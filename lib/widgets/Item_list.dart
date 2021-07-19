@@ -1,8 +1,12 @@
+import 'dart:ui';
+
+import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
 
 class ItemList extends StatelessWidget {
+  final Movie movie;
   final double ratio;
-  ItemList(this.ratio);
+  ItemList(this.movie, this.ratio);
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -11,10 +15,11 @@ class ItemList extends StatelessWidget {
         aspectRatio: ratio,
         child: Container(
           padding: EdgeInsets.all(4),
-          child: Image.network(
-            "https://thumbs.dreamstime.com/b/film-reel-icon-video-icon-movie-symbol-dark-background-film-reel-icon-video-icon-movie-symbol-dark-background-simple-116780933.jpg",
-            fit: BoxFit.cover,
-          ),
+          child: FadeInImage(placeholder:  AssetImage("assets/images/logo.png"),
+          image:
+           NetworkImage(
+            movie.posterURL,
+          ),fit: BoxFit.contain,),
         ),
       ),
     );
