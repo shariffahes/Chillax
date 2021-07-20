@@ -11,7 +11,12 @@ class ListAll extends StatelessWidget {
   final _controller = RefreshController();
   @override
   Widget build(BuildContext context) {
-    final type = ModalRoute.of(context)!.settings.arguments as DiscoverTypes;
+    final passedData =
+        ModalRoute.of(context)!.settings.arguments as Map<String, Object>;
+    final type = passedData['type'] as DiscoverTypes;
+    final _presentPopUp =
+        passedData['method'] as Function(BuildContext ctx, Movie movie);
+
     MovieProvider _movieProvider =
         Provider.of<MovieProvider>(context, listen: true);
     List<Movie> _movies = _movieProvider.getMoviesBy(
@@ -58,7 +63,7 @@ class ListAll extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           itemBuilder: (ctx, index) {
             return Center(
-              child: ItemList(_movies[index]),
+              child: ItemList(_movies[index],_presentPopUp),
             );
           },
           itemCount: _movies.length,

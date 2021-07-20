@@ -1,6 +1,7 @@
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
+import 'package:discuss_it/widgets/Item_details.dart';
 import 'package:discuss_it/widgets/poster_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,48 @@ class CategoryList extends StatelessWidget {
 
     await movieProvider.fetchMovieBy(type);
     _movies = movieProvider.getMoviesBy(type);
+  }
+
+  void _presentPopUp(BuildContext ctx, Movie movie) {
+    showDialog(
+      context: ctx,
+      builder: (_) => AlertDialog(
+        titlePadding: const EdgeInsets.only(top: 0, right: 0, left: 0),
+        title: Stack(
+          children: [
+            Image.network(movie.backDropURL),
+            Container(
+              color: Colors.white60,
+              padding: const EdgeInsets.all(6.0),
+              child: Text(
+                movie.name,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(movie.overview),
+          ]),
+        ),
+        actions: [
+          Container(
+            margin: EdgeInsets.zero,
+            width: double.infinity,
+            child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(ctx).pushReplacementNamed(ItemDetails.route,
+                      arguments: movie);
+                },
+                child: Text('See more')),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -41,7 +84,10 @@ class CategoryList extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       Navigator.of(context)
-                          .pushNamed(ListAll.route, arguments: type);
+                          .pushNamed(ListAll.route, arguments: {
+                        'type': type,
+                        'method': _presentPopUp,
+                      });
                     },
                     child: Text('See all'),
                   ),
@@ -53,7 +99,7 @@ class CategoryList extends StatelessWidget {
               height: 270,
               child: ListView(
                 children: _movies
-                    .map((movie) => PosterItem(movie.posterURL, 5 / 7))
+                    .map((movie) => PosterItem(movie, 5 / 7, _presentPopUp))
                     .toList(),
                 scrollDirection: Axis.horizontal,
               ),
@@ -61,7 +107,6 @@ class CategoryList extends StatelessWidget {
             Divider(
               thickness: 2,
             ),
-          
           ],
         );
       },

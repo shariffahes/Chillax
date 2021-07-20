@@ -1,9 +1,11 @@
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/widgets/Item_details.dart';
 import 'package:flutter/material.dart';
 
 class ItemList extends StatelessWidget {
   final Movie movie;
-  ItemList(this.movie);
+  final Function(BuildContext ctx, Movie movie) _presentPopUp;
+  ItemList(this.movie, this._presentPopUp);
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +20,13 @@ class ItemList extends StatelessWidget {
           ),
         ),
         child: ListTile(
+          onTap: () {
+            _presentPopUp(context, movie);
+          },
+          onLongPress: () {
+            Navigator.of(context)
+                .pushNamed(ItemDetails.route, arguments: movie);
+          },
           title: Container(
             color: Colors.white60,
             child: Column(
@@ -27,14 +36,15 @@ class ItemList extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                  movie.name,
-                  style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                    movie.name,
+                    style: TextStyle(
+                      fontSize: 25,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-              ),
-                )],
+                )
+              ],
             ),
           ),
         ));

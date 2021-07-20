@@ -1,5 +1,6 @@
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
+import 'package:discuss_it/widgets/Item_details.dart';
 import 'package:provider/provider.dart';
 import 'screens/tabs_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         routes: {
           ListAll.route: (ctx) => ListAll(),
+          ItemDetails.route : (ctx) => ItemDetails(),
         },
         title: 'Discuss it',
         theme: ThemeData(
