@@ -18,7 +18,7 @@ class PreviewCard extends StatelessWidget {
               child: Text(
                 title,
                 style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.w300,fontSize: 66),
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.w300,fontSize: 44),
               ),
             ),
             SizedBox(width: 15,),

@@ -1,11 +1,12 @@
+import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
-import 'package:discuss_it/widgets/Item_list.dart';
+import 'package:discuss_it/widgets/poster_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class CategoryList extends StatelessWidget {
-  final String type;
+  final DiscoverTypes type;
   CategoryList(this.type);
   List<Movie> _movies = [];
   Future<void> fetchMovies(BuildContext ctx) async {
@@ -31,12 +32,16 @@ class CategoryList extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    type,
-                    style: TextStyle(fontSize: 25),
+                    type.toShortString(),
+                    style: TextStyle(
+                      fontSize: 35,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pushNamed(ListAll.route, arguments: type);
+                      Navigator.of(context)
+                          .pushNamed(ListAll.route, arguments: type);
                     },
                     child: Text('See all'),
                   ),
@@ -47,14 +52,16 @@ class CategoryList extends StatelessWidget {
               //fix later to box constraint
               height: 270,
               child: ListView(
-                children:
-                    _movies.map((movie) => ItemList(movie, 5 / 7)).toList(),
+                children: _movies
+                    .map((movie) => PosterItem(movie.posterURL, 5 / 7))
+                    .toList(),
                 scrollDirection: Axis.horizontal,
               ),
             ),
             Divider(
               thickness: 2,
             ),
+          
           ],
         );
       },
