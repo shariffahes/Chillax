@@ -17,12 +17,20 @@ class PreviewCard extends StatelessWidget {
               padding: const EdgeInsets.only(left: 12.0),
               child: Text(
                 title,
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.w300,fontSize: 44),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300,
+                    fontSize: 44),
               ),
             ),
-            SizedBox(width: 15,),
-            Icon(symbol,size: 180,color: Colors.white,),
+            SizedBox(
+              width: 15,
+            ),
+            Icon(
+              symbol,
+              size: 180,
+              color: Colors.white,
+            ),
           ],
         ));
   }

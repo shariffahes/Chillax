@@ -1,8 +1,8 @@
-import 'package:discuss_it/models/keys.dart';
-import 'package:discuss_it/models/providers/Movies.dart';
-import 'package:discuss_it/screens/list_all_screen.dart';
-import 'package:discuss_it/widgets/Item_details.dart';
-import 'package:discuss_it/widgets/poster_item.dart';
+import '../models/keys.dart';
+import '../models/providers/Movies.dart';
+import '../screens/list_all_screen.dart';
+import '../widgets/Item_details.dart';
+import '../widgets/poster_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,7 +25,11 @@ class CategoryList extends StatelessWidget {
         titlePadding: const EdgeInsets.only(top: 0, right: 0, left: 0),
         title: Stack(
           children: [
-            Image.network(movie.backDropURL),
+            Image.network(
+              movie.backDropURL,
+              colorBlendMode: BlendMode.darken,
+              color: Colors.black26,
+            ),
             Container(
               color: Colors.white60,
               padding: const EdgeInsets.all(6.0),
@@ -35,6 +39,13 @@ class CategoryList extends StatelessWidget {
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
+              ),
+            ),
+            Positioned(
+              bottom: 2,
+              child: Text(
+                '2020-08-08',
+                style: TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -98,12 +109,14 @@ class CategoryList extends StatelessWidget {
               //fix later to box constraint
               height: 270,
               child: ListView(
+                clipBehavior: Clip.none,
                 children: _movies
                     .map((movie) => PosterItem(movie, 5 / 7, _presentPopUp))
                     .toList(),
                 scrollDirection: Axis.horizontal,
               ),
             ),
+            SizedBox(height: 10),
             Divider(
               thickness: 2,
             ),

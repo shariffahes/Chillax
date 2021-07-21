@@ -12,21 +12,49 @@ class PosterItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        _presentPopUp(context, movie);
+        Navigator.of(context).pushNamed(ItemDetails.route, arguments: movie);
       },
       onLongPress: () {
-        Navigator.of(context).pushNamed(ItemDetails.route, arguments: movie);
+        _presentPopUp(context, movie);
       },
       child: AspectRatio(
         aspectRatio: ratio,
         child: Container(
           padding: EdgeInsets.all(4),
-          child: FadeInImage(
-            placeholder: AssetImage("assets/images/logo.png"),
-            image: NetworkImage(
-              movie.posterURL,
-            ),
-            fit: BoxFit.contain,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              FadeInImage(
+                placeholder: AssetImage("assets/images/logo.png"),
+                image: NetworkImage(
+                  movie.posterURL,
+                ),
+                fit: BoxFit.contain,
+              ),
+              Positioned(
+                top: 5,
+                right: 20,
+                child: Container(
+                  alignment: AlignmentDirectional.center,
+                  decoration: BoxDecoration(
+                      color: Colors.white54, shape: BoxShape.circle),
+                  child: Stack(clipBehavior: Clip.none, children: [
+                    Positioned(
+                        top: 9,
+                        left: 3,
+                        child: Text(
+                          (movie.rate < 0 ? '-' : '${movie.rate}'),
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        )),
+                    CircularProgressIndicator(
+                      backgroundColor: Colors.black54,
+                      valueColor: AlwaysStoppedAnimation(Colors.green),
+                      value: movie.rate / 10.0,
+                    ),
+                  ]),
+                ),
+              ),
+            ],
           ),
         ),
       ),

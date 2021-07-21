@@ -21,11 +21,11 @@ class ItemList extends StatelessWidget {
         ),
         child: ListTile(
           onTap: () {
-            _presentPopUp(context, movie);
-          },
-          onLongPress: () {
             Navigator.of(context)
                 .pushNamed(ItemDetails.route, arguments: movie);
+          },
+          onLongPress: () {
+            _presentPopUp(context, movie);
           },
           title: Container(
             color: Colors.white60,
