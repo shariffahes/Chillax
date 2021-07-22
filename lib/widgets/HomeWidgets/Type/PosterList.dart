@@ -1,6 +1,6 @@
-import 'package:discuss_it/models/providers/Movies.dart';
-import 'package:discuss_it/models/providers/User.dart';
-import 'package:discuss_it/widgets/Item_details.dart';
+import '../../../models/providers/Movies.dart';
+import '../../../models/providers/User.dart';
+import '../../../widgets/Item_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -34,14 +34,18 @@ class _PosterListState extends State<PosterList> {
                       height: 230,
                       child: Stack(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: FadeInImage(
-                              placeholder: AssetImage('assets/images/logo.png'),
-                              image: NetworkImage(
-                                movie.posterURL,
+                          AspectRatio(
+                            aspectRatio: 3 / 4,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: FadeInImage(
+                                placeholder:
+                                    AssetImage('assets/images/logo.png'),
+                                image: NetworkImage(
+                                  movie.posterURL,
+                                ),
+                                fit: BoxFit.cover,
                               ),
-                              fit: BoxFit.cover,
                             ),
                           ),
                           IconButton(
@@ -62,10 +66,14 @@ class _PosterListState extends State<PosterList> {
                   ),
                   Container(
                     width: 140,
+                    height: 60,
                     padding: const EdgeInsets.only(top: 10, bottom: 2),
                     child: Text(
                       movie.name,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                   Row(

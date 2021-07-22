@@ -44,13 +44,18 @@ class MovieProvider with ChangeNotifier {
     return this;
   }
 
-  String _prepareURL(DiscoverTypes type, {page = 1}) {
-    String stringURL = keys.baseURL;
-    stringURL = stringURL +
-        (type == DiscoverTypes.trending
-            ? 'trending/movie/day'
-            : 'movie/${type.toShortString()}') +
-        '?api_key=${keys.apiKey}&language=en-US&page=$page';
+  String _prepareURL(DiscoverTypes type, {page = 1, int? genre}) {
+    String stringURL = "";
+    if (type == DiscoverTypes.trending) {
+      stringURL = '${keys.baseURL}trending/all/day?api_key=${keys.apiKey}';
+    } else if (type == DiscoverTypes.genre) {
+      
+      stringURL =
+          '${keys.baseURL}discover/movie?api_key=${keys.apiKey}&sort_by=popularity.des&page=$page&with_genres=$genre';
+    } else {
+      stringURL =
+          '${keys.baseURL}movie/${type.toShortString()}?api_key=${keys.apiKey}&language=en-US&page=$page';
+    }
     return stringURL;
   }
 
@@ -106,9 +111,10 @@ class MovieProvider with ChangeNotifier {
     return movieData;
   }
 
-  Future<void> loadMore(DiscoverTypes type) async {
+  Future<void> loadMore(DiscoverTypes type, {int? genre}) async {
     currentPage[type.index]++;
-    final url = _prepareURL(type, page: currentPage[type.index]);
+
+    final url = _prepareURL(type, page: currentPage[type.index], genre: genre);
     try {
       final decodedData = await _fetchData(url);
 
@@ -156,6 +162,16 @@ class MovieProvider with ChangeNotifier {
     final results = response['results'] as List<dynamic>;
     List<Movie> _searchData = _extractMoviesData(results);
     return _searchData;
+  }
+
+  Future<List<Movie>> fetchMovieBy(String genre) async {
+    final url = _prepareURL(DiscoverTypes.genre, genre: keys.genres[genre]);
+    print(url);
+    final decodedData = await _fetchData(url);
+    final results = decodedData['results'] as List<dynamic>;
+    final List<Movie> _movieData = _extractMoviesData(results);
+    _movies[DiscoverTypes.genre] = _movieData;
+    return _movieData;
   }
 
   List<Movie> getMoviesBy(DiscoverTypes type) {

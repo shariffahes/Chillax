@@ -76,7 +76,7 @@ class _TabsScreenState extends State<TabsScreen> {
           title: Text(tabBarWidgets[_index]['title'] as String),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Colors.orange,
+          selectedItemColor: Colors.red,
           unselectedItemColor: Colors.black,
           currentIndex: _index,
           onTap: selectTab,

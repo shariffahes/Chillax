@@ -1,17 +1,12 @@
+import 'package:discuss_it/models/keys.dart';
 import 'package:flutter/material.dart';
 import '../genre/ItemLists.dart';
 
 class Genre extends StatelessWidget {
-  final _items = [
-    'Comedy',
-    'Action',
-    'Thriller',
-    'Adventure',
-    'Horror',
-    'Family',
-    'Cartoon',
-    'Mystery',
-  ];
+  final DiscoverTypes type;
+  Genre(this.type);
+
+  final _items = keys.genres.keys.toList();
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -32,7 +27,7 @@ class Genre extends StatelessWidget {
             //dynamic
             height: 200,
             width: double.infinity,
-            child: ItemLists(5 / 3, _items)),
+            child: ItemLists(5 / 3, _items, type)),
       ],
     );
   }

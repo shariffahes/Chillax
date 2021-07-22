@@ -19,7 +19,7 @@ class Type extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             alignment: AlignmentDirectional.topStart,
             child: Text(
-              type.toShortString(),
+              type.toNormalString(),
               style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
             ),
           ),
@@ -27,7 +27,9 @@ class Type extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).pushNamed(
                 ListAll.route,
-                arguments: type,
+                arguments: {
+                  'type': type,
+                },
               );
             },
             child: Text('View all'),

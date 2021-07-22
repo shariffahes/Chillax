@@ -1,18 +1,44 @@
+import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/widgets/Item_details.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
-class Trending extends StatelessWidget {
-  final _items = [
-    'https://image.tmdb.org/t/p/w500/tehpKMsls621GT9WUQie2Ft6LmP.jpg',
-    'https://image.tmdb.org/t/p/w500/620hnMVLu6RSZW6a5rwO8gqpt0t.jpg',
-    'https://image.tmdb.org/t/p/w500/wjQXZTlFM3PVEUmKf1sUajjygqT.jpg'
-  ];
+class Trending extends StatefulWidget {
+  final DiscoverTypes type;
+  Trending(this.type);
+
+  @override
+  _TrendingState createState() => _TrendingState();
+}
+
+class _TrendingState extends State<Trending> {
+  List<Movie> _movies = [];
+
+  var ind = 0;
 
   final AutoScrollController _controller = AutoScrollController();
 
   void _scrollToIndex(int index) async {
     await _controller.scrollToIndex(index,
         preferPosition: AutoScrollPosition.middle);
+    setState(() {
+      ind = index;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    Provider.of<MovieProvider>(context, listen: false)
+        .fetchMovieListBy(widget.type)
+        .then((value) {
+      setState(() {
+        _movies = value.getMoviesBy(widget.type);
+      });
+    });
   }
 
   @override
@@ -24,7 +50,7 @@ class Trending extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            'Now Playing',
+            'Trending',
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
         ),
@@ -39,38 +65,62 @@ class Trending extends StatelessWidget {
               controller: _controller,
               index: index,
               child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context)
+                      .pushNamed(ItemDetails.route, arguments: _movies[index]);
+                },
                 onHorizontalDragDown: (details) {
-                  _scrollToIndex((index + 1) % _items.length);
+                  _scrollToIndex((index + 1) % _movies.length);
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(
-                        8.0,
-                      )),
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(
+                      12.0,
+                    ),
+                    image: DecorationImage(
+                      image: NetworkImage(_movies[index].backDropURL),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                   margin: EdgeInsets.all(5),
                   //dynamic
                   height: 300,
                   //dynamic
                   width: 360,
                   //dynamic
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(_items[index], fit: BoxFit.cover),
+                  child: Text(
+                    _movies[index].name,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      backgroundColor: Colors.white70,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-            itemCount: _items.length,
+            itemCount: _movies.length,
           ),
+        ),
+        SizedBox(
+          height: 13,
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            icons(Icons.tv_outlined),
-            icons(Icons.alarm_outlined),
-            icons(Icons.movie_outlined),
-            icons((Icons.person_outline)),
+            icons(
+              Icons.star_outline,
+              (_movies.isNotEmpty ? '${_movies[ind].rate}' : '-'),
+            ),
+            icons(Icons.calendar_today_outlined,
+                (_movies.isNotEmpty ? _movies[ind].releaseDate : '-')),
+            icons(Icons.timer_outlined, '02:12:20'),
+            icons(
+              Icons.language,
+              (_movies.isNotEmpty ? _movies[ind].language : '-'),
+            ),
           ],
         )
       ],
@@ -80,8 +130,8 @@ class Trending extends StatelessWidget {
 
 class icons extends StatelessWidget {
   final IconData icon;
-
-  const icons(this.icon);
+  final String value;
+  const icons(this.icon, this.value);
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +143,7 @@ class icons extends StatelessWidget {
           size: 55,
           color: Colors.red,
         ),
-        Text('rate'),
+        Text(value),
       ],
     );
   }

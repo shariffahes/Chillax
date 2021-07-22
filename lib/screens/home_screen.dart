@@ -14,8 +14,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<DiscoverTypes> listOfTitles = DiscoverTypes.values;
-
+  final List<DiscoverTypes> listOfTitles =
+      DiscoverTypes.values.skip(keys.mainList).toList();
 
 //optimize search in another widget to clean
   void _searchForResults(BuildContext ctx, String input) async {
@@ -72,29 +72,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(children: [
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: TextFormField(
-          decoration: InputDecoration(
-            prefixIcon: Icon(
-              Icons.search_sharp,
-              size: 30,
+    return SingleChildScrollView(
+      child: Column(children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextFormField(
+            decoration: InputDecoration(
+              prefixIcon: Icon(
+                Icons.search_sharp,
+                size: 30,
+              ),
+              labelText: 'Search for a movie, show, or people ...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
             ),
-            labelText: 'Search for a movie, show, or people ...',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
+            onFieldSubmitted: (input) {
+              _searchForResults(context, input);
+            },
           ),
-          onFieldSubmitted: (input) {
-
-            _searchForResults(context, input);
-          },
         ),
-      ),
-      Trending(),
-      Genre(),
-      ...listOfTitles.map((type) => Type(type)).toList(),
-    ]);
+        Trending(DiscoverTypes.trending),
+        Genre(DiscoverTypes.genre),
+        ...listOfTitles.map((type) => Type(type)).toList(),
+      ]),
+    );
   }
 }
