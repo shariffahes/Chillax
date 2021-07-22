@@ -1,24 +1,26 @@
-import '../models/keys.dart';
-import '../models/providers/Movies.dart';
-import '../screens/list_all_screen.dart';
-import '../widgets/Item_details.dart';
-import '../widgets/poster_item.dart';
+import 'package:discuss_it/models/providers/Movies.dart';
+import '../lib/models/keys.dart';
+import '../lib/models/providers/Movies.dart' as m;
+import '../lib/screens/list_all_screen.dart';
+import '../lib/widgets/Item_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'poster_item.dart';
 
 class CategoryList extends StatelessWidget {
   final DiscoverTypes type;
   CategoryList(this.type);
-  List<Movie> _movies = [];
+  List<m.Movie> _movies = [];
   Future<void> fetchMovies(BuildContext ctx) async {
-    MovieProvider movieProvider =
-        Provider.of<MovieProvider>(ctx, listen: false);
+    m.MovieProvider movieProvider =
+        Provider.of<m.MovieProvider>(ctx, listen: false);
 
-    await movieProvider.fetchMovieBy(type);
+    await movieProvider.fetchMovieListBy(type);
     _movies = movieProvider.getMoviesBy(type);
   }
 
-  void _presentPopUp(BuildContext ctx, Movie movie) {
+  void _presentPopUp(BuildContext ctx, m.Movie movie) {
     showDialog(
       context: ctx,
       builder: (_) => AlertDialog(

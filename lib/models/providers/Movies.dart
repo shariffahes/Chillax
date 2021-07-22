@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-import 'package:discuss_it/models/keys.dart';
-import 'package:discuss_it/models/providers/People.dart';
+import '/models/keys.dart';
+import '/models/providers/People.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -32,18 +31,20 @@ class MovieProvider with ChangeNotifier {
   Map<DiscoverTypes, List<Movie>> _movies = {};
   List<int> currentPage = DiscoverTypes.values.map((e) => 1).toList();
 
-  Future<void> fetchMovieBy(DiscoverTypes type, {int page = 1}) async {
-    if (_movies[type] != null && _movies[type]!.isNotEmpty) return null;
+  Future<MovieProvider> fetchMovieListBy(DiscoverTypes type,
+      {int page = 1}) async {
+    if (_movies[type] != null && _movies[type]!.isNotEmpty) return this;
     final stringURL = _prepareURL(type);
     final decodedData = await _fetchData(stringURL);
     final results = decodedData['results'] as List<dynamic>;
+
     final movieData = _extractMoviesData(results);
     _movies[type] = movieData;
     notifyListeners();
+    return this;
   }
 
   String _prepareURL(DiscoverTypes type, {page = 1}) {
-    print('the type $type');
     String stringURL = keys.baseURL;
     stringURL = stringURL +
         (type == DiscoverTypes.trending
@@ -68,10 +69,10 @@ class MovieProvider with ChangeNotifier {
     List<Movie> movieData = [];
 
     results.forEach((movie) {
-      final id = movie['id'];
-
-      final title = movie['original_title'];
-      final overview = movie['overview'];
+      //deal with empty values
+      final id = movie['id'] ?? 0;
+      final title = movie['original_title'] ?? '-';
+      final overview = movie['overview'] ?? '-';
       final imageURL = movie['poster_path'] == null
           ? "https://i.postimg.cc/cLWJs6Rb/logo.png"
           : keys.baseImageURL + movie['poster_path'];
@@ -79,9 +80,17 @@ class MovieProvider with ChangeNotifier {
           ? "https://i.postimg.cc/cLWJs6Rb/logo.png"
           : keys.baseImageURL + movie['backdrop_path'];
 
-      final rate = movie['vote_average'].toDouble();
-      final releaseDate = movie['release_date'] ?? "-";
-      final lan = movie['original_language'] ?? "-";
+      final rate = movie['vote_average'] == null
+          ? 0.0
+          : movie['vote_average'].toDouble();
+
+      String releaseDate = movie['release_date'] ?? '-';
+      releaseDate = releaseDate.isEmpty ? '-' : releaseDate;
+
+      String lan = movie['original_language'] ?? '-';
+
+      lan = lan.isEmpty ? '-' : lan;
+
       movieData.add(Movie(
         id,
         title,
@@ -138,50 +147,15 @@ class MovieProvider with ChangeNotifier {
     return _cast;
   }
 
-  Future<List<Map<String, Object>>> searchFor(String movieName) async {
+  Future<List<Movie>> searchFor(String movieName) async {
     String parsedName = movieName.replaceAll(" ", "+");
 
     final url =
         "https://api.themoviedb.org/3/search/movie?api_key=${keys.apiKey}&query=$parsedName";
     final response = await _fetchData(url);
     final results = response['results'] as List<dynamic>;
-
-    List<Map<String, Object>> _searchData = [];
-
-    results.forEach((movie) {
-      Map<String, Object> _movieData = {};
-      _movieData['name'] = movie['title'];
-      _movieData['poster'] = movie['poster_path'] == null
-          ? "https://i.postimg.cc/cLWJs6Rb/logo.png"
-          : keys.baseImageURL + movie['poster_path'];
-
-      _movieData['id'] = movie['id'];
-      _searchData.add(_movieData);
-    });
-
+    List<Movie> _searchData = _extractMoviesData(results);
     return _searchData;
-  }
-
-  Future<Movie> fetchDetails(int movieID) async {
-    final url =
-        "https://api.themoviedb.org/3/movie/$movieID?api_key=${keys.apiKey}";
-    final decodedData = await _fetchData(url);
-    final id = decodedData['id'];
-
-    final name = decodedData['original_title'];
-    final overview = decodedData['overview'];
-    final imageURL = decodedData['poster_path'] == null
-        ? "https://i.postimg.cc/cLWJs6Rb/logo.png"
-        : keys.baseImageURL + decodedData['poster_path'];
-    final backDropURL = decodedData['backdrop_path'] == null
-        ? "https://i.postimg.cc/cLWJs6Rb/logo.png"
-        : keys.baseImageURL + decodedData['backdrop_path'];
-    final rate = decodedData['vote_average'].toDouble();
-    final releaseDate = decodedData['release_date'] ?? "-";
-    final lan = decodedData['original_language'] ?? "-";
-    Movie movie = Movie(
-        id, name, overview, imageURL, backDropURL, rate, releaseDate, lan);
-    return movie;
   }
 
   List<Movie> getMoviesBy(DiscoverTypes type) {

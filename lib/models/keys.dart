@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
-enum DiscoverTypes { trending, popular, top_rated, now_playing, upcoming }
+enum DiscoverTypes { now_playing, trending, popular, top_rated, upcoming }
 
 extension ParseToString on DiscoverTypes {
   String toShortString() {
@@ -20,6 +21,9 @@ class keys {
     final response = await http.get(url);
     final decodedData = json.decode(response.body);
     baseImageURL = decodedData['images']['base_url'];
-    print(baseImageURL);
+  }
+
+  static String reformData(String date) {
+    return date == "-" ? date : DateFormat('yyyy').format(DateTime.parse(date));
   }
 }

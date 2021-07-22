@@ -18,7 +18,7 @@ class ItemDetails extends StatelessWidget {
     Future<void> _populateCast() async {
       _movieCast = await Provider.of<MovieProvider>(context, listen: false)
           .fetchCast(movie.id);
-      print(_movieCast.length);
+     
     }
 
     return Scaffold(

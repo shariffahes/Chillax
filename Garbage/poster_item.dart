@@ -1,6 +1,8 @@
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/widgets/Item_details.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class PosterItem extends StatelessWidget {
   final Movie movie;
@@ -30,6 +32,19 @@ class PosterItem extends StatelessWidget {
                   movie.posterURL,
                 ),
                 fit: BoxFit.contain,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: Colors.black38),
+                child: IconButton(
+                    onPressed: () {
+                      Provider.of<User>(context, listen: false).addToWatchList(movie);
+                    },
+                    icon: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    )),
               ),
               Positioned(
                 top: 5,

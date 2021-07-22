@@ -1,4 +1,5 @@
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:discuss_it/widgets/Item_details.dart';
 import 'package:provider/provider.dart';
@@ -15,15 +16,16 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => MovieProvider()),
+        ChangeNotifierProvider(create: (_) => User()),
       ],
       child: MaterialApp(
         routes: {
           ListAll.route: (ctx) => ListAll(),
-          ItemDetails.route : (ctx) => ItemDetails(),
+          ItemDetails.route: (ctx) => ItemDetails(),
         },
         title: 'Discuss it',
         theme: ThemeData(
-          primarySwatch: Colors.orange,
+          primarySwatch: Colors.red,
         ),
         home: TabsScreen(),
       ),

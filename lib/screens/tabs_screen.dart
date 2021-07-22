@@ -67,6 +67,9 @@ class _TabsScreenState extends State<TabsScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          elevation: 10,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           bottom: tabBarWidgets[_index].containsKey('tabBar')
               ? tabBarWidgets[_index]['tabBar'] as TabBar
               : null,

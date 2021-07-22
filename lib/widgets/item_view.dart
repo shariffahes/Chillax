@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 class ItemList extends StatelessWidget {
   final Movie movie;
-  final Function(BuildContext ctx, Movie movie) _presentPopUp;
-  ItemList(this.movie, this._presentPopUp);
+  //final Function(BuildContext ctx, Movie movie) _presentPopUp;
+  ItemList(this.movie); //this._presentPopUp);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class ItemList extends StatelessWidget {
                 .pushNamed(ItemDetails.route, arguments: movie);
           },
           onLongPress: () {
-            _presentPopUp(context, movie);
+          //  _presentPopUp(context, movie);
           },
           title: Container(
             color: Colors.white60,

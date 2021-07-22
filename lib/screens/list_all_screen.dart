@@ -1,5 +1,4 @@
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-
 import '../models/keys.dart';
 import '../models/providers/Movies.dart';
 import '../widgets/item_view.dart';
@@ -11,11 +10,9 @@ class ListAll extends StatelessWidget {
   final _controller = RefreshController();
   @override
   Widget build(BuildContext context) {
-    final passedData =
-        ModalRoute.of(context)!.settings.arguments as Map<String, Object>;
-    final type = passedData['type'] as DiscoverTypes;
-    final _presentPopUp =
-        passedData['method'] as Function(BuildContext ctx, Movie movie);
+    
+    final type =
+        ModalRoute.of(context)!.settings.arguments as DiscoverTypes;
 
     MovieProvider _movieProvider =
         Provider.of<MovieProvider>(context, listen: true);
@@ -63,7 +60,7 @@ class ListAll extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           itemBuilder: (ctx, index) {
             return Center(
-              child: ItemList(_movies[index],_presentPopUp),
+              child: ItemList(_movies[index]), //_presentPopUp),
             );
           },
           itemCount: _movies.length,
