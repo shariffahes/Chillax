@@ -1,13 +1,13 @@
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
-import 'package:discuss_it/widgets/Item_details.dart';
+import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 class Trending extends StatefulWidget {
   final DiscoverTypes type;
-  Trending(this.type);
+  const Trending(this.type);
 
   @override
   _TrendingState createState() => _TrendingState();
@@ -43,6 +43,53 @@ class _TrendingState extends State<Trending> {
 
   @override
   Widget build(BuildContext context) {
+    var aspectRatio = AspectRatio(
+      aspectRatio: 7 / 4,
+      child: ListView.builder(
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (_, index) => AutoScrollTag(
+          key: ValueKey(index),
+          controller: _controller,
+          index: index,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context)
+                  .pushNamed(PreviewItem.route, arguments: _movies[index]);
+            },
+            onHorizontalDragDown: (details) {
+              _scrollToIndex((index + 1) % _movies.length);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(
+                  12.0,
+                ),
+                image: DecorationImage(
+                  image: NetworkImage(_movies[index].backDropURL),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              margin: const EdgeInsets.all(5),
+              height: 300,
+              width: 360,
+              child: Text(
+                _movies[index].name,
+                textAlign: TextAlign.start,
+                style: TextStyle(
+                  backgroundColor: Colors.white70,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ),
+        itemCount: _movies.length,
+      ),
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,75 +101,42 @@ class _TrendingState extends State<Trending> {
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
         ),
-        AspectRatio(
-          //dynamic
-          aspectRatio: 7 / 3,
-          child: ListView.builder(
-            controller: _controller,
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (_, index) => AutoScrollTag(
-              key: ValueKey(index),
-              controller: _controller,
-              index: index,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.of(context)
-                      .pushNamed(ItemDetails.route, arguments: _movies[index]);
-                },
-                onHorizontalDragDown: (details) {
-                  _scrollToIndex((index + 1) % _movies.length);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(
-                      12.0,
-                    ),
-                    image: DecorationImage(
-                      image: NetworkImage(_movies[index].backDropURL),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  margin: EdgeInsets.all(5),
-                  //dynamic
-                  height: 300,
-                  //dynamic
-                  width: 360,
-                  //dynamic
-                  child: Text(
-                    _movies[index].name,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      backgroundColor: Colors.white70,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            itemCount: _movies.length,
-          ),
-        ),
+        aspectRatio,
         SizedBox(
           height: 13,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            icons(
-              Icons.star_outline,
-              (_movies.isNotEmpty ? '${_movies[ind].rate}' : '-'),
-            ),
-            icons(Icons.calendar_today_outlined,
-                (_movies.isNotEmpty ? _movies[ind].releaseDate : '-')),
-            icons(Icons.timer_outlined, '02:12:20'),
-            icons(
-              Icons.language,
-              (_movies.isNotEmpty ? _movies[ind].language : '-'),
-            ),
-          ],
-        )
+        InfoRow(movies: _movies, ind: ind)
+      ],
+    );
+  }
+}
+
+class InfoRow extends StatelessWidget {
+  const InfoRow({
+    Key? key,
+    required List<Movie> movies,
+    required this.ind,
+  }) : _movies = movies, super(key: key);
+
+  final List<Movie> _movies;
+  final int ind;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        icons(
+          Icons.star_outline,
+          (_movies.isNotEmpty ? '${_movies[ind].rate}' : '-'),
+        ),
+        icons(Icons.calendar_today_outlined,
+            (_movies.isNotEmpty ? _movies[ind].releaseDate : '-')),
+        icons(Icons.timer_outlined, '02:12:20'),
+        icons(
+          Icons.language,
+          (_movies.isNotEmpty ? _movies[ind].language : '-'),
+        ),
       ],
     );
   }

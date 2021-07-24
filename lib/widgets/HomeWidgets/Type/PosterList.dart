@@ -1,6 +1,7 @@
+import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
+import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import '../../../models/providers/Movies.dart';
 import '../../../models/providers/User.dart';
-import '../../../widgets/Item_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,31 +24,19 @@ class _PosterListState extends State<PosterList> {
             (movie) => Padding(
               padding: const EdgeInsets.all(5.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context)
-                          .pushNamed(ItemDetails.route, arguments: movie);
+                          .pushNamed(PreviewItem.route, arguments: movie);
                     },
                     child: Container(
                       height: 230,
                       child: Stack(
                         children: [
-                          AspectRatio(
-                            aspectRatio: 3 / 4,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: FadeInImage(
-                                placeholder:
-                                    AssetImage('assets/images/logo.png'),
-                                image: NetworkImage(
-                                  movie.posterURL,
-                                ),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
+                          ImagePoster(movie.posterURL),
                           IconButton(
                               alignment: AlignmentDirectional.topStart,
                               padding: EdgeInsets.zero,
@@ -76,44 +65,34 @@ class _PosterListState extends State<PosterList> {
                       ),
                     ),
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                              color: Colors.grey.shade800,
-                              borderRadius:
-                                  BorderRadius.all(Radius.elliptical(90, 85))),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 5),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.star,
-                                color: Colors.amber,
-                                size: 20,
-                              ),
-                              SizedBox(
-                                width: 4,
-                              ),
-                              Text(
-                                "${movie.rate}",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              )
-                            ],
-                          )),
-                    ],
-                  )
+                  Universal.rateContainer(movie.rate),
                 ],
               ),
             ),
           )
           .toList(),
+    );
+  }
+}
+
+class ImagePoster extends StatelessWidget {
+  final String posterURL;
+  const ImagePoster(this.posterURL);
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: FadeInImage(
+          placeholder: AssetImage('assets/images/logo.png'),
+          image: NetworkImage(
+            posterURL,
+          ),
+          fit: BoxFit.cover,
+        ),
+      ),
     );
   }
 }

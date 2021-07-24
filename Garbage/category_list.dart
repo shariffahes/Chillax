@@ -113,7 +113,7 @@ class CategoryList extends StatelessWidget {
               child: ListView(
                 clipBehavior: Clip.none,
                 children: _movies
-                    .map((movie) => PosterItem(movie, 5 / 7, _presentPopUp))
+                    .map((movie) => Center())//PosterItem(movie, 5 / 7, _presentPopUp))
                     .toList(),
                 scrollDirection: Axis.horizontal,
               ),

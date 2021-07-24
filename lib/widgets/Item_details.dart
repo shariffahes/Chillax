@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ItemDetails extends StatelessWidget {
-  static const route = "/item_details";
+  
   List<People> _movieCast = [];
 
   @override
@@ -18,86 +18,92 @@ class ItemDetails extends StatelessWidget {
     Future<void> _populateCast() async {
       _movieCast = await Provider.of<MovieProvider>(context, listen: false)
           .fetchCast(movie.id);
-     
     }
 
     return Scaffold(
-        body: FutureBuilder(
-      future: _populateCast(),
-      builder: (ctx, snapshot) => CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Image.network(
-                movie.backDropURL,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SliverList(
-              delegate: SliverChildListDelegate([
-            Center(
-              child: Text(
-                movie.name,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+      body: FutureBuilder(
+        future: _populateCast(),
+        builder: (ctx, snapshot) => CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 300,
+              pinned: true,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Image.network(
+                  movie.backDropURL,
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
-            Center(
-                child: CircleAvatar(
-              maxRadius: 30,
-              child: Center(
-                child: Text(
-                  '${movie.rate}',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+            SliverList(
+              delegate: SliverChildListDelegate(
+                [
+                  Center(
+                    child: Text(
+                      movie.name,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                  Center(
+                      child: CircleAvatar(
+                    maxRadius: 30,
+                    child: Center(
+                      child: Text(
+                        '${movie.rate}',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )),
+                  InfoRow(movie.releaseDate, movie.language),
+                  Divider(
+                    thickness: 2,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Subtitles('Story Line'),
+                  ),
+                  Padding(padding: const EdgeInsets.all(8.0)),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        movie.overview,
+                        style: TextStyle(
+                            height: 1.7,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w300),
+                      ),
+                    ),
+                  ),
+                  Divider(
+                    thickness: 2,
+                  ),
+                  Subtitles('Cast'),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: _movieCast
+                          .map((e) => Padding(
+                                padding: const EdgeInsets.only(bottom: 17.0),
+                                child: Actor(e.name, e.profileURL, e.character),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                ],
               ),
-            )),
-            InfoRow(movie.releaseDate, movie.language),
-            Divider(thickness: 2,),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Subtitles('Story Line'),
             ),
-            Padding(padding: const EdgeInsets.all(8.0)),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  movie.overview,
-                  style: TextStyle(
-                      height: 1.7, fontSize: 16, fontWeight: FontWeight.w300),
-                ),
-              ),
-            ),
-            Divider(
-              thickness: 2,
-            ),
-            Subtitles('Cast'),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                
-                mainAxisSize: MainAxisSize.min,
-                children: _movieCast
-                    .map((e) => Padding(
-                      padding: const EdgeInsets.only(bottom: 17.0),
-                      child: Actor(e.name, e.profileURL, e.character),
-                    ))
-                    .toList(),
-              ),
-            ),
-          ]))
-        ],
+          ],
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -166,7 +172,6 @@ class ColumnInfo extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(value),
-          
         ],
       ),
     );

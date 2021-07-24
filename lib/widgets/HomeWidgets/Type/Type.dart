@@ -1,3 +1,5 @@
+import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
+
 import '../../../models/keys.dart';
 import '../../../models/providers/Movies.dart';
 import '../../../screens/list_all_screen.dart';
@@ -42,13 +44,9 @@ class Type extends StatelessWidget {
         builder: (_, snapshot) {
           if (snapshot.hasError)
             //replace by somthing better
-            return Center(
-              child: Text('Failed :('),
-            );
+            return Universal.failedWidget();
           if (snapshot.connectionState == ConnectionState.waiting)
-            return Center(
-              child: CircularProgressIndicator(),
-            );
+            return Universal.loadingWidget();
 
           List<Movie> _movies = snapshot.data!.getMoviesBy(type);
           return Container(

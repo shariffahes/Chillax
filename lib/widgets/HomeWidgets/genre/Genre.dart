@@ -4,7 +4,7 @@ import '../genre/ItemLists.dart';
 
 class Genre extends StatelessWidget {
   final DiscoverTypes type;
-  Genre(this.type);
+   Genre(this.type);
 
   final _items = keys.genres.keys.toList();
   @override

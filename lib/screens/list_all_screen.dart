@@ -1,7 +1,7 @@
+import 'package:discuss_it/widgets/ListWidget/ListItems.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../models/keys.dart';
 import '../models/providers/Movies.dart';
-import '../widgets/item_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +16,7 @@ class ListAll extends StatelessWidget {
     final String? genre = data['genre'] ?? null;
 
     MovieProvider _movieProvider =
-        Provider.of<MovieProvider>(context, listen: true);
+        Provider.of<MovieProvider>(context, listen: false);
     List<Movie> _movies = _movieProvider.getMoviesBy(
       type,
     );
@@ -38,43 +38,12 @@ class ListAll extends StatelessWidget {
             return Center(
               child: CircularProgressIndicator(),
             );
-          _movies = !snapshot.hasData ? _movies : snapshot.data as List<Movie>;
-          return SmartRefresher(
-            enablePullDown: false,
-            footer: CustomFooter(
-              builder: (_, state) {
-                Widget body;
-                switch (state) {
-                  case LoadStatus.idle:
-                    body = Icon(Icons.arrow_upward);
-                    break;
-                  case LoadStatus.loading:
-                    body = CircularProgressIndicator();
-                    break;
-                  case LoadStatus.failed:
-                    body = Text('Failed');
-                    break;
-                  default:
-                    body = Icon(Icons.refresh);
-                    break;
-                }
-                return Center(
-                  child: body,
-                );
-              },
-            ),
-            enablePullUp: true,
-            controller: _controller,
-            onLoading: load,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemBuilder: (ctx, index) {
-                return Center(
-                  child: ItemList(_movies[index]), //_presentPopUp),
-                );
-              },
-              itemCount: _movies.length,
-            ),
+          // _movies = !snapshot.hasData ? _movies : snapshot.data as List<Movie>;
+          return Consumer<MovieProvider>(
+            builder: (_, prov, __) {
+              _movies = prov.getMoviesBy(type);
+              return ListItems(_movies, _controller, load);
+            },
           );
         },
       ),

@@ -7,14 +7,14 @@ class ItemLists extends StatelessWidget {
   final _items;
   final DiscoverTypes type;
   final double ratio;
-  ItemLists(this.ratio, this._items, this.type);
+  const ItemLists(this.ratio, this._items, this.type);
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisExtent: 200,
+        mainAxisExtent: MediaQuery.of(context).size.width * 0.41,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
         childAspectRatio: ratio,
@@ -31,12 +31,12 @@ class ItemLists extends StatelessWidget {
               borderRadius: BorderRadius.circular(
                 8.0,
               )),
-          margin: EdgeInsets.all(5),
+          margin: const EdgeInsets.all(5),
           child: Center(
             child: Text(
               _items[index],
               style: TextStyle(
-                  fontWeight: FontWeight.w300,
+                  fontWeight: FontWeight.w400,
                   color: Colors.white,
                   fontSize: 20),
             ),

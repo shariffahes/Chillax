@@ -49,7 +49,6 @@ class MovieProvider with ChangeNotifier {
     if (type == DiscoverTypes.trending) {
       stringURL = '${keys.baseURL}trending/all/day?api_key=${keys.apiKey}';
     } else if (type == DiscoverTypes.genre) {
-      
       stringURL =
           '${keys.baseURL}discover/movie?api_key=${keys.apiKey}&sort_by=popularity.des&page=$page&with_genres=$genre';
     } else {
@@ -165,8 +164,10 @@ class MovieProvider with ChangeNotifier {
   }
 
   Future<List<Movie>> fetchMovieBy(String genre) async {
+    currentPage[DiscoverTypes.genre.index] = 1;
+
     final url = _prepareURL(DiscoverTypes.genre, genre: keys.genres[genre]);
-    print(url);
+   
     final decodedData = await _fetchData(url);
     final results = decodedData['results'] as List<dynamic>;
     final List<Movie> _movieData = _extractMoviesData(results);
