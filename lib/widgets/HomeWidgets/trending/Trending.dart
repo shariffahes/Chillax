@@ -154,7 +154,7 @@ class icons extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 55,
+          size: 44,
           color: Colors.red,
         ),
         Text(value),

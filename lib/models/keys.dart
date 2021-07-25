@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/User.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 

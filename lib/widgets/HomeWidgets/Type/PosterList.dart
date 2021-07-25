@@ -37,18 +37,28 @@ class _PosterListState extends State<PosterList> {
                       child: Stack(
                         children: [
                           ImagePoster(movie.posterURL),
-                          IconButton(
-                              alignment: AlignmentDirectional.topStart,
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                Provider.of<User>(context, listen: false)
-                                    .addToWatchList(movie);
-                              },
-                              icon: Icon(
-                                Icons.add_circle_rounded,
-                                size: 35,
-                                color: Colors.amber,
-                              ))
+                          Consumer<User>(
+                            builder: (ctx, user, _) {
+                              final isAdded = user.isAdded(movie.id);
+
+                              return IconButton(
+                                alignment: AlignmentDirectional.topStart,
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  isAdded
+                                      ? user.removeFromList(movie.id)
+                                      : user.addToWatchList(movie);
+                                },
+                                icon: Icon(
+                                  isAdded
+                                      ? Icons.check_circle
+                                      : Icons.add_circle_rounded,
+                                  size: 35,
+                                  color: Colors.amber,
+                                ),
+                              );
+                            },
+                          )
                         ],
                       ),
                     ),

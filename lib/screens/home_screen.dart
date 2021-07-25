@@ -6,15 +6,12 @@ import '../widgets/HomeWidgets/Type/Type.dart';
 import '../widgets/HomeWidgets/genre/Genre.dart';
 import '../widgets/HomeWidgets/trending/Trending.dart';
 
-
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  //Set the number of discover types that will be in the home screen
-  //Skip the first 2 discover types (genre,trending)
   final List<DiscoverTypes> listOfTitles =
       DiscoverTypes.values.skip(keys.mainList).toList();
 

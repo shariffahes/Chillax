@@ -1,5 +1,6 @@
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/People.dart';
+import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ class PreviewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _movie = ModalRoute.of(context)!.settings.arguments as Movie;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
@@ -44,18 +46,27 @@ class PreviewItem extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
-              style: ButtonStyle(
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                  ),
-                  fixedSize: MaterialStateProperty.all<Size>(
-                    Size(210, 60),
-                  )),
-              onPressed: () {},
-              child: Text('Add to list'),
+            Consumer<User>(
+              builder: (ctx, user, _) {
+                final isAdded = user.isAdded(_movie.id);
+                return ElevatedButton(
+                  style: ButtonStyle(
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                      ),
+                      fixedSize: MaterialStateProperty.all<Size>(
+                        Size(210, 60),
+                      )),
+                  onPressed: () {
+                    isAdded
+                        ? user.removeFromList(_movie.id)
+                        : user.addToWatchList(_movie);
+                  },
+                  child: Text(isAdded ? 'Remove from List' : 'Add to list'),
+                );
+              },
             ),
             CircleAvatar(
               radius: 27,
@@ -83,7 +94,9 @@ class InfoColumn extends StatelessWidget {
     Key? key,
     required Movie movie,
     required List<People> cast,
-  }) : _movie = movie, _cast = cast, super(key: key);
+  })  : _movie = movie,
+        _cast = cast,
+        super(key: key);
 
   final Movie _movie;
   final List<People> _cast;
@@ -136,8 +149,7 @@ class InfoColumn extends StatelessWidget {
           ),
           Text(
             "Cast",
-            style: TextStyle(
-                fontSize: 33, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -145,10 +157,8 @@ class InfoColumn extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: _cast
                   .map((e) => Padding(
-                        padding: const EdgeInsets.only(
-                            bottom: 17.0),
-                        child: Actor(e.name, e.profileURL,
-                            e.character),
+                        padding: const EdgeInsets.only(bottom: 17.0),
+                        child: Actor(e.name, e.profileURL, e.character),
                       ))
                   .toList(),
             ),

@@ -1,7 +1,9 @@
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CardItem extends StatelessWidget {
   final Movie _movie;
@@ -58,7 +60,8 @@ class InfoColumn extends StatelessWidget {
   const InfoColumn({
     Key? key,
     required Movie movie,
-  }) : _movie = movie, super(key: key);
+  })  : _movie = movie,
+        super(key: key);
 
   final Movie _movie;
 
@@ -85,12 +88,22 @@ class InfoColumn extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.add_circle,
-                    size: 35,
-                  ),
+                Consumer<User>(
+                  builder: (ctx, user, _) {
+                    final isAdded = user.isAdded(_movie.id);
+                    
+                    return IconButton(
+                      onPressed: () {
+                        isAdded
+                            ? user.removeFromList(_movie.id)
+                            : user.addToWatchList(_movie);
+                      },
+                      icon: Icon(
+                        isAdded ? Icons.check_circle : Icons.add_circle,
+                        size: 35,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
