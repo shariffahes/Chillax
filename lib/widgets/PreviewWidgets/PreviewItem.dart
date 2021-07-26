@@ -24,11 +24,13 @@ class PreviewItem extends StatelessWidget {
                     future: Provider.of<MovieProvider>(context, listen: false)
                         .fetchCast(_movie.id),
                     builder: (_, snapshot) {
+                      print(snapshot.error);
                       if (snapshot.hasError) return Universal.failedWidget();
                       if (snapshot.connectionState == ConnectionState.waiting)
                         return Universal.loadingWidget();
 
                       final List<People> _cast = snapshot.data!;
+
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           vertical: 10,
@@ -130,7 +132,7 @@ class InfoColumn extends StatelessWidget {
             height: 14,
           ),
           Text(
-            'Run time: 02:15:02',
+            _movie.duration.toString(),
             style: TextStyle(
               fontWeight: FontWeight.w400,
               fontSize: 14,
@@ -230,7 +232,7 @@ class CustomAppBar extends StatelessWidget {
 class Actor extends StatelessWidget {
   final String name;
   final String profileURL;
-  final String character;
+  final List<String> character;
   @override
   Actor(this.name, this.profileURL, this.character);
 
@@ -245,7 +247,7 @@ class Actor extends StatelessWidget {
             child: Container(),
           ),
           Text(name),
-          Text(character),
+          ...character.map((e) => Text(e)).toList(),
         ],
       ),
     );

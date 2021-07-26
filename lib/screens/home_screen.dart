@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SingleChildScrollView(
       child: Column(children: [
         SearchWidget(),
-        Trending(DiscoverTypes.trending),
+        Trending(DiscoverTypes.boxoffice),
         Container(
             padding: const EdgeInsets.all(5),
             child: Genre(DiscoverTypes.genre)),

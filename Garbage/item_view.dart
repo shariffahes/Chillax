@@ -1,5 +1,5 @@
 import 'package:discuss_it/models/providers/Movies.dart';
-import 'package:discuss_it/widgets/Item_details.dart';
+import 'Item_details.dart';
 import 'package:flutter/material.dart';
 
 class ItemList extends StatelessWidget {

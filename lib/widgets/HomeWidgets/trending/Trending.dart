@@ -45,49 +45,65 @@ class _TrendingState extends State<Trending> {
   Widget build(BuildContext context) {
     var aspectRatio = AspectRatio(
       aspectRatio: 7 / 4,
-      child: ListView.builder(
-        controller: _controller,
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (_, index) => AutoScrollTag(
-          key: ValueKey(index),
-          controller: _controller,
-          index: index,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.of(context)
-                  .pushNamed(PreviewItem.route, arguments: _movies[index]);
-            },
-            onHorizontalDragDown: (details) {
-              _scrollToIndex((index + 1) % _movies.length);
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(
-                  12.0,
+      child: _movies.isEmpty
+          ? ListView(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(
+                      12.0,
+                    ),
+                  ),
+                  margin: const EdgeInsets.all(5),
+                  height: 300,
+                  width: 360,
                 ),
-                image: DecorationImage(
-                  image: NetworkImage(_movies[index].backDropURL),
-                  fit: BoxFit.cover,
+              ],
+            )
+          : ListView.builder(
+              controller: _controller,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (_, index) => AutoScrollTag(
+                key: ValueKey(index),
+                controller: _controller,
+                index: index,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(PreviewItem.route,
+                        arguments: _movies[index]);
+                  },
+                  onHorizontalDragDown: (details) {
+                    _scrollToIndex((index + 1) % _movies.length);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(
+                        12.0,
+                      ),
+                      image: DecorationImage(
+                        image: NetworkImage(_movies[index].backDropURL),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    margin: const EdgeInsets.all(5),
+                    height: 300,
+                    width: 360,
+                    child: Text(
+                      _movies[index].name,
+                      textAlign: TextAlign.start,
+                      style: TextStyle(
+                        backgroundColor: Colors.white70,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              margin: const EdgeInsets.all(5),
-              height: 300,
-              width: 360,
-              child: Text(
-                _movies[index].name,
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  backgroundColor: Colors.white70,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              itemCount: _movies.length,
             ),
-          ),
-        ),
-        itemCount: _movies.length,
-      ),
     );
 
     return Column(
@@ -97,7 +113,7 @@ class _TrendingState extends State<Trending> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            'Trending',
+            'US Box Office',
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
         ),
@@ -105,21 +121,20 @@ class _TrendingState extends State<Trending> {
         SizedBox(
           height: 13,
         ),
-        InfoRow(movies: _movies, ind: ind)
+        InfoRow(_movies, ind)
       ],
     );
   }
 }
 
 class InfoRow extends StatelessWidget {
-  const InfoRow({
-    Key? key,
-    required List<Movie> movies,
-    required this.ind,
-  }) : _movies = movies, super(key: key);
-
   final List<Movie> _movies;
   final int ind;
+
+  const InfoRow(
+    this._movies,
+    this.ind,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -128,11 +143,12 @@ class InfoRow extends StatelessWidget {
       children: [
         icons(
           Icons.star_outline,
-          (_movies.isNotEmpty ? '${_movies[ind].rate}' : '-'),
+          (_movies.isNotEmpty ? _movies[ind].rate : '-'),
         ),
         icons(Icons.calendar_today_outlined,
-            (_movies.isNotEmpty ? _movies[ind].releaseDate : '-')),
-        icons(Icons.timer_outlined, '02:12:20'),
+            (_movies.isNotEmpty ? _movies[ind].releaseDate.toString() : '-')),
+        icons(Icons.timer_outlined,
+            _movies.isNotEmpty ? _movies[ind].duration.toString() : '-'),
         icons(
           Icons.language,
           (_movies.isNotEmpty ? _movies[ind].language : '-'),

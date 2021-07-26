@@ -1,16 +1,12 @@
 import 'dart:convert';
-
-import 'package:discuss_it/models/providers/Movies.dart';
-import 'package:discuss_it/models/providers/User.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 enum DiscoverTypes {
-  trending,
+  boxoffice,
   genre,
-  now_playing,
+  trending,
   popular,
-  top_rated,
   upcoming
 }
 
@@ -25,31 +21,39 @@ extension ParseToString on DiscoverTypes {
 }
 
 class keys {
-  static Map<String, int> genres = {
-    "Action": 28,
-    "Adventure": 12,
-    "Animation": 16,
-    "Comedy": 35,
-    "Crime": 80,
-    "Documentary": 99,
-    "Drama": 18,
-    "Family": 10751,
-    "Fantasy": 14,
-    "History": 36,
-    "Horror": 27,
-    "Music": 10402,
-    "Mystery": 9648,
-    "Romance": 10749,
-    "Science Fiction": 878,
-    "TV Movie": 10770,
-    "Thriller": 53,
-    "War": 10752,
-    "Western": 37,
-  };
+  static List<String> genres = [
+   "Action",
+    "Adventure", 
+    "Animation",
+    "Anime",
+    "Comedy",
+    "Crime",
+    "Documentary", 
+    "Drama",
+    "Family",
+    "Fantasy", 
+    "History", 
+    "Holiday", 
+    "Horror",
+    "Music",
+    "Musical", 
+    "Mystery", 
+    "None",
+    "Romance", 
+    "Science Fiction",
+    "Short",
+    "Sporting Event",
+    "Superhero",
+    "Suspense",
+    "Thriller",
+    "War",
+    "Western"
+  ];
   static int mainList = 2;
-  static const String apiKey = "dd5468d7aa41e016a24fa6bce058252d";
-  static String baseImageURL = "https://image.tmdb.org/t/p/w500";
-  static String baseURL = "https://api.themoviedb.org/3/";
+  static const String apiKey = "4b919f5ec98bd3a8ae5e4603d87a919a22dedbbbb009839540bd43eae25b68f2";
+  static String baseImageURL = "https://image.tmdb.org/t/p/";
+  static String baseURL = "https://api.trakt.tv/";
+  static const String defaultImage = "https://i.postimg.cc/cLWJs6Rb/logo.png";
   void fetchConfig() async {
     final url =
         Uri.parse("https://api.themoviedb.org/3/configuration?api_key=$apiKey");

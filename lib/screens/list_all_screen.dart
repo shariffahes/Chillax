@@ -22,7 +22,7 @@ class ListAll extends StatelessWidget {
     );
 
     Future<void> load() async {
-      await _movieProvider.loadMore(type, genre: keys.genres[genre] ?? null);
+      await _movieProvider.loadMore(type, genre: genre ?? null);
       _controller.loadComplete();
     }
 
@@ -33,7 +33,9 @@ class ListAll extends StatelessWidget {
       body: FutureBuilder<List<Movie>>(
         future: (genre != null ? _movieProvider.fetchMovieBy(genre) : null),
         builder: (_, snapshot) {
+          print(snapshot.error);
           if (snapshot.hasError) return Text('An error has occured :(');
+
           if (snapshot.connectionState == ConnectionState.waiting)
             return Center(
               child: CircularProgressIndicator(),

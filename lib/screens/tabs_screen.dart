@@ -22,34 +22,12 @@ class _TabsScreenState extends State<TabsScreen> {
       {
         'page': WatchListScreen(),
         'title': 'Watch List',
-        'tabBar': TabBar(
-          labelColor: Colors.white,
-          tabs: [
-            Tab(
-              text: 'Movies',
-            ),
-            Tab(
-              text: 'Shows',
-            )
-          ],
-        )
       },
       {'page': SearchScreen(), 'title': 'Discover'},
       {'page': HomeScreen(), 'title': 'Main Home'},
       {
         'page': UpcomingScreen(),
         'title': 'Upcoming',
-        'tabBar': TabBar(
-          labelColor: Colors.white,
-          tabs: [
-            Tab(
-              text: 'Movies',
-            ),
-            Tab(
-              text: 'Shows',
-            )
-          ],
-        )
       },
       {'page': ProfileScreen(), 'title': 'My Profile'},
     ];
@@ -68,12 +46,24 @@ class _TabsScreenState extends State<TabsScreen> {
       child: Scaffold(
         appBar: AppBar(
           elevation: 10,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          bottom: tabBarWidgets[_index].containsKey('tabBar')
-              ? tabBarWidgets[_index]['tabBar'] as TabBar
-              : null,
-          title: Text(tabBarWidgets[_index]['title'] as String),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(66),
+          )),
+          toolbarHeight: 100,
+          bottom: TabBar(
+            labelColor: Colors.white,
+            tabs: [
+              Tab(
+                icon: Icon(Icons.local_movies),
+                text: 'Movies',
+              ),
+              Tab(
+                icon: Icon(Icons.tv_rounded),
+                text: 'Shows',
+              )
+            ],
+          ),
         ),
         bottomNavigationBar: BottomNavigationBar(
           selectedItemColor: Colors.red,

@@ -6,7 +6,7 @@ class Genre extends StatelessWidget {
   final DiscoverTypes type;
    Genre(this.type);
 
-  final _items = keys.genres.keys.toList();
+  final _items = keys.genres.toList();
   @override
   Widget build(BuildContext context) {
     return Column(

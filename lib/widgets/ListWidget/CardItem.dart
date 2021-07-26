@@ -22,6 +22,7 @@ class CardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        
         Navigator.of(context).pushNamed(PreviewItem.route, arguments: _movie);
       },
       child: Card(
@@ -75,42 +76,46 @@ class InfoColumn extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    _movie.name,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+            child: Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      _movie.name,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
-                ),
-                Consumer<User>(
-                  builder: (ctx, user, _) {
-                    final isAdded = user.isAdded(_movie.id);
-                    
-                    return IconButton(
-                      onPressed: () {
-                        isAdded
-                            ? user.removeFromList(_movie.id)
-                            : user.addToWatchList(_movie);
-                      },
-                      icon: Icon(
-                        isAdded ? Icons.check_circle : Icons.add_circle,
-                        size: 35,
-                      ),
-                    );
-                  },
-                ),
-              ],
+                  Consumer<User>(
+                    builder: (ctx, user, _) {
+                      final isAdded = user.isAdded(_movie.id);
+
+                      return IconButton(
+                        onPressed: () {
+                          isAdded
+                              ? user.removeFromList(_movie.id)
+                              : user.addToWatchList(_movie);
+                        },
+                        icon: Icon(
+                          isAdded ? Icons.check_circle : Icons.add_circle,
+                          size: 35,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-          Text(
-            'Crime, Drama, Thriller',
-            style: TextStyle(fontWeight: FontWeight.w600),
+          Expanded(
+            child: Text(
+              'Crime, Drama, Thriller',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
           SizedBox(
             height: 3,

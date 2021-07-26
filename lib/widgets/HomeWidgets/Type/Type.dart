@@ -1,5 +1,4 @@
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
-
 import '../../../models/keys.dart';
 import '../../../models/providers/Movies.dart';
 import '../../../screens/list_all_screen.dart';
@@ -44,6 +43,7 @@ class Type extends StatelessWidget {
         builder: (_, snapshot) {
           if (snapshot.hasError)
             //replace by somthing better
+
             return Universal.failedWidget();
           if (snapshot.connectionState == ConnectionState.waiting)
             return Universal.loadingWidget();

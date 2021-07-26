@@ -22,7 +22,7 @@ class SearchLists extends StatelessWidget {
                   },
                   leading: Image.network(movie.posterURL),
                   title: Text(movie.name),
-                  subtitle: Text(keys.reformData(movie.releaseDate)),
+                  subtitle: Text(keys.reformData(movie.releaseDate.toString())),
                 ))
             .toList(),
       ),

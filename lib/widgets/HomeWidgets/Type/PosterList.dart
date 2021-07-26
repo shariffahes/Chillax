@@ -86,8 +86,8 @@ class _PosterListState extends State<PosterList> {
 }
 
 class ImagePoster extends StatelessWidget {
-  final String posterURL;
-  const ImagePoster(this.posterURL);
+  final String imageURL;
+  const ImagePoster(this.imageURL);
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +98,7 @@ class ImagePoster extends StatelessWidget {
         child: FadeInImage(
           placeholder: AssetImage('assets/images/logo.png'),
           image: NetworkImage(
-            posterURL,
+            imageURL,
           ),
           fit: BoxFit.cover,
         ),

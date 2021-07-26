@@ -15,7 +15,7 @@ class Universal {
     return Center(child: Text('Failed'));
   }
 
-  static Widget rateContainer(double rate) {
+  static Widget rateContainer(String rate) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
