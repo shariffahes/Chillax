@@ -7,6 +7,8 @@ class User with ChangeNotifier {
   late Map<int, Movie> _watchList;
   late Map<int, Movie> _watched;
 
+  
+
   User({required Map<int, Movie> wl, required Map<int, Movie> wtched}) {
     _watchList = wl;
     _watched = wtched;
