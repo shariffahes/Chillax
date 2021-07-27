@@ -14,6 +14,7 @@ class ListAll extends StatelessWidget {
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final DiscoverTypes type = data['type'];
     final String? genre = data['genre'] ?? null;
+    final String? searchText = data['text'] ?? null;
 
     MovieProvider _movieProvider =
         Provider.of<MovieProvider>(context, listen: false);
@@ -22,32 +23,47 @@ class ListAll extends StatelessWidget {
     );
 
     Future<void> load() async {
-      await _movieProvider.loadMore(type,context, genre: genre ?? null);
+      await _movieProvider.loadMore(type, context,
+          genre: genre ?? null, movieName: searchText ?? null);
       _controller.loadComplete();
+    }
+
+    Future<List<Movie>> _fetchData() async {
+      if (genre != null)
+        return _movieProvider.fetchMovieBy(genre, context);
+      else
+        return _movieProvider.searchFor(searchText!, context);
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(type.toShortString()),
       ),
-      body: FutureBuilder<List<Movie>>(
-        future: (genre != null ? _movieProvider.fetchMovieBy(genre,context) : null),
-        builder: (_, snapshot) {
-          print(snapshot.error);
-          if (snapshot.hasError) return Text('An error has occured :(');
-
-          if (snapshot.connectionState == ConnectionState.waiting)
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          // _movies = !snapshot.hasData ? _movies : snapshot.data as List<Movie>;
-          return Consumer<MovieProvider>(
-            builder: (_, prov, __) {
-              _movies = prov.getMoviesBy(type);
-              return ListItems(_movies, _controller, load);
-            },
-          );
+      body: WillPopScope(
+        onWillPop: () async {
+          Navigator.pop(context,1);
+          return true;
         },
+        child: FutureBuilder<List<Movie>>(
+          future: (genre != null || type == DiscoverTypes.search
+              ? _fetchData()
+              : null),
+          builder: (_, snapshot) {
+            if (snapshot.hasError) return Text('An error has occured :(');
+
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            // _movies = !snapshot.hasData ? _movies : snapshot.data as List<Movie>;
+            return Consumer<MovieProvider>(
+              builder: (_, prov, __) {
+                _movies = prov.getMoviesBy(type);
+                return ListItems(_movies, _controller, load);
+              },
+            );
+          },
+        ),
       ),
     );
   }

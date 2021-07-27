@@ -30,7 +30,7 @@ class SearchLists extends StatelessWidget {
                     },
                   ),
                   title: Text(movie.name),
-                  subtitle: Text(keys.reformData(movie.releaseDate.toString())),
+                  subtitle: Text(movie.releaseDate.toString()),
                 ))
             .toList(),
       ),

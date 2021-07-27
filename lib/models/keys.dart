@@ -1,14 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 
-enum DiscoverTypes {
-  boxoffice,
-  genre,
-  trending,
-  popular,
-  upcoming
-}
+
+enum DiscoverTypes { boxoffice, genre, search, trending, popular, upcoming }
 
 extension ParseToString on DiscoverTypes {
   String toShortString() {
@@ -22,24 +16,24 @@ extension ParseToString on DiscoverTypes {
 
 class keys {
   static List<String> genres = [
-   "Action",
-    "Adventure", 
+    "Action",
+    "Adventure",
     "Animation",
     "Anime",
     "Comedy",
     "Crime",
-    "Documentary", 
+    "Documentary",
     "Drama",
     "Family",
-    "Fantasy", 
-    "History", 
-    "Holiday", 
+    "Fantasy",
+    "History",
+    "Holiday",
     "Horror",
     "Music",
-    "Musical", 
-    "Mystery", 
+    "Musical",
+    "Mystery",
     "None",
-    "Romance", 
+    "Romance",
     "Science Fiction",
     "Short",
     "Sporting Event",
@@ -49,8 +43,9 @@ class keys {
     "War",
     "Western"
   ];
-  static int mainList = 2;
-  static const String apiKey = "4b919f5ec98bd3a8ae5e4603d87a919a22dedbbbb009839540bd43eae25b68f2";
+  static int mainList = 3;
+  static const String apiKey =
+      "4b919f5ec98bd3a8ae5e4603d87a919a22dedbbbb009839540bd43eae25b68f2";
   static String baseImageURL = "https://image.tmdb.org/t/p/";
   static String baseURL = "https://api.trakt.tv/";
   static const String defaultImage = "https://i.postimg.cc/cLWJs6Rb/logo.png";
@@ -62,7 +57,5 @@ class keys {
     baseImageURL = decodedData['images']['base_url'];
   }
 
-  static String reformData(String date) {
-    return date == "-" ? date : DateFormat('yyyy').format(DateTime.parse(date));
-  }
+  
 }

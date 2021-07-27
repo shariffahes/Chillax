@@ -2,6 +2,7 @@ import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
+import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -12,87 +13,109 @@ class WatchList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: Row(
-        children: [
-          Container(
-            width: 170,
-            padding: const EdgeInsets.only(right: 8.0, top: 10.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.elliptical(70, 90)),
-              child: Consumer<PhotoProvider>(
-                builder: (ctx, image, _) {
-                  final backdrop = image.getMovieImages(_movie.id) ??
-                      [keys.defaultImage, keys.defaultImage];
-
-                  return Image.network(backdrop[1]);
-                },
-              ),
-            ),
+    return Dismissible(
+      direction: DismissDirection.endToStart,
+      background: Container(
+        padding: const EdgeInsets.all(10),
+        alignment: AlignmentDirectional.centerEnd,
+        color: Colors.red,
+        child: Text(
+          'Remove From List',
+          style: TextStyle(
+            color: Colors.white,
           ),
-          Flexible(
-            fit: FlexFit.tight,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _movie.name,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+        ),
+      ),
+      onDismissed: (_) => _userProv.deleteItem(_movie.id),
+      key: ValueKey(_movie.id),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).pushNamed(
+          PreviewItem.route,
+          arguments: _movie,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Row(
+            children: [
+              Container(
+                width: 170,
+                padding: const EdgeInsets.only(right: 8.0, top: 10.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.elliptical(70, 90)),
+                  child: Consumer<PhotoProvider>(
+                    builder: (ctx, image, _) {
+                      final backdrop = image.getMovieImages(_movie.id) ??
+                          [keys.defaultImage, keys.defaultImage];
+
+                      return Image.network(backdrop[1]);
+                    },
                   ),
                 ),
-                SizedBox(
-                  height: 6,
-                ),
-                Row(
+              ),
+              Flexible(
+                fit: FlexFit.tight,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Movie',
+                      _movie.name,
                       style: TextStyle(
-                        color: Colors.grey.shade700,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(
-                      width: 13,
+                      height: 6,
                     ),
-                    Icon(
-                      Icons.circle,
-                      size: 9,
-                      color: Colors.grey.shade700,
-                    ),
-                    SizedBox(
-                      width: 13,
-                    ),
-                    Text(
-                      (_movie.duration.toDouble() / 60).toStringAsFixed(2) +
-                          ' h',
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 13,
+                    Row(
+                      children: [
+                        Text(
+                          'Movie',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        SizedBox(
+                          width: 13,
+                        ),
+                        Icon(
+                          Icons.circle,
+                          size: 9,
+                          color: Colors.grey.shade700,
+                        ),
+                        SizedBox(
+                          width: 13,
+                        ),
+                        Text(
+                          (_movie.duration.toDouble() / 60).toStringAsFixed(2) +
+                              ' h',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        SizedBox(
+                          width: 13,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              IconButton(
+                onPressed: () {
+                  _userProv.watchComplete(_movie.id);
+                },
+                icon: Icon(
+                  _userProv.isWatched(_movie.id)
+                      ? Icons.check_circle_rounded
+                      : Icons.check_circle_outline_rounded,
+                  size: 33,
+                ),
+              )
+            ],
           ),
-          IconButton(
-            onPressed: () {
-              _userProv.watchComplete(_movie.id);
-            },
-            icon: Icon(
-              _userProv.isWatched(_movie.id)
-                  ? Icons.check_circle_rounded
-                  : Icons.check_circle_outline_rounded,
-              size: 33,
-            ),
-          )
-        ],
+        ),
       ),
     );
   }

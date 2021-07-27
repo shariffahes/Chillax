@@ -9,40 +9,59 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class Movie {
-  final int id;
-  final String name;
-  final String overview;
-  final String rate;
-  final int releaseDate;
-  final String language;
-  final int duration;
-  final List<String> genre;
-  final String certification;
+  late final int id;
+  late String name;
+  late String overview;
+  late String rate;
+  late int releaseDate;
+  late String language;
+  late int duration;
+  late List<String> genre;
+  late String certification;
 
-  Movie(
-      this.id,
-      this.name,
-      this.overview,
-      this.rate,
-      this.releaseDate,
-      this.language,
-      this.duration,
-      this.genre,
-      this.certification);
+  Movie.fromMap(Map<String, Object?> list) {
+    this.id = list['id'] as int;
+    this.name = list['name'] as String;
+    this.overview = list['overview'] as String;
+    this.rate = list['rate'] as String;
+    this.releaseDate = list['releaseDate'] as int;
+    this.language = list['language'] as String;
+    this.duration = list['duration'] as int;
+    final String genre = list['name'] as String;
+    this.genre = genre.split(',');
+    this.certification = list['certification'] as String;
+  }
+
+  Movie(this.id, this.name, this.overview, this.rate, this.releaseDate,
+      this.language, this.duration, this.genre, this.certification);
 
   String genreToString() {
     return genre.join(", ");
+  }
+
+  Map<String, Object> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'overview': overview,
+      'rate': rate,
+      'releaseDate': releaseDate,
+      'language': language,
+      'duration': duration,
+      'genre': genreToString(),
+      'certification': certification,
+      'watched': 0,
+    };
   }
 }
 
 class MovieProvider with ChangeNotifier {
   Map<DiscoverTypes, List<Movie>> _movies = {};
   Map<int, List<String>> imgs = {};
-  
 
   List<int> currentPage = DiscoverTypes.values.map((e) => 1).toList();
 
-  Future<MovieProvider> fetchMovieListBy(DiscoverTypes type,BuildContext ctx,
+  Future<MovieProvider> fetchMovieListBy(DiscoverTypes type, BuildContext ctx,
       {int page = 1}) async {
     if (_movies[type] != null && _movies[type]!.isNotEmpty) return this;
     final stringURL = _prepareURL(type);
@@ -50,7 +69,7 @@ class MovieProvider with ChangeNotifier {
 
     final results = decodedData as List<dynamic>;
 
-    final movieData = await _extractMoviesData(results,ctx);
+    final movieData = await _extractMoviesData(results, ctx);
 
     _movies[type] = movieData;
 
@@ -58,11 +77,15 @@ class MovieProvider with ChangeNotifier {
     return this;
   }
 
-  String _prepareURL(DiscoverTypes type, {page = 1, String? genre}) {
+  String _prepareURL(DiscoverTypes type,
+      {page = 1, String? genre, String? movieName}) {
     String stringURL;
     if (type == DiscoverTypes.genre) {
       stringURL =
           '${keys.baseURL}movies/recommended/daily?&page=$page&limit=${15}&genres=${genre!.toLowerCase()}&extended=full';
+    } else if (type == DiscoverTypes.search) {
+      stringURL =
+          "${keys.baseURL}search/movie?query=$movieName&extended=full&page=$page";
     } else {
       stringURL =
           '${keys.baseURL}movies/${type.toShortString()}?api_key=${keys.apiKey}&page=$page&limit=${15}&extended=full';
@@ -88,7 +111,7 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<List<Movie>> _extractMoviesData(List<dynamic> results,BuildContext ctx) async {
+  List<Movie> _extractMoviesData(List<dynamic> results, BuildContext ctx) {
     List<Movie> movieData = [];
 
     for (var movie in results) {
@@ -132,16 +155,19 @@ class MovieProvider with ChangeNotifier {
     return movieData;
   }
 
-  Future<void> loadMore(DiscoverTypes type,BuildContext ctx, {String? genre}) async {
+  Future<void> loadMore(DiscoverTypes type, BuildContext ctx,
+      {String? genre, String? movieName}) async {
     currentPage[type.index]++;
 
-    final url = _prepareURL(type, page: currentPage[type.index], genre: genre);
+    final url = _prepareURL(type,
+        page: currentPage[type.index], genre: genre, movieName: movieName);
+
     try {
       final decodedData = await _fetchData(url);
 
       final results = decodedData as List<dynamic>;
 
-      List<Movie> _movieData = await _extractMoviesData(results,ctx);
+      List<Movie> _movieData = _extractMoviesData(results, ctx);
       _movies[type]!.addAll(_movieData);
     } catch (error) {
       print(error);
@@ -183,14 +209,12 @@ class MovieProvider with ChangeNotifier {
     return _cast;
   }
 
-  Future<List<Movie>> searchFor(String movieName,BuildContext ctx) async {
-    String parsedName = movieName.replaceAll(" ", "+");
-
-    final url =
-        "https://api.themoviedb.org/3/search/movie?api_key=${keys.apiKey}&query=$parsedName";
+  Future<List<Movie>> searchFor(String movieName, BuildContext ctx) async {
+    final url = _prepareURL(DiscoverTypes.search, movieName: movieName);
     final response = await _fetchData(url);
     final results = response as List<dynamic>;
-    List<Movie> _searchData = await _extractMoviesData(results,ctx);
+    List<Movie> _searchData = _extractMoviesData(results, ctx);
+    _movies[DiscoverTypes.search] = _searchData;
     return _searchData;
   }
 
@@ -203,7 +227,7 @@ class MovieProvider with ChangeNotifier {
 
     final results = decodedData as List<dynamic>;
 
-    final List<Movie> _movieData = await _extractMoviesData(results,ctx);
+    final List<Movie> _movieData = _extractMoviesData(results, ctx);
 
     _movies[DiscoverTypes.genre] = _movieData;
     return _movieData;
@@ -213,5 +237,9 @@ class MovieProvider with ChangeNotifier {
     if (_movies[type] == null) return [];
 
     return [..._movies[type]!];
+  }
+
+  void clearCache(DiscoverTypes type) {
+    if (_movies[type] != null) _movies[type]!.clear();
   }
 }
