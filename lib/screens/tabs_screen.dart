@@ -27,6 +27,7 @@ class _TabsScreenState extends State<TabsScreen> {
       {'page': HomeScreen(), 'title': 'Main Home'},
       {
         'page': UpcomingScreen(),
+        
         'title': 'Upcoming',
       },
       {'page': ProfileScreen(), 'title': 'My Profile'},
