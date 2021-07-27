@@ -54,6 +54,7 @@ class User with ChangeNotifier {
       removeFromList(id);
     }
     notifyListeners();
+    
   }
 
   void _update(int id, int value) async {
