@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
+import '../providers/PhotoProvider.dart';
 import '/models/keys.dart';
 import '/models/providers/People.dart';
 import 'package:flutter/foundation.dart';
@@ -9,24 +12,37 @@ class Movie {
   final int id;
   final String name;
   final String overview;
-  String posterURL;
-  String backDropURL;
   final String rate;
   final int releaseDate;
   final String language;
   final int duration;
+  final List<String> genre;
+  final String certification;
 
-  Movie(this.id, this.name, this.overview, this.rate, this.releaseDate,
-      this.language, this.duration, this.posterURL, this.backDropURL);
+  Movie(
+      this.id,
+      this.name,
+      this.overview,
+      this.rate,
+      this.releaseDate,
+      this.language,
+      this.duration,
+      this.genre,
+      this.certification);
+
+  String genreToString() {
+    return genre.join(", ");
+  }
 }
 
 class MovieProvider with ChangeNotifier {
   Map<DiscoverTypes, List<Movie>> _movies = {};
   Map<int, List<String>> imgs = {};
+  
 
   List<int> currentPage = DiscoverTypes.values.map((e) => 1).toList();
 
-  Future<MovieProvider> fetchMovieListBy(DiscoverTypes type,
+  Future<MovieProvider> fetchMovieListBy(DiscoverTypes type,BuildContext ctx,
       {int page = 1}) async {
     if (_movies[type] != null && _movies[type]!.isNotEmpty) return this;
     final stringURL = _prepareURL(type);
@@ -34,7 +50,7 @@ class MovieProvider with ChangeNotifier {
 
     final results = decodedData as List<dynamic>;
 
-    final movieData = await _extractMoviesData(results);
+    final movieData = await _extractMoviesData(results,ctx);
 
     _movies[type] = movieData;
 
@@ -72,44 +88,33 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<List<Movie>> _extractMoviesData(List<dynamic> results) async {
+  Future<List<Movie>> _extractMoviesData(List<dynamic> results,BuildContext ctx) async {
     List<Movie> movieData = [];
+
     for (var movie in results) {
       final res = movie['movie'] ?? movie;
       final id = res['ids']['trakt'] ?? 0;
+      final tmdbId = res['ids']['tmdb'] ?? -1;
+      Provider.of<PhotoProvider>(ctx, listen: false)
+          .fetchImagesFor(tmdbId, id, ImageType.movie);
       print(id);
       final title = res['title'] ?? '-';
       final overview = res['overview'] ?? '-';
       final duration = res['runtime'] ?? 0;
       final rate =
           res['rating'] == null ? '-' : res['rating'].toStringAsFixed(1);
+      final certification = res['certification'] ?? '-';
 
       int releaseDate = res['year'] ?? 0;
       String lan = res['language'] ?? '-';
       lan = lan.isEmpty ? '-' : lan;
 
-      final tmdbId = res['ids']['tmdb'] ?? -1;
-
-      final url = Uri.parse(
-          'https://api.themoviedb.org/3/movie/$tmdbId/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
-
-      final response = await http.get(url);
-
-      final images = json.decode(response.body);
-
-      final posterImages = images['posters'] != null
-          ? (images['posters'].isNotEmpty ? images['posters'][0] : {})
-          : {};
-      final imageURL = posterImages['file_path'] == null
-          ? "https://i.postimg.cc/cLWJs6Rb/logo.png"
-          : keys.baseImageURL + '/w500' + posterImages['file_path'];
-
-      final backdropImages = images['backdrops'] != null
-          ? (images['backdrops'].isNotEmpty ? images['backdrops'][0] : {})
-          : {};
-      final backDropURL = backdropImages['file_path'] == null
-          ? "https://i.postimg.cc/cLWJs6Rb/logo.png"
-          : keys.baseImageURL + '/w1280' + backdropImages['file_path'];
+      final List<dynamic> extractedGenres = res['genres'] ?? ['-'];
+      final List<String> genres = [];
+      int maxRange = extractedGenres.length > 3 ? 3 : extractedGenres.length;
+      extractedGenres.getRange(0, maxRange).forEach((element) {
+        genres.add(element);
+      });
 
       movieData.add(Movie(
         id,
@@ -119,15 +124,15 @@ class MovieProvider with ChangeNotifier {
         releaseDate,
         lan,
         duration,
-        imageURL,
-        backDropURL,
+        genres,
+        certification,
       ));
     }
 
     return movieData;
   }
 
-  Future<void> loadMore(DiscoverTypes type, {String? genre}) async {
+  Future<void> loadMore(DiscoverTypes type,BuildContext ctx, {String? genre}) async {
     currentPage[type.index]++;
 
     final url = _prepareURL(type, page: currentPage[type.index], genre: genre);
@@ -136,7 +141,7 @@ class MovieProvider with ChangeNotifier {
 
       final results = decodedData as List<dynamic>;
 
-      List<Movie> _movieData = await _extractMoviesData(results);
+      List<Movie> _movieData = await _extractMoviesData(results,ctx);
       _movies[type]!.addAll(_movieData);
     } catch (error) {
       print(error);
@@ -145,7 +150,7 @@ class MovieProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<People>> fetchCast(int id) async {
+  Future<List<People>> fetchCast(int id, BuildContext ctx) async {
     final stringURL = keys.baseURL + "movies/$id/people?api_key=${keys.apiKey}";
 
     final decodedData = await _fetchData(stringURL);
@@ -160,36 +165,36 @@ class MovieProvider with ChangeNotifier {
       final person = actor['person'];
 
       final id = person['ids']['trakt'] ?? 0;
+      final tmdbId = person['ids']['tmdb'] ?? 0;
+      Provider.of<PhotoProvider>(ctx, listen: false)
+          .fetchImagesFor(tmdbId, id, ImageType.person);
+
       final name = person['name'] ?? '-';
-
       final List<dynamic> characters = actor['characters'] ?? [];
-
 
       List<String> chars = [];
       characters.forEach((element) {
         chars.add(element);
       });
 
-      final profileURL = "https://i.postimg.cc/cLWJs6Rb/logo.png";
-
-      _cast.add(People(name, id, chars, profileURL));
+      _cast.add(People(name, id, chars));
     });
 
     return _cast;
   }
 
-  Future<List<Movie>> searchFor(String movieName) async {
+  Future<List<Movie>> searchFor(String movieName,BuildContext ctx) async {
     String parsedName = movieName.replaceAll(" ", "+");
 
     final url =
         "https://api.themoviedb.org/3/search/movie?api_key=${keys.apiKey}&query=$parsedName";
     final response = await _fetchData(url);
     final results = response as List<dynamic>;
-    List<Movie> _searchData = await _extractMoviesData(results);
+    List<Movie> _searchData = await _extractMoviesData(results,ctx);
     return _searchData;
   }
 
-  Future<List<Movie>> fetchMovieBy(String genre) async {
+  Future<List<Movie>> fetchMovieBy(String genre, BuildContext ctx) async {
     currentPage[DiscoverTypes.genre.index] = 1;
 
     final url = _prepareURL(DiscoverTypes.genre, genre: genre);
@@ -198,7 +203,7 @@ class MovieProvider with ChangeNotifier {
 
     final results = decodedData as List<dynamic>;
 
-    final List<Movie> _movieData = await _extractMoviesData(results);
+    final List<Movie> _movieData = await _extractMoviesData(results,ctx);
 
     _movies[DiscoverTypes.genre] = _movieData;
     return _movieData;

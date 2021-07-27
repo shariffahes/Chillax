@@ -1,5 +1,7 @@
+import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/People.dart';
+import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
@@ -22,9 +24,8 @@ class PreviewItem extends StatelessWidget {
               [
                 FutureBuilder<List<People>>(
                     future: Provider.of<MovieProvider>(context, listen: false)
-                        .fetchCast(_movie.id),
+                        .fetchCast(_movie.id, context),
                     builder: (_, snapshot) {
-                      print(snapshot.error);
                       if (snapshot.hasError) return Universal.failedWidget();
                       if (snapshot.connectionState == ConnectionState.waiting)
                         return Universal.loadingWidget();
@@ -71,13 +72,13 @@ class PreviewItem extends StatelessWidget {
               },
             ),
             CircleAvatar(
-              radius: 27,
+              radius: 30,
               backgroundColor: Colors.red,
               child: CircleAvatar(
                 backgroundColor: Colors.white,
-                radius: 25,
+                radius: 27,
                 child: Text(
-                  _movie.rate.toString(),
+                  _movie.certification,
                   style: TextStyle(
                     color: Colors.black,
                   ),
@@ -118,33 +119,63 @@ class InfoColumn extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 14,
+            height: 10,
           ),
-          Text(
-            'Crime, thriller, Action',
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              color: Colors.grey,
+          Flexible(
+            child: Row(
+              children: [
+                Text(_movie.releaseDate.toString()),
+                SizedBox(
+                  width: 7,
+                ),
+                Icon(
+                  Icons.circle,
+                  size: 5,
+                ),
+                SizedBox(
+                  width: 7,
+                ),
+                Text(
+                  (_movie.duration.toString() + ' mins'),
+                ),
+              ],
             ),
           ),
           SizedBox(
-            height: 14,
+            height: 10,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: _movie.genre.map(
+              (e) {
+                return Card(
+                  elevation: 5,
+                  margin: const EdgeInsets.all(8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(
+                      e,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500, color: Colors.grey),
+                    ),
+                  ),
+                );
+              },
+            ).toList(),
+          ),
+          Divider(
+            thickness: 2,
           ),
           Text(
-            _movie.duration.toString(),
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          SizedBox(
-            height: 14,
+            "Story line",
+            style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
           Text(
             _movie.overview,
-            style: TextStyle(height: 1.5, fontSize: 15),
+            style: TextStyle(wordSpacing: 1, height: 2, fontSize: 15),
           ),
           Divider(
             thickness: 2,
@@ -155,14 +186,20 @@ class InfoColumn extends StatelessWidget {
           ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: _cast
-                  .map((e) => Padding(
-                        padding: const EdgeInsets.only(bottom: 17.0),
-                        child: Actor(e.name, e.profileURL, e.character),
-                      ))
-                  .toList(),
+            child: Container(
+              height: 200,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: _cast
+                    .map((e) => AspectRatio(
+                          aspectRatio: 3 / 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ActorItem(e.name, e.id, e.character),
+                          ),
+                        ))
+                    .toList(),
+              ),
             ),
           ),
         ],
@@ -188,9 +225,16 @@ class CustomAppBar extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Positioned.fill(
-            child: Image.network(
-              _movie.backDropURL,
-              fit: BoxFit.cover,
+            child: Consumer<PhotoProvider>(
+              builder: (ctx, image, _) {
+                final backdrop = image.getMovieImages(_movie.id) ??
+                    [keys.defaultImage, keys.defaultImage];
+
+                return Image.network(
+                  backdrop[1],
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
           Positioned(
@@ -218,8 +262,13 @@ class CustomAppBar extends StatelessWidget {
               ),
               child: CircleAvatar(
                 radius: 42,
-                child: Icon(Icons.play_arrow_rounded,
-                    color: Colors.white, size: 80),
+                child: Text(
+                  _movie.rate,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           )
@@ -229,26 +278,56 @@ class CustomAppBar extends StatelessWidget {
   }
 }
 
-class Actor extends StatelessWidget {
+class ActorItem extends StatelessWidget {
   final String name;
-  final String profileURL;
-  final List<String> character;
-  @override
-  Actor(this.name, this.profileURL, this.character);
+  final int id;
+  final List<String> char;
+  const ActorItem(this.name, this.id, this.char);
 
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundImage: NetworkImage(profileURL),
-            child: Container(),
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topRight: Radius.circular(44),
+        bottomLeft: Radius.circular(44),
+      ),
+      child: GridTile(
+        child: Consumer<PhotoProvider>(
+          builder: (ctx, image, _) {
+            final profile = image.getPersonProfiles(id) ?? [keys.defaultImage];
+          
+            return Image.network(
+              profile[0],
+              fit: BoxFit.cover,
+            );
+          },
+        ),
+        footer: Container(
+          height: 100,
+          color: Colors.black54,
+          child: Stack(
+            children: [
+              GridTileBar(
+                title: Text(name),
+                subtitle: Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children:
+                        char.map((e) => Expanded(child: Text(e))).toList(),
+                  ),
+                ),
+              ),
+              Positioned(
+                  bottom: -8,
+                  left: 0,
+                  right: 0,
+                  child: ElevatedButton(
+                    child: Text('View more'),
+                    onPressed: () {},
+                  ))
+            ],
           ),
-          Text(name),
-          ...character.map((e) => Text(e)).toList(),
-        ],
+        ),
       ),
     );
   }

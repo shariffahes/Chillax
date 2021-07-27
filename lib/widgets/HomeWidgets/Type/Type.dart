@@ -39,7 +39,7 @@ class Type extends StatelessWidget {
       ),
       FutureBuilder<MovieProvider>(
         future: Provider.of<MovieProvider>(context, listen: false)
-            .fetchMovieListBy(type),
+            .fetchMovieListBy(type,context),
         builder: (_, snapshot) {
           if (snapshot.hasError)
             //replace by somthing better

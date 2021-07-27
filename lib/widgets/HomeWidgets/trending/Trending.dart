@@ -1,5 +1,6 @@
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +34,7 @@ class _TrendingState extends State<Trending> {
     super.initState();
 
     Provider.of<MovieProvider>(context, listen: false)
-        .fetchMovieListBy(widget.type)
+        .fetchMovieListBy(widget.type,context)
         .then((value) {
       setState(() {
         _movies = value.getMoviesBy(widget.type);
@@ -62,6 +63,7 @@ class _TrendingState extends State<Trending> {
               ],
             )
           : ListView.builder(
+              physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
               controller: _controller,
               scrollDirection: Axis.horizontal,
               itemBuilder: (_, index) => AutoScrollTag(
@@ -73,23 +75,39 @@ class _TrendingState extends State<Trending> {
                     Navigator.of(context).pushNamed(PreviewItem.route,
                         arguments: _movies[index]);
                   },
-                  onHorizontalDragDown: (details) {
-                    _scrollToIndex((index + 1) % _movies.length);
+                  // onHorizontalDragEnd: (details) {
+
+                  // },
+                  onPanUpdate: (details) {
+                    if (details.delta.dx > 0)
+                      _scrollToIndex(
+                          (index - 1) == 0 ? _movies.length - 1 : index - 1);
+                    else
+                      _scrollToIndex((index + 1) % _movies.length);
                   },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(
-                        12.0,
-                      ),
-                      image: DecorationImage(
-                        image: NetworkImage(_movies[index].backDropURL),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    margin: const EdgeInsets.all(5),
-                    height: 300,
-                    width: 360,
+                  child: Consumer<PhotoProvider>(
+                    builder: (ctx, image, child) {
+                      final backdrop =
+                          image.getMovieImages(_movies[index].id) ??
+                              [keys.defaultImage, keys.defaultImage];
+                     
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(
+                            12.0,
+                          ),
+                          image: DecorationImage(
+                            image: NetworkImage(backdrop[1]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        margin: const EdgeInsets.all(5),
+                        height: 300,
+                        width: 360,
+                        child: child,
+                      );
+                    },
                     child: Text(
                       _movies[index].name,
                       textAlign: TextAlign.start,

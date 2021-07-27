@@ -1,3 +1,5 @@
+import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import '../../../models/providers/Movies.dart';
@@ -36,7 +38,7 @@ class _PosterListState extends State<PosterList> {
                       height: 230,
                       child: Stack(
                         children: [
-                          ImagePoster(movie.posterURL),
+                          ImagePoster(movie.id),
                           Consumer<User>(
                             builder: (ctx, user, _) {
                               final isAdded = user.isAdded(movie.id);
@@ -86,8 +88,8 @@ class _PosterListState extends State<PosterList> {
 }
 
 class ImagePoster extends StatelessWidget {
-  final String imageURL;
-  const ImagePoster(this.imageURL);
+  final int id;
+  const ImagePoster(this.id);
 
   @override
   Widget build(BuildContext context) {
@@ -95,12 +97,18 @@ class ImagePoster extends StatelessWidget {
       aspectRatio: 3 / 4,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
-        child: FadeInImage(
-          placeholder: AssetImage('assets/images/logo.png'),
-          image: NetworkImage(
-            imageURL,
-          ),
-          fit: BoxFit.cover,
+        child: Consumer<PhotoProvider>(
+          builder: (ctx, image, _) {
+            final posters = image.getMovieImages(id) ?? [keys.defaultImage];
+
+            return FadeInImage(
+              placeholder: AssetImage('assets/images/logo.png'),
+              image: NetworkImage(
+                posters[0],
+              ),
+              fit: BoxFit.cover,
+            );
+          },
         ),
       ),
     );

@@ -12,7 +12,7 @@ class SearchWidget extends StatelessWidget {
         context: ctx,
         builder: (_) => FutureBuilder<List<Movie>>(
             future:
-                Provider.of<MovieProvider>(ctx, listen: false).searchFor(input),
+                Provider.of<MovieProvider>(ctx, listen: false).searchFor(input,ctx),
             builder: (_, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting)
                 return Universal.loadingWidget();

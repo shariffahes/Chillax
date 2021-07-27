@@ -1,7 +1,9 @@
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SearchLists extends StatelessWidget {
   final List<Movie> results;
@@ -20,7 +22,13 @@ class SearchLists extends StatelessWidget {
                     Navigator.of(context)
                         .pushNamed(PreviewItem.route, arguments: movie);
                   },
-                  leading: Image.network(movie.posterURL),
+                  leading: Consumer<PhotoProvider>(
+                    builder: (ctx, image, _) {
+                      final poster =
+                          image.getMovieImages(movie.id) ?? [keys.defaultImage];
+                      return Image.network(poster[0]);
+                    },
+                  ),
                   title: Text(movie.name),
                   subtitle: Text(keys.reformData(movie.releaseDate.toString())),
                 ))

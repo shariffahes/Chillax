@@ -1,4 +1,5 @@
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => MovieProvider()),
         ChangeNotifierProvider(create: (_) => User()),
+        ChangeNotifierProvider(create: (_) => PhotoProvider()),
       ],
       child: MaterialApp(
         routes: {

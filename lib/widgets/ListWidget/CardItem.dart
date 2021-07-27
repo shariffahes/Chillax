@@ -1,4 +1,6 @@
+import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
@@ -22,7 +24,6 @@ class CardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        
         Navigator.of(context).pushNamed(PreviewItem.route, arguments: _movie);
       },
       child: Card(
@@ -40,8 +41,14 @@ class CardItem extends StatelessWidget {
                 height: 180,
                 child: ClipRRect(
                   borderRadius: roundedBorder(22, 55),
-                  child: Image(
-                    image: NetworkImage(_movie.posterURL),
+                  child: Consumer<PhotoProvider>(
+                    builder: (ctx, image, _) {
+                      final poster = image.getMovieImages(_movie.id) ?? [keys.defaultImage];
+
+                      return Image(
+                        image: NetworkImage(poster[0]),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -113,7 +120,7 @@ class InfoColumn extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              'Crime, Drama, Thriller',
+              _movie.genreToString(),
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
