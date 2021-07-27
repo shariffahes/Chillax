@@ -1,4 +1,4 @@
-import 'package:discuss_it/widgets/HomeWidgets/search/SearchWidget.dart';
+import '../widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../models/keys.dart';
