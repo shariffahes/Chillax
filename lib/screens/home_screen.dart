@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -12,18 +13,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<DiscoverTypes> listOfTitles =
-      DiscoverTypes.values.skip(keys.mainList).toList();
+  final List<MovieTypes> listOfTitles =
+      MovieTypes.values.skip(keys.mainList).toList();
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(children: [
         SearchWidget(),
-        Trending(DiscoverTypes.boxoffice),
+        Trending(MovieTypes.boxoffice),
         Container(
             padding: const EdgeInsets.all(5),
-            child: Genre(DiscoverTypes.genre)),
+            child: Genre(MovieTypes.genre)),
         ...listOfTitles.map((type) => Type(type)).toList(),
       ]),
     );

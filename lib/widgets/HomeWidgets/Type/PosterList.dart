@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
@@ -41,15 +42,15 @@ class _PosterListState extends State<PosterList> {
                           ImagePoster(movie.id),
                           Consumer<User>(
                             builder: (ctx, user, _) {
-                              final isAdded = user.isAdded(movie.id);
+                              final isAdded = user.isMovieAdded(movie.id);
 
                               return IconButton(
                                 alignment: AlignmentDirectional.topStart,
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
                                   isAdded
-                                      ? user.removeFromList(movie.id)
-                                      : user.addToWatchList(movie);
+                                      ? user.removeFromList(DataType.movie,movie.id)
+                                      : user.addToWatchList(DataType.movie,movie,null);
                                 },
                                 icon: Icon(
                                   isAdded

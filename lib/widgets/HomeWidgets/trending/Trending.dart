@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
@@ -7,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 class Trending extends StatefulWidget {
-  final DiscoverTypes type;
+  final MovieTypes type;
   const Trending(this.type);
 
   @override
@@ -33,7 +34,7 @@ class _TrendingState extends State<Trending> {
   void initState() {
     super.initState();
 
-    Provider.of<MovieProvider>(context, listen: false)
+    Provider.of<DataProvider>(context, listen: false)
         .fetchMovieListBy(widget.type,context)
         .then((value) {
       setState(() {

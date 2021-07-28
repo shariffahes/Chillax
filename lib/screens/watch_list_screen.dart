@@ -21,8 +21,8 @@ class WatchListScreen extends StatelessWidget {
 class Movies extends StatelessWidget {
   Widget build(BuildContext context) {
     final userProv = Provider.of<User>(context);
-    Map<int, Movie> _watchList = userProv.watchList;
-    Map<int, Movie> _watchedList = userProv.watched;
+    Map<int, Movie> _watchList = userProv.movieWatchList;
+    Map<int, Movie> _watchedList = userProv.watchedMovies;
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),

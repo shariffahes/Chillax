@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/widgets/ListWidget/ListItems.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../models/keys.dart';
@@ -12,19 +13,19 @@ class ListAll extends StatelessWidget {
   Widget build(BuildContext context) {
     final data =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final DiscoverTypes type = data['type'];
+    final MovieTypes type = data['type'];
     final String? genre = data['genre'] ?? null;
     final String? searchText = data['text'] ?? null;
 
-    MovieProvider _movieProvider =
-        Provider.of<MovieProvider>(context, listen: false);
+    DataProvider _movieProvider =
+        Provider.of<DataProvider>(context, listen: false);
     List<Movie> _movies = _movieProvider.getMoviesBy(
       type,
     );
 
     Future<void> load() async {
-      await _movieProvider.loadMore(type, context,
-          genre: genre ?? null, movieName: searchText ?? null);
+      await _movieProvider.loadMoreMovies(type, context,
+          genre: genre ?? null, searchName: searchText ?? null);
       _controller.loadComplete();
     }
 
@@ -45,7 +46,7 @@ class ListAll extends StatelessWidget {
           return true;
         },
         child: FutureBuilder<List<Movie>>(
-          future: (genre != null || type == DiscoverTypes.search
+          future: (genre != null || type == MovieTypes.search
               ? _fetchData()
               : null),
           builder: (_, snapshot) {
@@ -56,7 +57,7 @@ class ListAll extends StatelessWidget {
                 child: CircularProgressIndicator(),
               );
             // _movies = !snapshot.hasData ? _movies : snapshot.data as List<Movie>;
-            return Consumer<MovieProvider>(
+            return Consumer<DataProvider>(
               builder: (_, prov, __) {
                 _movies = prov.getMoviesBy(type);
                 return ListItems(_movies, _controller, load);

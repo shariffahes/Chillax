@@ -1,5 +1,5 @@
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
-import '../../../models/keys.dart';
+import '../../../models/Enums.dart';
 import '../../../models/providers/Movies.dart';
 import '../../../screens/list_all_screen.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../Type/PosterList.dart';
 
 class Type extends StatelessWidget {
-  final DiscoverTypes type;
+  final MovieTypes type;
   Type(this.type);
 
   @override
@@ -37,8 +37,8 @@ class Type extends StatelessWidget {
           ),
         ],
       ),
-      FutureBuilder<MovieProvider>(
-        future: Provider.of<MovieProvider>(context, listen: false)
+      FutureBuilder<DataProvider>(
+        future: Provider.of<DataProvider>(context, listen: false)
             .fetchMovieListBy(type,context),
         builder: (_, snapshot) {
           if (snapshot.hasError)

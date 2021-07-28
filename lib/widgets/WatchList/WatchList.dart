@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
@@ -26,7 +27,7 @@ class WatchList extends StatelessWidget {
           ),
         ),
       ),
-      onDismissed: (_) => _userProv.deleteItem(_movie.id),
+      onDismissed: (_) => _userProv.deleteItem(DataType.movie, _movie.id),
       key: ValueKey(_movie.id),
       child: GestureDetector(
         onTap: () => Navigator.of(context).pushNamed(
@@ -104,10 +105,10 @@ class WatchList extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () {
-                  _userProv.watchComplete(_movie.id);
+                  _userProv.watchComplete(DataType.movie, _movie.id);
                 },
                 icon: Icon(
-                  _userProv.isWatched(_movie.id)
+                  _userProv.isMovieWatched(_movie.id)
                       ? Icons.check_circle_rounded
                       : Icons.check_circle_outline_rounded,
                   size: 33,

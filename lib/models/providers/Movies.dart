@@ -1,23 +1,24 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import '../providers/PhotoProvider.dart';
 import '/models/keys.dart';
 import '/models/providers/People.dart';
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
+import '../Enums.dart';
 
 class Movie {
   late final int id;
-  late String name;
-  late String overview;
-  late String rate;
-  late int releaseDate;
-  late String language;
-  late int duration;
-  late List<String> genre;
-  late String certification;
+  late final String name;
+  late final String overview;
+  late final String rate;
+  late final int releaseDate;
+  late final String language;
+  late final int duration;
+  late final List<String> genre;
+  late final String certification;
 
   Movie.fromMap(Map<String, Object?> list) {
     this.id = list['id'] as int;
@@ -55,21 +56,50 @@ class Movie {
   }
 }
 
-class MovieProvider with ChangeNotifier {
-  Map<DiscoverTypes, List<Movie>> _movies = {};
-  Map<int, List<String>> imgs = {};
+class Show {
+  final int id;
+  final String name;
+  final int year;
+  final String overview;
+  final String runTime;
+  final String certification;
+  final String network;
+  final String status;
+  final String rate;
+  final String lan;
+  final List<String> genres;
+  final int airedEpisode;
 
-  List<int> currentPage = DiscoverTypes.values.map((e) => 1).toList();
+  Show(
+      this.id,
+      this.name,
+      this.year,
+      this.overview,
+      this.runTime,
+      this.certification,
+      this.network,
+      this.status,
+      this.rate,
+      this.lan,
+      this.genres,
+      this.airedEpisode);
+}
 
-  Future<MovieProvider> fetchMovieListBy(DiscoverTypes type, BuildContext ctx,
+class DataProvider with ChangeNotifier {
+  Map<MovieTypes, List<Movie>> _movies = {};
+  Map<TvTypes, List<Show>> _tvShows = {};
+
+  List<int> currentPage = MovieTypes.values.map((e) => 1).toList();
+
+  Future<DataProvider> fetchMovieListBy(MovieTypes type, BuildContext ctx,
       {int page = 1}) async {
     if (_movies[type] != null && _movies[type]!.isNotEmpty) return this;
-    final stringURL = _prepareURL(type);
+    final stringURL = _prepareURL(DataType.movie, type, null);
     final decodedData = await _fetchData(stringURL);
 
     final results = decodedData as List<dynamic>;
 
-    final movieData = await _extractMoviesData(results, ctx);
+    final movieData = _extractMoviesData(results, ctx);
 
     _movies[type] = movieData;
 
@@ -77,38 +107,30 @@ class MovieProvider with ChangeNotifier {
     return this;
   }
 
-  String _prepareURL(DiscoverTypes type,
-      {page = 1, String? genre, String? movieName}) {
-    String stringURL;
-    if (type == DiscoverTypes.genre) {
-      stringURL =
-          '${keys.baseURL}movies/recommended/daily?&page=$page&limit=${15}&genres=${genre!.toLowerCase()}&extended=full';
-    } else if (type == DiscoverTypes.search) {
-      stringURL =
-          "${keys.baseURL}search/movie?query=$movieName&extended=full&page=$page";
-    } else {
-      stringURL =
-          '${keys.baseURL}movies/${type.toShortString()}?api_key=${keys.apiKey}&page=$page&limit=${15}&extended=full';
-    }
-    return stringURL;
+  Future<List<Movie>> fetchMovieBy(String genre, BuildContext ctx) async {
+    currentPage[MovieTypes.genre.index] = 1;
+
+    final url =
+        _prepareURL(DataType.movie, MovieTypes.genre, null, genre: genre);
+
+    final decodedData = await _fetchData(url);
+
+    final results = decodedData as List<dynamic>;
+
+    final List<Movie> _movieData = _extractMoviesData(results, ctx);
+//reminder: clear data after finish
+    _movies[MovieTypes.genre] = _movieData;
+    return _movieData;
   }
 
-  Future<dynamic> _fetchData(String url) async {
-    final parsedURL = Uri.parse(url);
-    try {
-      final response = await http.get(
-        parsedURL,
-        headers: {
-          'Content-Type': 'application/json',
-          'trakt-api-version': '2',
-          'trakt-api-key': keys.apiKey,
-        },
-      );
+  List<Movie> getMoviesBy(MovieTypes type) {
+    if (_movies[type] == null) return [];
 
-      return json.decode(response.body);
-    } catch (error) {
-      throw HttpException(error.toString());
-    }
+    return [..._movies[type]!];
+  }
+
+  void clearMovieCache(MovieTypes type) {
+    if (_movies[type] != null) _movies[type]!.clear();
   }
 
   List<Movie> _extractMoviesData(List<dynamic> results, BuildContext ctx) {
@@ -119,7 +141,7 @@ class MovieProvider with ChangeNotifier {
       final id = res['ids']['trakt'] ?? 0;
       final tmdbId = res['ids']['tmdb'] ?? -1;
       Provider.of<PhotoProvider>(ctx, listen: false)
-          .fetchImagesFor(tmdbId, id, ImageType.movie);
+          .fetchImagesFor(tmdbId, id, DataType.movie);
       print(id);
       final title = res['title'] ?? '-';
       final overview = res['overview'] ?? '-';
@@ -155,20 +177,84 @@ class MovieProvider with ChangeNotifier {
     return movieData;
   }
 
-  Future<void> loadMore(DiscoverTypes type, BuildContext ctx,
-      {String? genre, String? movieName}) async {
-    currentPage[type.index]++;
+  String _prepareURL(DataType dataType, MovieTypes? movie, TvTypes? tv,
+      {page = 1, String? genre, String? searchName}) {
+    String stringURL;
+    if (dataType == DataType.movie) {
+      switch (movie) {
+        case MovieTypes.genre:
+          stringURL =
+              '${keys.baseURL}movies/recommended/daily?&page=$page&limit=${15}&genres=${genre!.toLowerCase()}&extended=full';
+          break;
+        case MovieTypes.search:
+          stringURL =
+              "${keys.baseURL}search/movie?query=$searchName&extended=full&page=$page";
+          break;
+        default:
+          stringURL =
+              '${keys.baseURL}movies/${movie!.toShortString()}?page=$page&limit=${15}&extended=full';
+          break;
+      }
+    } else {
+      switch (tv) {
+        case TvTypes.played:
+          stringURL =
+              '${keys.apiKey}shows/played/daily?page=$page&limit=${15}&extended=full';
+          break;
+        case TvTypes.recommended:
+          stringURL =
+              '${keys.apiKey}shows/recommended/weekly?page=$page&limit=${15}&extended=full';
+          break;
+        case TvTypes.genre:
+          stringURL =
+              '${keys.apiKey}shows/recommended/daily?genres=${genre!.toLowerCase()}&page=$page&limit=${15}&extended=full';
+          break;
+        case TvTypes.search:
+          stringURL =
+              "${keys.baseURL}search/show?query=$searchName&extended=full&page=$page";
+          break;
+        default:
+          stringURL =
+              "${keys.baseURL}search/shows/${tv!.toShortString()}?extended=full&page=$page";
+          break;
+      }
+    }
 
-    final url = _prepareURL(type,
-        page: currentPage[type.index], genre: genre, movieName: movieName);
+    return stringURL;
+  }
+
+  Future<dynamic> _fetchData(String url) async {
+    final parsedURL = Uri.parse(url);
+    try {
+      final response = await http.get(
+        parsedURL,
+        headers: {
+          'Content-Type': 'application/json',
+          'trakt-api-version': '2',
+          'trakt-api-key': keys.apiKey,
+        },
+      );
+
+      return json.decode(response.body);
+    } catch (error) {
+      throw HttpException(error.toString());
+    }
+  }
+
+  Future<void> loadMoreMovies(MovieTypes movieType, BuildContext ctx,
+      {String? genre, String? searchName}) async {
+    currentPage[movieType.index]++;
+    final url = _prepareURL(DataType.movie, movieType, null,
+        page: currentPage[movieType.index],
+        genre: genre,
+        searchName: searchName);
 
     try {
       final decodedData = await _fetchData(url);
-
       final results = decodedData as List<dynamic>;
 
-      List<Movie> _movieData = _extractMoviesData(results, ctx);
-      _movies[type]!.addAll(_movieData);
+      final data = _extractMoviesData(results, ctx);
+      _movies[movieType]!.addAll(data);
     } catch (error) {
       print(error);
       throw HttpException(error.toString());
@@ -176,8 +262,10 @@ class MovieProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<People>> fetchCast(int id, BuildContext ctx) async {
-    final stringURL = keys.baseURL + "movies/$id/people?api_key=${keys.apiKey}";
+  Future<List<People>> fetchCast(
+      int id, DataType type, BuildContext ctx) async {
+    final label = type == DataType.movie ? 'movies' : 'shows';
+    final stringURL = keys.baseURL + "$label/$id/people?api_key=${keys.apiKey}";
 
     final decodedData = await _fetchData(stringURL);
 
@@ -193,7 +281,7 @@ class MovieProvider with ChangeNotifier {
       final id = person['ids']['trakt'] ?? 0;
       final tmdbId = person['ids']['tmdb'] ?? 0;
       Provider.of<PhotoProvider>(ctx, listen: false)
-          .fetchImagesFor(tmdbId, id, ImageType.person);
+          .fetchImagesFor(tmdbId, id, DataType.person);
 
       final name = person['name'] ?? '-';
       final List<dynamic> characters = actor['characters'] ?? [];
@@ -209,37 +297,115 @@ class MovieProvider with ChangeNotifier {
     return _cast;
   }
 
-  Future<List<Movie>> searchFor(String movieName, BuildContext ctx) async {
-    final url = _prepareURL(DiscoverTypes.search, movieName: movieName);
+  Future<List<Movie>> searchFor(String searchName, BuildContext ctx) async {
+    final url = _prepareURL(DataType.movie, MovieTypes.search, null,
+        searchName: searchName);
     final response = await _fetchData(url);
     final results = response as List<dynamic>;
     List<Movie> _searchData = _extractMoviesData(results, ctx);
-    _movies[DiscoverTypes.search] = _searchData;
+    _movies[MovieTypes.search] = _searchData;
     return _searchData;
   }
 
-  Future<List<Movie>> fetchMovieBy(String genre, BuildContext ctx) async {
-    currentPage[DiscoverTypes.genre.index] = 1;
+  List<Show> _extractShowData(List<dynamic> results, BuildContext ctx) {
+    List<Show> showsData = [];
 
-    final url = _prepareURL(DiscoverTypes.genre, genre: genre);
+    results.forEach((item) {
+      final show = item['show'];
+
+      final id = show['ids']['trakt'];
+      final tmdbID = show['ids']['tmdb'];
+      Provider.of<PhotoProvider>(ctx, listen: false)
+          .fetchImagesFor(tmdbID, id, DataType.tvShow);
+      final title = show['title'] ?? '-';
+      final release = show['year'] ?? '-';
+      final overview = show['overview'] ?? '-';
+      final runtime = show['runtime'] ?? '-';
+      final certification = show['certification'] ?? '-';
+      final network = show['network'] ?? '-';
+      final status = show['status'] ?? '-';
+      final double rating = show['rating'] ?? 0;
+      final rate = rating.toStringAsFixed(2);
+      final lan = show['language'] ?? '-';
+      final List<String> listGenre = show['genres'] ?? [''];
+      int maxRange = listGenre.length > 3 ? 3 : listGenre.length;
+      final genres = listGenre.getRange(0, maxRange).toList();
+
+      final airedEpisode = show['aired_episodes'];
+      showsData.add(Show(
+        id,
+        title,
+        release,
+        overview,
+        runtime,
+        certification,
+        network,
+        status,
+        rate,
+        lan,
+        genres,
+        airedEpisode,
+      ));
+    });
+    return showsData;
+  }
+
+  Future<DataProvider> fetchTvShows(TvTypes type, BuildContext ctx) async {
+    if (_tvShows[type] != null && _tvShows[type]!.isNotEmpty) return this;
+
+    final url = _prepareURL(DataType.tvShow, null, type);
+    final response = await _fetchData(url);
+    final results = response as List<dynamic>;
+    final List<Show> showsData = _extractShowData(results, ctx);
+    _tvShows[type] = showsData;
+    notifyListeners();
+    return this;
+  }
+
+  Future<List<Show>> fetchShowGenre(String genre, BuildContext ctx) async {
+    currentPage[MovieTypes.genre.index] = 1;
+
+    final url = _prepareURL(DataType.tvShow, null, TvTypes.genre, genre: genre);
 
     final decodedData = await _fetchData(url);
 
     final results = decodedData as List<dynamic>;
 
-    final List<Movie> _movieData = _extractMoviesData(results, ctx);
-
-    _movies[DiscoverTypes.genre] = _movieData;
-    return _movieData;
+    final List<Show> _showData = _extractShowData(results, ctx);
+//reminder: clear data after finish
+    _tvShows[TvTypes.genre] = _showData;
+    return _showData;
   }
 
-  List<Movie> getMoviesBy(DiscoverTypes type) {
-    if (_movies[type] == null) return [];
-
-    return [..._movies[type]!];
+  void clearShowCache(TvTypes type) {
+    if (_tvShows[type] != null) _tvShows[type]!.clear();
   }
 
-  void clearCache(DiscoverTypes type) {
-    if (_movies[type] != null) _movies[type]!.clear();
+  List<Show> getShowsBy(TvTypes type) {
+    if (_tvShows[type] == null) return [];
+
+    return [..._tvShows[type]!];
+  }
+
+  Future<void> loadMoreShows(TvTypes showType, BuildContext ctx,
+      {String? genre, String? searchName}) async {
+    currentPage[showType.index]++;
+
+    final url = _prepareURL(DataType.tvShow, null, showType,
+        page: currentPage[showType.index],
+        genre: genre,
+        searchName: searchName);
+
+    try {
+      final decodedData = await _fetchData(url);
+      final results = decodedData as List<dynamic>;
+
+      final data = _extractShowData(results, ctx);
+      _tvShows[showType]!.addAll(data);
+    } catch (error) {
+      print(error);
+      throw HttpException(error.toString());
+    }
+    notifyListeners();
   }
 }

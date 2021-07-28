@@ -1,4 +1,4 @@
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:flutter/material.dart';
@@ -26,11 +26,11 @@ class SearchWidget extends StatelessWidget {
         onFieldSubmitted: (input) {
           if (input.isNotEmpty)
             Navigator.of(context).pushNamed(ListAll.route, arguments: {
-              'type': DiscoverTypes.search,
+              'type': MovieTypes.search,
               'text': input,
             }).then((v) {
-              Provider.of<MovieProvider>(context, listen: false)
-                  .clearCache(DiscoverTypes.search);
+              Provider.of<DataProvider>(context, listen: false)
+                  .clearMovieCache(MovieTypes.search);
             });
           _fieldController.clear();
         },

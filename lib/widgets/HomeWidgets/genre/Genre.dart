@@ -1,9 +1,10 @@
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:flutter/material.dart';
 import '../genre/ItemLists.dart';
 
 class Genre extends StatelessWidget {
-  final DiscoverTypes type;
+  final MovieTypes type;
    Genre(this.type);
 
   final _items = keys.genres.toList();

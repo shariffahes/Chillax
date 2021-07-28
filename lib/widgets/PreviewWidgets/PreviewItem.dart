@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/People.dart';
@@ -23,8 +24,8 @@ class PreviewItem extends StatelessWidget {
             delegate: SliverChildListDelegate(
               [
                 FutureBuilder<List<People>>(
-                    future: Provider.of<MovieProvider>(context, listen: false)
-                        .fetchCast(_movie.id, context),
+                    future: Provider.of<DataProvider>(context, listen: false)
+                        .fetchCast(_movie.id, DataType.movie, context),
                     builder: (_, snapshot) {
                       if (snapshot.hasError) return Universal.failedWidget();
                       if (snapshot.connectionState == ConnectionState.waiting)
@@ -51,7 +52,7 @@ class PreviewItem extends StatelessWidget {
           children: [
             Consumer<User>(
               builder: (ctx, user, _) {
-                final isAdded = user.isAdded(_movie.id);
+                final isAdded = user.isMovieAdded(_movie.id);
                 return ElevatedButton(
                   style: ButtonStyle(
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -64,8 +65,8 @@ class PreviewItem extends StatelessWidget {
                       )),
                   onPressed: () {
                     isAdded
-                        ? user.removeFromList(_movie.id)
-                        : user.addToWatchList(_movie);
+                        ? user.removeFromList(DataType.movie,_movie.id)
+                        : user.addToWatchList(DataType.movie,_movie,null);
                   },
                   child: Text(isAdded ? 'Remove from List' : 'Add to list'),
                 );

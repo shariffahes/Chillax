@@ -1,19 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-
-enum DiscoverTypes { boxoffice, genre, search, trending, popular, upcoming }
-
-extension ParseToString on DiscoverTypes {
-  String toShortString() {
-    return this.toString().split('.').last;
-  }
-
-  String toNormalString() {
-    return this.toShortString().toString().replaceAll('_', ' ');
-  }
-}
-
 class keys {
   static List<String> genres = [
     "Action",
@@ -46,6 +33,7 @@ class keys {
   static int mainList = 3;
   static const String apiKey =
       "4b919f5ec98bd3a8ae5e4603d87a919a22dedbbbb009839540bd43eae25b68f2";
+      
   static String baseImageURL = "https://image.tmdb.org/t/p/";
   static String baseURL = "https://api.trakt.tv/";
   static const String defaultImage = "https://i.postimg.cc/cLWJs6Rb/logo.png";

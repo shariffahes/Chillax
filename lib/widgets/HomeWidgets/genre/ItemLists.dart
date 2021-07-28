@@ -1,11 +1,11 @@
 import 'dart:math';
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:flutter/material.dart';
 
 class ItemLists extends StatelessWidget {
   final _items;
-  final DiscoverTypes type;
+  final MovieTypes type;
   final double ratio;
   const ItemLists(this.ratio, this._items, this.type);
 

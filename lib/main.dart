@@ -66,7 +66,7 @@ class MyApp extends StatelessWidget {
             );
           return MultiProvider(
             providers: [
-              ChangeNotifierProvider(create: (_) => MovieProvider()),
+              ChangeNotifierProvider(create: (_) => DataProvider()),
               ChangeNotifierProvider(create: (_) => User(wl: snapshot.data![0],wtched: snapshot.data![1])),
               ChangeNotifierProvider(create: (_) => PhotoProvider()),
             ],

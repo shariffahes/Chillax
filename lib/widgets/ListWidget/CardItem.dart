@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
@@ -43,7 +44,8 @@ class CardItem extends StatelessWidget {
                   borderRadius: roundedBorder(22, 55),
                   child: Consumer<PhotoProvider>(
                     builder: (ctx, image, _) {
-                      final poster = image.getMovieImages(_movie.id) ?? [keys.defaultImage];
+                      final poster = image.getMovieImages(_movie.id) ??
+                          [keys.defaultImage];
 
                       return Image(
                         image: NetworkImage(poster[0]),
@@ -99,13 +101,14 @@ class InfoColumn extends StatelessWidget {
                   ),
                   Consumer<User>(
                     builder: (ctx, user, _) {
-                      final isAdded = user.isAdded(_movie.id);
+                      final isAdded = user.isMovieAdded(_movie.id);
 
                       return IconButton(
                         onPressed: () {
                           isAdded
-                              ? user.removeFromList(_movie.id)
-                              : user.addToWatchList(_movie);
+                              ? user.removeFromList(DataType.movie, _movie.id)
+                              : user.addToWatchList(
+                                  DataType.movie, _movie, null);
                         },
                         icon: Icon(
                           isAdded ? Icons.check_circle : Icons.add_circle,
