@@ -27,7 +27,7 @@ class WatchList extends StatelessWidget {
           ),
         ),
       ),
-      onDismissed: (_) => _userProv.deleteItem(DataType.movie, _movie.id),
+      onDismissed: (_) => _userProv.deleteItem(_movie.id),
       key: ValueKey(_movie.id),
       child: GestureDetector(
         onTap: () => Navigator.of(context).pushNamed(
@@ -105,7 +105,7 @@ class WatchList extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () {
-                  _userProv.watchComplete(DataType.movie, _movie.id);
+                  _userProv.watchComplete(_movie.id);
                 },
                 icon: Icon(
                   _userProv.isMovieWatched(_movie.id)

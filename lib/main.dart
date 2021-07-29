@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
@@ -31,12 +32,12 @@ class MyApp extends StatelessWidget {
     var info = await db!.query('WatchList', where: 'watched = ${0}');
     final Map<int, Movie> watchList = {};
     info.forEach((element) {
-      watchList[element['id'] as int] = Movie.fromMap(element);
+      //watchList[element['id'] as int] = Movie.fromMap(element);
     });
     final Map<int, Movie> watched = {};
     info = await db!.query('WatchList', where: 'watched = ${1}');
     info.forEach((element) {
-      watched[element['id'] as int] = Movie.fromMap(element);
+      //watched[element['id'] as int] = Movie.fromMap(element);
     });
     final list = [watchList, watched];
     return list;
@@ -44,44 +45,47 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return FutureBuilder<List<Map<int, Movie>>>(
-        future: setDB(),
+        // future: setDB(),
         builder: (ctx, snapshot) {
-          if (snapshot.hasError)
-            return AlertDialog(
-              title: Text('An error has occured'),
-              content: Text(
-                'An error has occured retrieving local data. Please try again',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {},
-                  child: Text('Try again'),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: Text('close app'),
-                ),
-              ],
-            );
-          return MultiProvider(
-            providers: [
-              ChangeNotifierProvider(create: (_) => DataProvider()),
-              ChangeNotifierProvider(create: (_) => User(wl: snapshot.data![0],wtched: snapshot.data![1])),
-              ChangeNotifierProvider(create: (_) => PhotoProvider()),
-            ],
-            child: MaterialApp(
-              routes: {
-                ListAll.route: (ctx) => ListAll(),
-                PreviewItem.route: (ctx) => PreviewItem(),
-              },
-              title: 'Discuss it',
-              theme: ThemeData(
-                primarySwatch: Colors.red,
-              ),
-              home: TabsScreen(),
+      if (snapshot.hasError) {
+        print('object');
+        return AlertDialog(
+          title: Text('An error has occured'),
+          content: Text(
+            'An error has occured retrieving local data. Please try again',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {},
+              child: Text('Try again'),
             ),
-          );
-        });
+            TextButton(
+              onPressed: () {},
+              child: Text('close app'),
+            ),
+          ],
+        );
+      }
+      return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => DataProvider()),
+          ChangeNotifierProvider(create: (_) => User(wl: {}, wtched: {})),
+          ChangeNotifierProvider(create: (_) => PhotoProvider()),
+        ],
+        child: MaterialApp(
+          routes: {
+            ListAll.route: (ctx) => ListAll(),
+            PreviewItem.route: (ctx) => PreviewItem(),
+          },
+          title: 'Discuss it',
+          theme: ThemeData(
+            primarySwatch: Colors.red,
+          ),
+          home: TabsScreen(),
+        ),
+      );
+    });
   }
 }

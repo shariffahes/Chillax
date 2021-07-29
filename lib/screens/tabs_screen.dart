@@ -1,3 +1,6 @@
+import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/keys.dart';
+
 import '../screens/home_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/schedule_screen.dart';
@@ -7,10 +10,10 @@ import 'package:flutter/material.dart';
 
 class TabsScreen extends StatefulWidget {
   @override
-  _TabsScreenState createState() => _TabsScreenState();
+  TabsScreenState createState() => TabsScreenState();
 }
 
-class _TabsScreenState extends State<TabsScreen> {
+class TabsScreenState extends State<TabsScreen> {
   int _index = 2;
   late List<Map<String, Object>> tabBarWidgets;
 
@@ -27,7 +30,6 @@ class _TabsScreenState extends State<TabsScreen> {
       {'page': HomeScreen(), 'title': 'Main Home'},
       {
         'page': UpcomingScreen(),
-        
         'title': 'Upcoming',
       },
       {'page': ProfileScreen(), 'title': 'My Profile'},
@@ -43,6 +45,7 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
+      initialIndex: 0,
       length: 2,
       child: Scaffold(
         appBar: AppBar(

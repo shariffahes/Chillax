@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class ListItems extends StatelessWidget {
-  final List<Movie> _movieList;
+  final List<Data> _movieList;
   final RefreshController _controller;
   final void Function() load;
 

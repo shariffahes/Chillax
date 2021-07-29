@@ -1,4 +1,3 @@
-import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/People.dart';
@@ -13,19 +12,19 @@ class PreviewItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _movie = ModalRoute.of(context)!.settings.arguments as Movie;
+    final _data = ModalRoute.of(context)!.settings.arguments as Data;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          CustomAppBar(_movie),
+          CustomAppBar(_data),
           SliverList(
             delegate: SliverChildListDelegate(
               [
                 FutureBuilder<List<People>>(
                     future: Provider.of<DataProvider>(context, listen: false)
-                        .fetchCast(_movie.id, DataType.movie, context),
+                        .fetchCast(_data.id, context),
                     builder: (_, snapshot) {
                       if (snapshot.hasError) return Universal.failedWidget();
                       if (snapshot.connectionState == ConnectionState.waiting)
@@ -38,7 +37,7 @@ class PreviewItem extends StatelessWidget {
                           vertical: 10,
                           horizontal: 20,
                         ),
-                        child: InfoColumn(movie: _movie, cast: _cast),
+                        child: InfoColumn(_data, _cast),
                       );
                     })
               ],
@@ -52,7 +51,7 @@ class PreviewItem extends StatelessWidget {
           children: [
             Consumer<User>(
               builder: (ctx, user, _) {
-                final isAdded = user.isMovieAdded(_movie.id);
+                final isAdded = user.isMovieAdded(_data.id);
                 return ElevatedButton(
                   style: ButtonStyle(
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -65,8 +64,8 @@ class PreviewItem extends StatelessWidget {
                       )),
                   onPressed: () {
                     isAdded
-                        ? user.removeFromList(DataType.movie,_movie.id)
-                        : user.addToWatchList(DataType.movie,_movie,null);
+                        ? user.removeFromList(_data.id)
+                        : user.addToWatchList(_data as Movie);
                   },
                   child: Text(isAdded ? 'Remove from List' : 'Add to list'),
                 );
@@ -79,7 +78,7 @@ class PreviewItem extends StatelessWidget {
                 backgroundColor: Colors.white,
                 radius: 27,
                 child: Text(
-                  _movie.certification,
+                  _data.certification,
                   style: TextStyle(
                     color: Colors.black,
                   ),
@@ -94,15 +93,12 @@ class PreviewItem extends StatelessWidget {
 }
 
 class InfoColumn extends StatelessWidget {
-  const InfoColumn({
-    Key? key,
-    required Movie movie,
-    required List<People> cast,
-  })  : _movie = movie,
-        _cast = cast,
-        super(key: key);
+  const InfoColumn(
+    this._data,
+    this._cast,
+  );
 
-  final Movie _movie;
+  final Data _data;
   final List<People> _cast;
 
   @override
@@ -113,7 +109,7 @@ class InfoColumn extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _movie.name,
+            _data.name,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 33,
@@ -125,7 +121,7 @@ class InfoColumn extends StatelessWidget {
           Flexible(
             child: Row(
               children: [
-                Text(_movie.releaseDate.toString()),
+                Text(_data.releaseDate.toString()),
                 SizedBox(
                   width: 7,
                 ),
@@ -137,7 +133,7 @@ class InfoColumn extends StatelessWidget {
                   width: 7,
                 ),
                 Text(
-                  (_movie.duration.toString() + ' mins'),
+                  (' mins'),
                 ),
               ],
             ),
@@ -147,7 +143,7 @@ class InfoColumn extends StatelessWidget {
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            children: _movie.genre.map(
+            children: _data.genre.map(
               (e) {
                 return Card(
                   elevation: 5,
@@ -175,7 +171,7 @@ class InfoColumn extends StatelessWidget {
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
           Text(
-            _movie.overview,
+            _data.overview,
             style: TextStyle(wordSpacing: 1, height: 2, fontSize: 15),
           ),
           Divider(
@@ -211,10 +207,10 @@ class InfoColumn extends StatelessWidget {
 
 class CustomAppBar extends StatelessWidget {
   CustomAppBar(
-    this._movie,
+    this._data,
   );
 
-  final Movie _movie;
+  final Data _data;
 
   @override
   Widget build(BuildContext context) {
@@ -228,8 +224,11 @@ class CustomAppBar extends StatelessWidget {
           Positioned.fill(
             child: Consumer<PhotoProvider>(
               builder: (ctx, image, _) {
-                final backdrop = image.getMovieImages(_movie.id) ??
-                    [keys.defaultImage, keys.defaultImage];
+                List<String> backdrop = [keys.defaultImage, keys.defaultImage];
+                if (keys.isMovie())
+                  backdrop = image.getMovieImages(_data.id) ?? backdrop;
+                else
+                  backdrop = image.getShowImages(_data.id) ?? backdrop;
 
                 return Image.network(
                   backdrop[1],
@@ -264,7 +263,7 @@ class CustomAppBar extends StatelessWidget {
               child: CircleAvatar(
                 radius: 42,
                 child: Text(
-                  _movie.rate,
+                  _data.rate,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -296,7 +295,7 @@ class ActorItem extends StatelessWidget {
         child: Consumer<PhotoProvider>(
           builder: (ctx, image, _) {
             final profile = image.getPersonProfiles(id) ?? [keys.defaultImage];
-          
+
             return Image.network(
               profile[0],
               fit: BoxFit.cover,

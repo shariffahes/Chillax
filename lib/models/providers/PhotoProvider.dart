@@ -25,24 +25,34 @@ class PhotoProvider with ChangeNotifier {
     return _moviesImage[id];
   }
 
+  List<String>? getShowImages(int id) {
+    return _showsImage[id];
+  }
+
+  Map<int, List<String>> get showsImages {
+    return {..._showsImage};
+  }
+
   void fetchImagesFor(int tmdbId, int id, DataType type) async {
+ 
     final url = Uri.parse(
         'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
     final response = await http.get(url);
     final decodedData = json.decode(response.body);
 
-    final List<String> images = _extractData(type, decodedData);
-
-    if (type == DataType.movie) {
+    final List<String> images = _extractData(decodedData,type);
+    if (type == DataType.person) {
+      _peopleProfiles[id] = images;
+    } else if (type == DataType.movie) {
       _moviesImage[id] = images;
     } else if (type == DataType.tvShow) {
       _showsImage[id] = images;
-    } else
-      _peopleProfiles[id] = images;
+    }
+
     notifyListeners();
   }
 
-  List<String> _extractData(DataType type, dynamic response) {
+  List<String> _extractData(dynamic response, DataType type) {
     List<String> _images = [];
 
     switch (type) {
@@ -63,11 +73,6 @@ class PhotoProvider with ChangeNotifier {
 
         _images.add(profile);
         _images.add(backDropProfile);
-
-        break;
-
-      case DataType.tvShow:
-        _images.add(keys.defaultImage);
         break;
 
       default:
@@ -88,8 +93,10 @@ class PhotoProvider with ChangeNotifier {
 
         _images.add(imageURL);
         _images.add(backDropURL);
+
         break;
     }
+
     return _images;
   }
 }

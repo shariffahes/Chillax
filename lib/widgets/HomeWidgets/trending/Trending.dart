@@ -8,15 +8,23 @@ import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 class Trending extends StatefulWidget {
-  final MovieTypes type;
-  const Trending(this.type);
+  MovieTypes movieType;
+  TvTypes showType;
+  Trending(this.movieType, this.showType);
 
   @override
   _TrendingState createState() => _TrendingState();
 }
 
 class _TrendingState extends State<Trending> {
-  List<Movie> _movies = [];
+  Map<int, List<Data>> _itemsData = {
+    0: [
+      Movie(0, '-', '-', '-', 0, '-', ['-'], '-', 0)
+    ],
+    1: [
+      Show(0, '-', '-', '-', 0, '-', ['-'], '-', '-', 0, '-', 0),
+    ]
+  };
 
   var ind = 0;
 
@@ -34,97 +42,21 @@ class _TrendingState extends State<Trending> {
   void initState() {
     super.initState();
 
+    Object discover = keys.isMovie() ? widget.movieType : widget.showType;
+
     Provider.of<DataProvider>(context, listen: false)
-        .fetchMovieListBy(widget.type,context)
+        .fetchDataListBy(discover, context)
         .then((value) {
       setState(() {
-        _movies = value.getMoviesBy(widget.type);
+        _itemsData[keys.dataType.index] = keys.isMovie()
+            ? value.getDataBy(widget.movieType, null)
+            : value.getDataBy(null, widget.showType);
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    var aspectRatio = AspectRatio(
-      aspectRatio: 7 / 4,
-      child: _movies.isEmpty
-          ? ListView(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(
-                      12.0,
-                    ),
-                  ),
-                  margin: const EdgeInsets.all(5),
-                  height: 300,
-                  width: 360,
-                ),
-              ],
-            )
-          : ListView.builder(
-              physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
-              controller: _controller,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (_, index) => AutoScrollTag(
-                key: ValueKey(index),
-                controller: _controller,
-                index: index,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(PreviewItem.route,
-                        arguments: _movies[index]);
-                  },
-                  // onHorizontalDragEnd: (details) {
-
-                  // },
-                  onPanUpdate: (details) {
-                    if (details.delta.dx > 0)
-                      _scrollToIndex(
-                          (index - 1) == 0 ? _movies.length - 1 : index - 1);
-                    else
-                      _scrollToIndex((index + 1) % _movies.length);
-                  },
-                  child: Consumer<PhotoProvider>(
-                    builder: (ctx, image, child) {
-                      final backdrop =
-                          image.getMovieImages(_movies[index].id) ??
-                              [keys.defaultImage, keys.defaultImage];
-                     
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(
-                            12.0,
-                          ),
-                          image: DecorationImage(
-                            image: NetworkImage(backdrop[1]),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        margin: const EdgeInsets.all(5),
-                        height: 300,
-                        width: 360,
-                        child: child,
-                      );
-                    },
-                    child: Text(
-                      _movies[index].name,
-                      textAlign: TextAlign.start,
-                      style: TextStyle(
-                        backgroundColor: Colors.white70,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              itemCount: _movies.length,
-            ),
-    );
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,45 +64,55 @@ class _TrendingState extends State<Trending> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            'US Box Office',
+            keys.isMovie()
+                ? widget.movieType.toNormalString()
+                : widget.showType.toNormalString(),
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
         ),
-        aspectRatio,
+        ViewCards(
+          _controller,
+          _scrollToIndex,
+          _itemsData[keys.dataType.index]!,
+        ),
         SizedBox(
           height: 13,
         ),
-        InfoRow(_movies, ind)
+        InfoRow(_itemsData[keys.dataType.index]!, ind),
       ],
     );
   }
 }
 
 class InfoRow extends StatelessWidget {
-  final List<Movie> _movies;
+  final List<Data> _list;
   final int ind;
 
   const InfoRow(
-    this._movies,
+    this._list,
     this.ind,
   );
 
   @override
   Widget build(BuildContext context) {
+    var duration = keys.isMovie()
+        ? (_list.cast<Movie>())[ind].duration
+        : (_list.cast<Show>())[ind].runTime;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         icons(
           Icons.star_outline,
-          (_movies.isNotEmpty ? _movies[ind].rate : '-'),
+          (_list.isNotEmpty ? _list[ind].rate : '-'),
         ),
         icons(Icons.calendar_today_outlined,
-            (_movies.isNotEmpty ? _movies[ind].releaseDate.toString() : '-')),
-        icons(Icons.timer_outlined,
-            _movies.isNotEmpty ? _movies[ind].duration.toString() : '-'),
+            (_list.isNotEmpty ? _list[ind].releaseDate.toString() : '-')),
+        icons(
+            Icons.timer_outlined, _list.isNotEmpty ? duration.toString() : '-'),
         icons(
           Icons.language,
-          (_movies.isNotEmpty ? _movies[ind].language : '-'),
+          (_list.isNotEmpty ? _list[ind].language : '-'),
         ),
       ],
     );
@@ -194,6 +136,86 @@ class icons extends StatelessWidget {
         ),
         Text(value),
       ],
+    );
+  }
+}
+
+class ViewCards extends StatelessWidget {
+  final AutoScrollController _controller;
+  final Function(int ind) _scrollToIndex;
+  List<Data> list;
+  ViewCards(
+    this._controller,
+    this._scrollToIndex,
+    this.list,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 7 / 4,
+      child: ListView.builder(
+        physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (_, index) => AutoScrollTag(
+          key: ValueKey(index),
+          controller: _controller,
+          index: index,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context)
+                  .pushNamed(PreviewItem.route, arguments: list[index]);
+            },
+            // onHorizontalDragEnd: (details) {
+
+            // },
+            onPanUpdate: (details) {
+              if (details.delta.dx > 0)
+                _scrollToIndex((index - 1) == 0 ? list.length - 1 : index - 1);
+              else
+                _scrollToIndex((index + 1) % list.length);
+            },
+            child: Consumer<PhotoProvider>(
+              builder: (ctx, image, child) {
+                List<String> backdrop = [keys.defaultImage, keys.defaultImage];
+                if (keys.isMovie())
+                  backdrop = image.getMovieImages(list[index].id) ?? backdrop;
+                else {
+                  backdrop = image.getShowImages(list[index].id) ?? backdrop;
+                }
+
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(
+                      12.0,
+                    ),
+                    image: DecorationImage(
+                      image: NetworkImage(backdrop[1]),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  margin: const EdgeInsets.all(5),
+                  height: 300,
+                  width: 360,
+                  child: child,
+                );
+              },
+              child: Text(
+                list[index].name,
+                textAlign: TextAlign.start,
+                style: TextStyle(
+                  backgroundColor: Colors.white70,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ),
+        itemCount: list.length,
+      ),
     );
   }
 }

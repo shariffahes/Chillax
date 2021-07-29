@@ -9,9 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class CardItem extends StatelessWidget {
-  final Movie _movie;
+  final Data _data;
 
-  CardItem(this._movie);
+  CardItem(this._data);
   BorderRadius roundedBorder(double edge1, double edg2) {
     return BorderRadius.only(
       topLeft: Radius.circular(edge1),
@@ -25,7 +25,7 @@ class CardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(PreviewItem.route, arguments: _movie);
+        Navigator.of(context).pushNamed(PreviewItem.route, arguments: _data);
       },
       child: Card(
         shape: RoundedRectangleBorder(
@@ -44,8 +44,11 @@ class CardItem extends StatelessWidget {
                   borderRadius: roundedBorder(22, 55),
                   child: Consumer<PhotoProvider>(
                     builder: (ctx, image, _) {
-                      final poster = image.getMovieImages(_movie.id) ??
-                          [keys.defaultImage];
+                      List<String> poster = [keys.defaultImage];
+                      if (keys.isMovie())
+                        poster = image.getMovieImages(_data.id) ?? poster;
+                      else
+                        poster = image.getShowImages(_data.id) ?? poster;
 
                       return Image(
                         image: NetworkImage(poster[0]),
@@ -57,7 +60,7 @@ class CardItem extends StatelessWidget {
             ),
             Flexible(
               fit: FlexFit.tight,
-              child: InfoColumn(movie: _movie),
+              child: InfoColumn(_data),
             ),
           ],
         ),
@@ -67,13 +70,9 @@ class CardItem extends StatelessWidget {
 }
 
 class InfoColumn extends StatelessWidget {
-  const InfoColumn({
-    Key? key,
-    required Movie movie,
-  })  : _movie = movie,
-        super(key: key);
+  const InfoColumn(this._data);
 
-  final Movie _movie;
+  final Data _data;
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +90,7 @@ class InfoColumn extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      _movie.name,
+                      _data.name,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -101,14 +100,15 @@ class InfoColumn extends StatelessWidget {
                   ),
                   Consumer<User>(
                     builder: (ctx, user, _) {
-                      final isAdded = user.isMovieAdded(_movie.id);
-
+                      final isAdded = user.isMovieAdded(_data.id);
+                      final isShowAdded = user.isShowAdded(_data.id);
                       return IconButton(
                         onPressed: () {
-                          isAdded
-                              ? user.removeFromList(DataType.movie, _movie.id)
-                              : user.addToWatchList(
-                                  DataType.movie, _movie, null);
+                          isAdded || isShowAdded
+                              ? user.removeFromList(_data.id)
+                              : user.addToWatchList(keys.isMovie()
+                                  ? _data as Movie
+                                  : _data as Show);
                         },
                         icon: Icon(
                           isAdded ? Icons.check_circle : Icons.add_circle,
@@ -123,14 +123,14 @@ class InfoColumn extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              _movie.genreToString(),
+              _data.genreToString(),
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
           SizedBox(
             height: 3,
           ),
-          Universal.rateContainer(_movie.rate),
+          Universal.rateContainer(_data.rate),
           SizedBox(
             height: 2,
           ),
@@ -139,7 +139,7 @@ class InfoColumn extends StatelessWidget {
               height: 70,
               width: 200,
               child: Text(
-                _movie.overview,
+                _data.overview,
                 style: TextStyle(
                   fontSize: 15,
                 ),

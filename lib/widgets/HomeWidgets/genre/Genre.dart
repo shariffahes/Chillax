@@ -1,12 +1,9 @@
-import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:flutter/material.dart';
 import '../genre/ItemLists.dart';
 
 class Genre extends StatelessWidget {
-  final MovieTypes type;
-   Genre(this.type);
-
+  Genre();
   final _items = keys.genres.toList();
   @override
   Widget build(BuildContext context) {
@@ -25,10 +22,14 @@ class Genre extends StatelessWidget {
           ),
         ),
         Container(
-            //dynamic
-            height: 200,
-            width: double.infinity,
-            child: ItemLists(5 / 3, _items, type)),
+          //dynamic
+          height: 200,
+          width: double.infinity,
+          child: ItemLists(
+            5 / 3,
+            _items,
+          ),
+        ),
       ],
     );
   }

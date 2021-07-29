@@ -37,13 +37,14 @@ extension ParseToStringTv on TvTypes {
 }
 
 enum DataType {
-  person,
   movie,
   tvShow,
+  person,
 }
 
 extension ParseToStringImg on DataType {
   String toShortString() {
+    if (this.index == 1) return 'tv';
     return this.toString().split('.').last;
   }
 }

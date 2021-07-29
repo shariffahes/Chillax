@@ -1,4 +1,3 @@
-import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
@@ -9,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PosterList extends StatefulWidget {
-  final List<Movie> _items;
+  final List<Data> _items;
 
   PosterList(this._items);
 
@@ -24,7 +23,7 @@ class _PosterListState extends State<PosterList> {
       scrollDirection: Axis.horizontal,
       children: widget._items
           .map(
-            (movie) => Padding(
+            (item) => Padding(
               padding: const EdgeInsets.all(5.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,27 +32,32 @@ class _PosterListState extends State<PosterList> {
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context)
-                          .pushNamed(PreviewItem.route, arguments: movie);
+                          .pushNamed(PreviewItem.route, arguments: item);
                     },
                     child: Container(
                       height: 230,
                       child: Stack(
                         children: [
-                          ImagePoster(movie.id),
+                          ImagePoster(item.id),
                           Consumer<User>(
                             builder: (ctx, user, _) {
-                              final isAdded = user.isMovieAdded(movie.id);
+                              bool isMovieAdded = user.isMovieAdded(item.id);
+                              bool isShowAdded = user.isShowAdded(item.id);
 
                               return IconButton(
                                 alignment: AlignmentDirectional.topStart,
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
-                                  isAdded
-                                      ? user.removeFromList(DataType.movie,movie.id)
-                                      : user.addToWatchList(DataType.movie,movie,null);
+                                  final isMovieAdded =
+                                      user.isMovieAdded(item.id);
+                                  final isShowAdded = user.isShowAdded(item.id);
+
+                                  isMovieAdded || isShowAdded
+                                      ? user.removeFromList(item.id)
+                                      : user.addToWatchList(item);
                                 },
                                 icon: Icon(
-                                  isAdded
+                                  isShowAdded || isMovieAdded
                                       ? Icons.check_circle
                                       : Icons.add_circle_rounded,
                                   size: 35,
@@ -71,14 +75,14 @@ class _PosterListState extends State<PosterList> {
                     height: 60,
                     padding: const EdgeInsets.only(top: 10, bottom: 2),
                     child: Text(
-                      movie.name,
+                      item.name,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                   ),
-                  Universal.rateContainer(movie.rate),
+                  Universal.rateContainer(item.rate),
                 ],
               ),
             ),
@@ -100,7 +104,11 @@ class ImagePoster extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         child: Consumer<PhotoProvider>(
           builder: (ctx, image, _) {
-            final posters = image.getMovieImages(id) ?? [keys.defaultImage];
+            List<String> posters = [keys.defaultImage];
+            if (keys.isMovie())
+              posters = image.getMovieImages(id) ?? posters;
+            else
+              posters = image.getShowImages(id) ?? posters;
 
             return FadeInImage(
               placeholder: AssetImage('assets/images/logo.png'),

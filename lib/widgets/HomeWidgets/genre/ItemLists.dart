@@ -1,13 +1,17 @@
 import 'dart:math';
 import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:flutter/material.dart';
 
 class ItemLists extends StatelessWidget {
   final _items;
-  final MovieTypes type;
+
   final double ratio;
-  const ItemLists(this.ratio, this._items, this.type);
+  const ItemLists(
+    this.ratio,
+    this._items,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,10 @@ class ItemLists extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       itemBuilder: (_, index) => InkWell(
         onTap: () {
-          Navigator.of(context).pushNamed(ListAll.route, arguments: {'type' : type, 'genre' : _items[index]});
+          Navigator.of(context).pushNamed(ListAll.route, arguments: {
+            'discover_type': keys.isMovie() ? MovieTypes.genre : TvTypes.genre,
+            'genre': _items[index]
+          });
         },
         child: Container(
           decoration: BoxDecoration(

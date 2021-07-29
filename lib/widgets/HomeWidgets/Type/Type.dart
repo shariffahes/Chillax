@@ -7,8 +7,9 @@ import 'package:provider/provider.dart';
 import '../Type/PosterList.dart';
 
 class Type extends StatelessWidget {
-  final MovieTypes type;
-  Type(this.type);
+  final MovieTypes? movieType;
+  final TvTypes? showType;
+  Type(this.movieType, this.showType);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class Type extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             alignment: AlignmentDirectional.topStart,
             child: Text(
-              type.toNormalString(),
+              movieType?.toNormalString() ?? showType!.toNormalString(),
               style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
             ),
           ),
@@ -29,7 +30,7 @@ class Type extends StatelessWidget {
               Navigator.of(context).pushNamed(
                 ListAll.route,
                 arguments: {
-                  'type': type,
+                  'discover_type': showType ?? movieType,
                 },
               );
             },
@@ -39,7 +40,7 @@ class Type extends StatelessWidget {
       ),
       FutureBuilder<DataProvider>(
         future: Provider.of<DataProvider>(context, listen: false)
-            .fetchMovieListBy(type,context),
+            .fetchDataListBy(movieType ?? showType!, context),
         builder: (_, snapshot) {
           if (snapshot.hasError)
             //replace by somthing better
@@ -47,11 +48,11 @@ class Type extends StatelessWidget {
             return Universal.failedWidget();
           if (snapshot.connectionState == ConnectionState.waiting)
             return Universal.loadingWidget();
+          List<Data> _data = snapshot.data!.getDataBy(movieType, showType);
 
-          List<Movie> _movies = snapshot.data!.getMoviesBy(type);
           return Container(
             height: 340,
-            child: PosterList(_movies),
+            child: PosterList(_data),
           );
         },
       ),
