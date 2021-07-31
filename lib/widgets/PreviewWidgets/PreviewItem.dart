@@ -66,7 +66,7 @@ class PreviewItem extends StatelessWidget {
                   onPressed: () {
                     isMovieAdded || isShowAdded
                         ? user.removeFromList(_data.id)
-                        : user.addToWatchList(_data as Movie);
+                        : user.addToWatchList(_data);
                   },
                   child: Text(isMovieAdded || isShowAdded
                       ? 'Remove from List'

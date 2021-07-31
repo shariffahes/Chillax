@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/widgets/HomeWidgets/search/SearchWidget.dart';
-=======
-import '../widgets/HomeWidgets/search/SearchWidget.dart';
->>>>>>> d7d238ab93df8a134214072b32cda37f7c11614a
 import 'package:flutter/material.dart';
+import '../widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/rendering.dart';
 import '../models/keys.dart';
 import '../widgets/HomeWidgets/Type/Type.dart';
