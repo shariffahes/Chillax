@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -88,10 +89,19 @@ class Show extends Data {
             certification);
 }
 
+class Episode {
+  final int id;
+  final int tmdbId;
+  final String name;
+  final int number;
+  final int season;
+  Episode(this.id, this.tmdbId, this.name, this.number, this.season);
+}
+
 class DataProvider with ChangeNotifier {
   Map<MovieTypes, List<Movie>> _movies = {};
   Map<TvTypes, List<Show>> _tvShows = {};
-
+  Map<int, Map<int, List<Episode>>> _seriesEpisodes = {};
   List<List<int>> currentPage = [
     MovieTypes.values.map((e) => 1).toList(),
     TvTypes.values.map((e) => 1).toList()
@@ -380,5 +390,57 @@ class DataProvider with ChangeNotifier {
     if (_tvShows[type] == null) return [];
 
     return [..._tvShows[type]!];
+  }
+
+  Future<DataProvider> fetchEpisodes(int id) async {
+    if (_seriesEpisodes[id] != null) return this;
+    final url =
+        Uri.parse('https://api.trakt.tv/shows/$id/seasons?extended=episodes');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'trakt-api-version': '2',
+        'trakt-api-key': keys.apiKey,
+      },
+    );
+    final results = json.decode(response.body) as List<dynamic>;
+    Map<int, List<Episode>> info = {};
+    for (var season in results) {
+      final number = season['number'];
+      if (number == 0) continue;
+      final episodes = season['episodes'] as List<dynamic>;
+      List<Episode> ep = [];
+
+      episodes.forEach(
+        (episode) {
+          final int id = episode['ids']['trakt'] ?? 0;
+          final tmdbId = episode['ids']['tmdb'] ?? -1;
+          final name = episode['title'] ?? '-';
+          final num = episode['number'] ?? -1;
+
+          ep.add(Episode(id, tmdbId, name, num, number));
+        },
+      );
+      info[number] = ep;
+    }
+    _seriesEpisodes[id] = info;
+
+
+    return this;
+  }
+
+  Episode? getEpisodeInfo(int id, int season, int episode, BuildContext ctx) {
+
+    Provider.of<User>(ctx, listen: false).updateNext(id, season, episode + 1);
+    episode = episode - 1;
+    if (_seriesEpisodes[id] == null) return null;
+    if (season > _seriesEpisodes[id]!.keys.length) return null;
+
+    if (episode >= _seriesEpisodes[id]![season]!.length)
+      return getEpisodeInfo(id, season + 1, 1, ctx);
+
+    return _seriesEpisodes[id]![season]![episode];
   }
 }

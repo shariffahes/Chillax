@@ -51,7 +51,8 @@ class PreviewItem extends StatelessWidget {
           children: [
             Consumer<User>(
               builder: (ctx, user, _) {
-                final isAdded = user.isMovieAdded(_data.id);
+                final isMovieAdded = user.isMovieAdded(_data.id);
+                final isShowAdded = user.isShowAdded(_data.id);
                 return ElevatedButton(
                   style: ButtonStyle(
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -63,11 +64,13 @@ class PreviewItem extends StatelessWidget {
                         Size(210, 60),
                       )),
                   onPressed: () {
-                    isAdded
+                    isMovieAdded || isShowAdded
                         ? user.removeFromList(_data.id)
                         : user.addToWatchList(_data as Movie);
                   },
-                  child: Text(isAdded ? 'Remove from List' : 'Add to list'),
+                  child: Text(isMovieAdded || isShowAdded
+                      ? 'Remove from List'
+                      : 'Add to list'),
                 );
               },
             ),

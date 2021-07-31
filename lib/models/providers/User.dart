@@ -4,15 +4,38 @@ import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
+class Track {
+  int currentEp;
+  int currentSeason;
+  int nextEp;
+  int nextSeason;
+  Track(
+      {this.currentEp = 0,
+      this.currentSeason = 0,
+      this.nextEp = 0,
+      this.nextSeason = 0});
+}
+
 class User with ChangeNotifier {
   late Map<int, Movie> _watchList;
   late Map<int, Movie> _watched;
   final Map<int, Show> _tvWatchList = {};
   final Map<int, Show> _tvWatched = {};
+  final List<Show> _watching = [];
+  Map<int, Track> track = {};
 
   User({required Map<int, Movie> wl, required Map<int, Movie> wtched}) {
     _watchList = wl;
     _watched = wtched;
+  }
+
+  void startWatching(int id) {
+    _watching.add(_tvWatchList[id]!);
+    removeFromList(id);
+  }
+
+  List<Show> getCurrentlyWatching() {
+    return [..._watching];
   }
 
   void addToWatchList(Object item) async {
@@ -54,7 +77,11 @@ class User with ChangeNotifier {
       _watchList.remove(id);
       // _delete(id);
     } else {
-      _tvWatchList.remove(id);
+      if (_tvWatchList[id] == null) {
+        print('delete');
+      } else {
+        _tvWatchList.remove(id);
+      }
       //delete
     }
     notifyListeners();
@@ -65,7 +92,7 @@ class User with ChangeNotifier {
   }
 
   bool isShowAdded(int id) {
-    return _tvWatchList[id] != null || _tvWatched[id] != null;
+    return _tvWatchList[id] != null || _tvWatched[id] != null ;
   }
 
   void watchComplete(int id) {
@@ -77,6 +104,7 @@ class User with ChangeNotifier {
         // _update(id, 0);
       } else {
         _watched[id] = _watchList[id]!;
+
         //_update(id, 1);
         removeFromList(id);
       }
@@ -86,10 +114,19 @@ class User with ChangeNotifier {
         _tvWatched.remove(id);
         _tvWatchList[id] = item!;
         //_update(id, 0);
-      } else {
+      } else if (_tvWatchList[id] != null) {
         _tvWatched[id] = _tvWatchList[id]!;
-        //_update(id, 1);
         removeFromList(id);
+
+        //_update(id, 1);
+
+      } else {
+        final nextEp = track[id]!.nextEp;
+
+        final nextSeason = track[id]!.nextSeason;
+
+        track[id]!.currentEp = nextEp;
+        track[id]!.currentSeason = nextSeason;
       }
     }
     notifyListeners();
@@ -120,5 +157,15 @@ class User with ChangeNotifier {
       removeFromList(id);
     }
     notifyListeners();
+  }
+
+  void updateNext(int id, int season, int episode) {
+    if (track[id] == null) {
+      track[id] =
+          Track(currentEp: 1, currentSeason: 1, nextEp: episode, nextSeason: 1);
+    } else {
+      track[id]!.nextSeason = season;
+      track[id]!.nextEp = episode;
+    }
   }
 }

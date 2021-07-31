@@ -100,18 +100,18 @@ class InfoColumn extends StatelessWidget {
                   ),
                   Consumer<User>(
                     builder: (ctx, user, _) {
-                      final isAdded = user.isMovieAdded(_data.id);
+                      final isMovieAdded = user.isMovieAdded(_data.id);
                       final isShowAdded = user.isShowAdded(_data.id);
                       return IconButton(
                         onPressed: () {
-                          isAdded || isShowAdded
+                          isMovieAdded || isShowAdded
                               ? user.removeFromList(_data.id)
                               : user.addToWatchList(keys.isMovie()
                                   ? _data as Movie
                                   : _data as Show);
                         },
                         icon: Icon(
-                          isAdded ? Icons.check_circle : Icons.add_circle,
+                          isMovieAdded || isShowAdded ? Icons.check_circle : Icons.add_circle,
                           size: 35,
                         ),
                       );

@@ -66,8 +66,8 @@ class MainScreen extends StatelessWidget {
   }
 }
 
-class Show extends StatelessWidget {
-  const Show({Key? key}) : super(key: key);
+class TvShow extends StatelessWidget {
+  const TvShow({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
