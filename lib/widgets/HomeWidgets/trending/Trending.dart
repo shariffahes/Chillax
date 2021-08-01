@@ -18,11 +18,9 @@ class Trending extends StatefulWidget {
 
 class _TrendingState extends State<Trending> {
   Map<int, List<Data>> _itemsData = {
-    0: [
-      Movie(0, '-', '-', '-', 0, '-', ['-'], '-', 0)
-    ],
+    0: [Movie(0, '-', '-', '-', 0, '-', [], '-', '-', 0)],
     1: [
-      Show(0, '-', '-', '-', 0, '-', ['-'], '-', '-', 0, '-', 0),
+      Show(0, '-', '-', '-', 0, '-', ['-'], '-', '-', '-', 0, '-', 0),
     ]
   };
 
@@ -107,7 +105,7 @@ class InfoRow extends StatelessWidget {
           (_list.isNotEmpty ? _list[ind].rate : '-'),
         ),
         icons(Icons.calendar_today_outlined,
-            (_list.isNotEmpty ? _list[ind].releaseDate.toString() : '-')),
+            (_list.isNotEmpty ? _list[ind].yearOfRelease.toString() : '-')),
         icons(
             Icons.timer_outlined, _list.isNotEmpty ? duration.toString() : '-'),
         icons(

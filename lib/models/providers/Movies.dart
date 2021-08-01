@@ -15,13 +15,26 @@ class Data {
   late final String name;
   late final String overview;
   late final String rate;
-  late final int releaseDate;
+  late final int yearOfRelease;
   late final String language;
   late final List<String> genre;
   late final String certification;
+  late final String releasedDate;
 
-  Data(this.id, this.name, this.overview, this.rate, this.releaseDate,
-      this.language, this.genre, this.certification);
+  Data(this.id, this.name, this.overview, this.rate, this.yearOfRelease,
+      this.language, this.genre, this.certification, this.releasedDate);
+  Data.compressed(
+    this.id,
+    this.name,
+    this.releasedDate,
+  ) {
+    overview = '-';
+    rate = '-';
+    yearOfRelease = 0;
+    language = '-';
+    genre = [];
+    certification = '-';
+  }
 
   String genreToString() {
     return genre.join(", ");
@@ -44,10 +57,19 @@ class Movie extends Data {
   //   this.certification = list['certification'] as String;
   // }
 
-  Movie(int id, String name, String overview, String rate, int releaseDate,
-      String language, List<String> genre, String certification, this.duration)
-      : super(id, name, overview, rate, releaseDate, language, genre,
-            certification);
+  Movie(
+    int id,
+    String name,
+    String overview,
+    String rate,
+    int yearOfRelease,
+    String language,
+    List<String> genre,
+    String certification,
+    String releasedDate,
+    this.duration,
+  ) : super(id, name, overview, rate, yearOfRelease, language, genre,
+            certification, releasedDate);
 
   // Map<String, Object> toMap() {
   //   return {
@@ -77,16 +99,17 @@ class Show extends Data {
     String name,
     String overview,
     String rate,
-    int releaseDate,
+    int yearOfRelease,
     String language,
     List<String> genre,
     String certification,
+    String releasedDate,
     this.network,
     this.runTime,
     this.status,
     this.airedEpisode,
-  ) : super(id, name, overview, rate, releaseDate, language, genre,
-            certification);
+  ) : super(id, name, overview, rate, yearOfRelease, language, genre,
+            certification, releasedDate);
 }
 
 class Episode {
@@ -102,6 +125,7 @@ class DataProvider with ChangeNotifier {
   Map<MovieTypes, List<Movie>> _movies = {};
   Map<TvTypes, List<Show>> _tvShows = {};
   Map<int, Map<int, List<Episode>>> _seriesEpisodes = {};
+  Map<DateTime, List<Data>> schedule = {};
   List<List<int>> currentPage = [
     MovieTypes.values.map((e) => 1).toList(),
     TvTypes.values.map((e) => 1).toList()
@@ -197,7 +221,7 @@ class DataProvider with ChangeNotifier {
 
       final lan = info['language'] ?? '-';
       final certification = info['certification'] ?? '-';
-      final int releaseDate = info['year'] ?? 0;
+      final int year = info['year'] ?? 0;
 
       final List<dynamic> extractedGenres = info['genres'] ?? ['-'];
       int maxRange = extractedGenres.length > 3 ? 3 : extractedGenres.length;
@@ -206,15 +230,18 @@ class DataProvider with ChangeNotifier {
 
       if (keys.isMovie()) {
         final duration = info['runtime'] ?? 0;
+        final releasedDate = info['released'] ?? '-';
+
         itemsInfo.add(Movie(
           id,
           title,
           overview,
           rate,
-          releaseDate,
+          year,
           lan,
           genres,
           certification,
+          releasedDate,
           duration,
         ));
       } else {
@@ -223,16 +250,18 @@ class DataProvider with ChangeNotifier {
         final network = info['network'] ?? '-';
         final status = info['status'] ?? '-';
         final airedEpisode = info['aired_episodes'] ?? 0;
+        final releasedDate = info['first_aired'] ?? '-';
 
         itemsInfo.add(Show(
           id,
           title,
           overview,
           rate,
-          releaseDate,
+          year,
           lan,
           genres,
           certification,
+          releasedDate,
           network,
           runtime,
           status,
@@ -427,12 +456,10 @@ class DataProvider with ChangeNotifier {
     }
     _seriesEpisodes[id] = info;
 
-
     return this;
   }
 
   Episode? getEpisodeInfo(int id, int season, int episode, BuildContext ctx) {
-
     Provider.of<User>(ctx, listen: false).updateNext(id, season, episode + 1);
     episode = episode - 1;
     if (_seriesEpisodes[id] == null) return null;
@@ -442,5 +469,42 @@ class DataProvider with ChangeNotifier {
       return getEpisodeInfo(id, season + 1, 1, ctx);
 
     return _seriesEpisodes[id]![season]![episode];
+  }
+
+  Future<Map<DateTime, List<Data>>> getScheduleFor(
+      String date, BuildContext ctx) async {
+    final dateT = DateTime.parse(date);
+
+    if (schedule[dateT] != null) return schedule;
+    print('fetch');
+    final label = keys.isMovie() ? 'movies' : 'shows';
+    final url =
+        'https://api.trakt.tv/calendars/all/$label/$date/7?extended=full';
+
+    final response = await _fetchData(url);
+    final decodedData = response as List<dynamic>;
+    Map<DateTime, List<Data>> list = {};
+
+    if (keys.isMovie()) {
+      decodedData.forEach(
+        (element) {
+          final dateOfRelease = element['released'] ?? date;
+          final title = element['movie']['title'] ?? '-';
+          final id = element['movie']['ids']['trakt'] ?? 0;
+          final tmdbId = element['movie']['ids']['tmdb'] ?? -1;
+          Provider.of<PhotoProvider>(ctx, listen: false)
+              .fetchImagesFor(tmdbId, id, keys.dataType);
+          final dateTime = DateTime.parse(dateOfRelease);
+          if (schedule[dateTime] == null) {
+            schedule[dateTime] = [Data.compressed(id, title, dateOfRelease)];
+          } else {
+            schedule[dateTime]!.add(Data.compressed(id, title, dateOfRelease));
+          }
+        },
+      );
+      print(schedule);
+    } else {}
+
+    return schedule;
   }
 }

@@ -45,6 +45,7 @@ class PhotoProvider with ChangeNotifier {
       _peopleProfiles[id] = images;
     } else if (type == DataType.movie) {
       _moviesImage[id] = images;
+      print(images);
     } else if (type == DataType.tvShow) {
       _showsImage[id] = images;
     }

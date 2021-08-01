@@ -124,7 +124,7 @@ class InfoColumn extends StatelessWidget {
           Flexible(
             child: Row(
               children: [
-                Text(_data.releaseDate.toString()),
+                Text(_data.yearOfRelease.toString()),
                 SizedBox(
                   width: 7,
                 ),

@@ -1,6 +1,3 @@
-import 'package:discuss_it/models/Enums.dart';
-import 'package:discuss_it/models/keys.dart';
-
 import '../screens/home_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/schedule_screen.dart';
@@ -49,10 +46,10 @@ class TabsScreenState extends State<TabsScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          elevation: 10,
+          elevation: _index == 3 ? 0 : 10,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(66),
+            bottomLeft: Radius.circular(_index == 3 ? 0 : 66),
           )),
           toolbarHeight: 100,
           bottom: TabBar(
