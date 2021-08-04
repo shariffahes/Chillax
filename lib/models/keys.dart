@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:http/http.dart' as http;
 
+// a static class used to get useful info such as api key and urls
+//helps in preventing repition
 class keys {
   static DataType dataType = DataType.movie;
   static List<String> genres = [

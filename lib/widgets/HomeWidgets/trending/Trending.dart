@@ -18,9 +18,9 @@ class Trending extends StatefulWidget {
 
 class _TrendingState extends State<Trending> {
   Map<int, List<Data>> _itemsData = {
-    0: [Movie(0, '-', '-', '-', 0, '-', [], '-', '-', 0)],
+    0: [Movie(0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', 0)],
     1: [
-      Show(0, '-', '-', '-', 0, '-', ['-'], '-', '-', '-', 0, '-', 0),
+      Show(0, '-', '-', '-', 0, '-', ['-'], '-', '-', '-', '-', '-', 0, '-', 0),
     ]
   };
 
@@ -165,9 +165,6 @@ class ViewCards extends StatelessWidget {
               Navigator.of(context)
                   .pushNamed(PreviewItem.route, arguments: list[index]);
             },
-            // onHorizontalDragEnd: (details) {
-
-            // },
             onPanUpdate: (details) {
               if (details.delta.dx > 0)
                 _scrollToIndex((index - 1) == 0 ? list.length - 1 : index - 1);
@@ -214,6 +211,56 @@ class ViewCards extends StatelessWidget {
         ),
         itemCount: list.length,
       ),
+    );
+  }
+}
+
+class LoadingSkeleton extends StatefulWidget {
+  final Widget child;
+  LoadingSkeleton(this.child);
+  @override
+  _LoadingSkeletonState createState() => _LoadingSkeletonState();
+}
+
+class _LoadingSkeletonState extends State<LoadingSkeleton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1))
+          ..repeat();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.child,
+        Positioned.fill(
+            child: ClipRRect(
+          child: AnimatedBuilder(
+            animation: controller,
+            builder: (ctx, child) => FractionallySizedBox(
+              widthFactor: 2,
+              alignment: AlignmentGeometryTween(
+                      begin: Alignment(-1 - 0.2 * 3, 0),
+                      end: Alignment(1.0 + 0.2 * 3, 0))
+                  .chain(CurveTween(curve: Curves.easeOut))
+                  .evaluate(controller)!,
+              child: child,
+            ),
+            child: const DecoratedBox(
+                decoration: const BoxDecoration(
+              gradient: const LinearGradient(
+                colors: const [Color.fromARGB(0, 255, 255, 255), Colors.white],
+              ),
+            )),
+          ),
+        ))
+      ],
     );
   }
 }

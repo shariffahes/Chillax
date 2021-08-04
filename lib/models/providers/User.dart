@@ -92,7 +92,7 @@ class User with ChangeNotifier {
   }
 
   bool isShowAdded(int id) {
-    return _tvWatchList[id] != null || _tvWatched[id] != null ;
+    return _tvWatchList[id] != null || _tvWatched[id] != null;
   }
 
   void watchComplete(int id) {
@@ -167,5 +167,14 @@ class User with ChangeNotifier {
       track[id]!.nextSeason = season;
       track[id]!.nextEp = episode;
     }
+  }
+
+  Map<int, Data> WatchingtoMap() {
+    Map<int, Data> map = {};
+
+    _watching.forEach((element) {
+      map[element.id] = element;
+    });
+    return map;
   }
 }

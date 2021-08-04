@@ -4,7 +4,7 @@ enum MovieTypes {
   search,
   trending,
   popular,
-  upcoming,
+  recommended,
 }
 
 extension ParseToStringType on MovieTypes {

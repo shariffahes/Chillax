@@ -11,7 +11,7 @@ class TabsScreen extends StatefulWidget {
 }
 
 class TabsScreenState extends State<TabsScreen> {
-  int _index = 2;
+  int _index = 1;
   late List<Map<String, Object>> tabBarWidgets;
 
   @override
@@ -21,15 +21,20 @@ class TabsScreenState extends State<TabsScreen> {
     tabBarWidgets = [
       {
         'page': WatchListScreen(),
-        'title': 'Watch List',
       },
-      {'page': SearchScreen(), 'title': 'Discover'},
-      {'page': HomeScreen(), 'title': 'Main Home'},
+      // {
+      //   'page': SearchScreen(),
+      // },
+      {
+        'page': HomeScreen(),
+      },
       {
         'page': UpcomingScreen(),
-        'title': 'Upcoming',
+        
       },
-      {'page': ProfileScreen(), 'title': 'My Profile'},
+      {
+        'page': ProfileScreen(),
+      },
     ];
   }
 
@@ -46,13 +51,13 @@ class TabsScreenState extends State<TabsScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          elevation: _index == 3 ? 0 : 10,
+          elevation: _index == 2 ? 0 : 10,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(_index == 3 ? 0 : 66),
+            bottomLeft: Radius.circular(_index == 2 ? 0 : 66),
           )),
           toolbarHeight: 100,
-          bottom: TabBar(
+          bottom: _index == 3 ? null : TabBar(
             labelColor: Colors.white,
             tabs: [
               Tab(
@@ -65,6 +70,7 @@ class TabsScreenState extends State<TabsScreen> {
               )
             ],
           ),
+       
         ),
         bottomNavigationBar: BottomNavigationBar(
           selectedItemColor: Colors.red,
@@ -76,10 +82,10 @@ class TabsScreenState extends State<TabsScreen> {
               icon: Icon(Icons.tv),
               label: 'WatchList',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Search',
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.search),
+            //   label: 'Search',
+            // ),
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: 'Home',

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SearchWidget extends StatelessWidget {
+  //used to clear text after search finish
   final _fieldController = TextEditingController();
 
   @override
@@ -31,6 +32,7 @@ class SearchWidget extends StatelessWidget {
                   keys.isMovie() ? MovieTypes.search : TvTypes.search,
               'text': input,
             }).then((v) {
+              //clear the array that holds search results when done
               Provider.of<DataProvider>(context, listen: false)
                   .clearMovieCache(MovieTypes.search);
             });

@@ -20,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
   }
 
+  //Prepare the home screen main titles
   final List<MovieTypes> listOfMovieTitles =
       MovieTypes.values.skip(keys.mainList).toList();
   final List<TvTypes> listOfShowTitles =
@@ -63,17 +64,6 @@ class MainScreen extends StatelessWidget {
           return Type(null, e as TvTypes);
         }).toList(),
       ]),
-    );
-  }
-}
-
-class TvShow extends StatelessWidget {
-  const TvShow({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Text('tt'),
     );
   }
 }

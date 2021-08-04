@@ -23,71 +23,84 @@ class _PosterListState extends State<PosterList> {
       scrollDirection: Axis.horizontal,
       children: widget._items
           .map(
-            (item) => Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context)
-                          .pushNamed(PreviewItem.route, arguments: item);
-                    },
-                    child: Container(
-                      height: 230,
-                      child: Stack(
-                        children: [
-                          ImagePoster(item.id),
-                          Consumer<User>(
-                            builder: (ctx, user, _) {
-                              bool isMovieAdded = user.isMovieAdded(item.id);
-                              bool isShowAdded = user.isShowAdded(item.id);
-
-                              return IconButton(
-                                alignment: AlignmentDirectional.topStart,
-                                padding: EdgeInsets.zero,
-                                onPressed: () {
-                                  final isMovieAdded =
-                                      user.isMovieAdded(item.id);
-                                  final isShowAdded = user.isShowAdded(item.id);
-
-                                  isMovieAdded || isShowAdded
-                                      ? user.removeFromList(item.id)
-                                      : user.addToWatchList(item);
-                                },
-                                icon: Icon(
-                                  isShowAdded || isMovieAdded
-                                      ? Icons.check_circle
-                                      : Icons.add_circle_rounded,
-                                  size: 35,
-                                  color: Colors.amber,
-                                ),
-                              );
-                            },
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 140,
-                    height: 60,
-                    padding: const EdgeInsets.only(top: 10, bottom: 2),
-                    child: Text(
-                      item.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Universal.rateContainer(item.rate),
-                ],
-              ),
+            (item) => PosterItem(
+              item,
+              Universal.footerContainer(item.rate,Icons.star),
             ),
           )
           .toList(),
+    );
+  }
+}
+
+class PosterItem extends StatelessWidget {
+  final Data _data;
+  final Widget footer;
+  const PosterItem(this._data, this.footer);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context)
+                  .pushNamed(PreviewItem.route, arguments: _data);
+            },
+            child: Container(
+              height: 230,
+              child: Stack(
+                children: [
+                  ImagePoster(_data.id),
+                  Consumer<User>(
+                    builder: (ctx, user, _) {
+                      bool isMovieAdded = user.isMovieAdded(_data.id);
+                      bool isShowAdded = user.isShowAdded(_data.id);
+
+                      return IconButton(
+                        alignment: AlignmentDirectional.topStart,
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          final isMovieAdded = user.isMovieAdded(_data.id);
+                          final isShowAdded = user.isShowAdded(_data.id);
+
+                          isMovieAdded || isShowAdded
+                              ? user.removeFromList(_data.id)
+                              : user.addToWatchList(_data);
+                        },
+                        icon: Icon(
+                          isShowAdded || isMovieAdded
+                              ? Icons.check_circle
+                              : Icons.add_circle_rounded,
+                          size: 35,
+                          color: Colors.amber,
+                        ),
+                      );
+                    },
+                  )
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: 140,
+            height: 60,
+            padding: const EdgeInsets.only(top: 10, bottom: 2),
+            child: Text(
+              _data.name,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          footer,
+        ],
+      ),
     );
   }
 }

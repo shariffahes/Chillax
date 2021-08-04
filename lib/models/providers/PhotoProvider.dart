@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class PhotoProvider with ChangeNotifier {
+  //images are stored in a map.
+  //this makes the get faster when you have id.
+  //data might grow big
   Map<int, List<String>> _moviesImage = {};
   Map<int, List<String>> _showsImage = {};
   Map<int, List<String>> _peopleProfiles = {};
@@ -34,13 +37,15 @@ class PhotoProvider with ChangeNotifier {
   }
 
   void fetchImagesFor(int tmdbId, int id, DataType type) async {
-    print('tmdb: $tmdbId');
+    //prepare the url
+    //check if we are fetching people, shows, or movies.
     final url = Uri.parse(
         'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
     final response = await http.get(url);
     final decodedData = json.decode(response.body);
 
     final List<String> images = _extractData(decodedData, type);
+
     if (type == DataType.person) {
       _peopleProfiles[id] = images;
     } else if (type == DataType.movie) {
@@ -55,7 +60,8 @@ class PhotoProvider with ChangeNotifier {
 
   List<String> _extractData(dynamic response, DataType type) {
     List<String> _images = [];
-
+//fill data according to the type in its right map
+//each has a default image if the images are not avaible
     switch (type) {
       case DataType.person:
         final profiles = response['profiles'] ?? {};

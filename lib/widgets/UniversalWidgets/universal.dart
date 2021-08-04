@@ -15,7 +15,7 @@ class Universal {
     return Center(child: Text('Failed'));
   }
 
-  static Widget rateContainer(String rate) {
+  static Widget footerContainer(String content,IconData icon) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,7 +30,7 @@ class Universal {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.star,
+                icon,
                 color: Colors.amber,
                 size: 20,
               ),
@@ -38,7 +38,7 @@ class Universal {
                 width: 4,
               ),
               Text(
-                rate.toString(),
+                content,
                 style: TextStyle(
                   color: Colors.white,
                 ),

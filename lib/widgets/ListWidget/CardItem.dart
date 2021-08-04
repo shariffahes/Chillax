@@ -111,7 +111,9 @@ class InfoColumn extends StatelessWidget {
                                   : _data as Show);
                         },
                         icon: Icon(
-                          isMovieAdded || isShowAdded ? Icons.check_circle : Icons.add_circle,
+                          isMovieAdded || isShowAdded
+                              ? Icons.check_circle
+                              : Icons.add_circle,
                           size: 35,
                         ),
                       );
@@ -130,7 +132,7 @@ class InfoColumn extends StatelessWidget {
           SizedBox(
             height: 3,
           ),
-          Universal.rateContainer(_data.rate),
+          Universal.footerContainer(_data.rate, Icons.star),
           SizedBox(
             height: 2,
           ),
