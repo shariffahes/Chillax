@@ -15,7 +15,7 @@ class Universal {
     return Center(child: Text('Failed'));
   }
 
-  static Widget footerContainer(String content,IconData icon) {
+  static Widget footerContainer(String content, IconData icon) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,4 +50,20 @@ class Universal {
     );
   }
 
+  static Widget genreContainer(String content) {
+    return Card(
+      elevation: 5,
+      margin: const EdgeInsets.all(8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Text(
+          content,
+          style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey),
+        ),
+      ),
+    );
+  }
 }

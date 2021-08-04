@@ -3,6 +3,7 @@ import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/People.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
+import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -136,7 +137,9 @@ class InfoColumn extends StatelessWidget {
                   width: 7,
                 ),
                 Text(
-                  (' mins'),
+                  (keys.isMovie()
+                      ? (_data as Movie).duration.toString() + ' mins'
+                      : (_data as Show).runTime.toString() + 'mins'),
                 ),
               ],
             ),
@@ -148,23 +151,10 @@ class InfoColumn extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: _data.genre.map(
               (e) {
-                return Card(
-                  elevation: 5,
-                  margin: const EdgeInsets.all(8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Text(
-                      e,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500, color: Colors.grey),
-                    ),
-                  ),
-                );
+                return Universal.genreContainer(e);
               },
             ).toList(),
+            
           ),
           Divider(
             thickness: 2,
@@ -184,25 +174,68 @@ class InfoColumn extends StatelessWidget {
             "Cast",
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Container(
-              height: 200,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: _cast
-                    .map((e) => AspectRatio(
-                          aspectRatio: 3 / 4,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ActorItem(e.name, e.id, e.character),
-                          ),
-                        ))
-                    .toList(),
-              ),
-            ),
+          PreviewList(_cast, null, true),
+          Divider(
+            thickness: 2,
           ),
+          Text(
+            "Similar",
+            style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
+          ),
+          FutureBuilder<List<Data>>(
+              future: Provider.of<DataProvider>(context, listen: false)
+                  .fetchDataBy(context, id: _data.id),
+              builder: (ctx, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting)
+                  return Universal.loadingWidget();
+                if (snapshot.hasError) return Universal.failedWidget();
+                return PreviewList(null, snapshot.data, false);
+              }),
         ],
+      ),
+    );
+  }
+}
+
+class PreviewList extends StatelessWidget {
+  PreviewList(this._cast, this._data, this.isCast);
+
+  final List<People>? _cast;
+  final List<Data>? _data;
+  bool isCast;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        height: 200,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: isCast
+              ? _cast!
+                  .map((e) => AspectRatio(
+                        aspectRatio: 3 / 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ActorItem(
+                            e,
+                            null,
+                            true,
+                          ),
+                        ),
+                      ))
+                  .toList()
+              : _data!
+                  .map((e) => AspectRatio(
+                        aspectRatio: 3 / 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ActorItem(null, e, false),
+                        ),
+                      ))
+                  .toList(),
+        ),
       ),
     );
   }
@@ -282,10 +315,14 @@ class CustomAppBar extends StatelessWidget {
 }
 
 class ActorItem extends StatelessWidget {
-  final String name;
-  final int id;
-  final List<String> char;
-  const ActorItem(this.name, this.id, this.char);
+  final bool isCast;
+  final People? _cast;
+  final Data? _data;
+  ActorItem(
+    this._cast,
+    this._data,
+    this.isCast,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +334,13 @@ class ActorItem extends StatelessWidget {
       child: GridTile(
         child: Consumer<PhotoProvider>(
           builder: (ctx, image, _) {
-            final profile = image.getPersonProfiles(id) ?? [keys.defaultImage];
+            var profile = [keys.defaultImage];
+            if (isCast)
+              profile = image.getPersonProfiles(_cast!.id) ?? profile;
+            else
+              profile = keys.isMovie()
+                  ? image.getMovieImages(_data!.id) ?? profile
+                  : image.getShowImages(_data!.id) ?? profile;
 
             return Image.network(
               profile[0],
@@ -307,17 +350,36 @@ class ActorItem extends StatelessWidget {
         ),
         footer: Container(
           height: 100,
-          color: Colors.black54,
           child: Stack(
             children: [
-              GridTileBar(
-                title: Text(name),
-                subtitle: Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children:
-                        char.map((e) => Expanded(child: Text(e))).toList(),
-                  ),
+              Container(
+                width: double.infinity,
+                color: Colors.black45,
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _data?.name ?? _cast!.name,
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                    SizedBox(
+                      height: 4,
+                    ),
+                    if (isCast)
+                      ..._cast!.character
+                          .map((e) => Expanded(
+                                child: Text(
+                                  e,
+                                  style: TextStyle(
+                                      color: Colors.white.withAlpha(240)),
+                                ),
+                              ))
+                          .toList()
+                  ],
                 ),
               ),
               Positioned(
@@ -326,7 +388,11 @@ class ActorItem extends StatelessWidget {
                   right: 0,
                   child: ElevatedButton(
                     child: Text('View more'),
-                    onPressed: () {},
+                    onPressed: () {
+                      if (!isCast)
+                        Navigator.of(context)
+                            .pushNamed(PreviewItem.route, arguments: _data);
+                    },
                   ))
             ],
           ),

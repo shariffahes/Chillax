@@ -198,13 +198,17 @@ class DataProvider with ChangeNotifier {
   }
 
 //this method is called when user need to get specific genres
-  Future<List<Data>> fetchDataBy(String genre, BuildContext ctx) async {
+  Future<List<Data>> fetchDataBy(BuildContext ctx,
+      {int? id, String? genre}) async {
     //each time you open a genre, it will be reset to first page
     //movies and shows data are always cleared from the map when we move
     //to the next genre
     currentPage[keys.dataType.index][MovieTypes.genre.index] = 1;
+    MovieTypes movieType =
+        genre == null ? MovieTypes.similar : MovieTypes.genre;
+    TvTypes tvType = genre == null ? TvTypes.similar : TvTypes.genre;
 
-    final url = _prepareURL(MovieTypes.genre, TvTypes.genre, genre: genre);
+    final url = _prepareURL(movieType, tvType, genre: genre, id: id);
 
     final decodedData = await _fetchData(url);
 
@@ -317,7 +321,7 @@ class DataProvider with ChangeNotifier {
 
 //it will prepare a url based on data type orif it is genre or search
   String _prepareURL(MovieTypes? movie, TvTypes? tv,
-      {page = 1, String? genre, String? searchName}) {
+      {page = 1, String? genre, String? searchName, int? id}) {
     String stringURL;
     if (keys.dataType == DataType.movie) {
       switch (movie) {
@@ -328,6 +332,9 @@ class DataProvider with ChangeNotifier {
         case MovieTypes.search:
           stringURL =
               "${keys.baseURL}search/movie?query=$searchName&extended=full&page=$page";
+          break;
+        case MovieTypes.similar:
+          stringURL = '${keys.baseURL}movies/$id/related?extended=full';
           break;
         default:
           stringURL =
@@ -353,6 +360,9 @@ class DataProvider with ChangeNotifier {
           stringURL =
               "${keys.baseURL}search/show?query=$searchName&extended=full&page=$page";
           break;
+        case TvTypes.similar:
+          stringURL = '${keys.baseURL}shows/$id/related?extended=full';
+          break;
         default:
           stringURL =
               "${keys.baseURL}shows/${tv!.toShortString()}?extended=full&page=$page&limit${15}";
@@ -366,7 +376,7 @@ class DataProvider with ChangeNotifier {
 //responsible to get the json data from trakt
   Future<dynamic> _fetchData(String url) async {
     final parsedURL = Uri.parse(url);
-    print('fetch');
+
     try {
       final response = await http.get(
         parsedURL,
@@ -376,7 +386,7 @@ class DataProvider with ChangeNotifier {
           'trakt-api-key': keys.apiKey,
         },
       );
-
+      print(response.request);
       return json.decode(response.body);
     } catch (error) {
       throw HttpException(error.toString());
@@ -417,7 +427,7 @@ class DataProvider with ChangeNotifier {
 //when preview page is opened. you fetch the cast by this method
   Future<List<People>> fetchCast(int id, BuildContext ctx) async {
     final label = keys.isMovie() ? 'movies' : 'shows';
-    final stringURL = keys.baseURL + "$label/$id/people?api_key=${keys.apiKey}";
+    final stringURL = keys.baseURL + "$label/$id/people";
 
     final decodedData = await _fetchData(stringURL);
 
@@ -546,78 +556,50 @@ class DataProvider with ChangeNotifier {
     }
 
     final label = keys.isMovie() ? 'movies' : 'shows';
-    final url = 'https://api.trakt.tv/calendars/all/$label/$date/1';
+    final url =
+        'https://api.trakt.tv/calendars/all/$label/$date/1?extended=full';
 
-    final response = await _fetchData(url);
-    final decodedData = response as List<dynamic>;
+    final response = await _fetchData(url) as List<dynamic>;
 
-    decodedData.forEach(
-      (element) {
-        if (keys.isMovie()) {
-          final dateOfRelease = element['released'] ?? date;
-          final title = element['movie']['title'] ?? '-';
-          final id = element['movie']['ids']['trakt'] ?? 0;
-          final bool isFirst =
-              Provider.of<User>(ctx, listen: false).movieWatchList['id'] !=
-                  null;
-          final tmdbId = element['movie']['ids']['tmdb'] ?? -1;
-          if (tmdbId != -1)
-            Provider.of<PhotoProvider>(ctx, listen: false)
-                .fetchImagesFor(tmdbId, id, keys.dataType);
-          Data data = Data.compressed(id, title, dateOfRelease);
-          if (schedule[ind][dateOfRelease] == null) {
-            schedule[ind][dateOfRelease] = [data];
-          } else {
-            schedule[ind][dateOfRelease]!.add(data);
-          }
-          if (isFirst) {
-            if (_mySchedule[ind][dateOfRelease] == null)
-              _mySchedule[ind][dateOfRelease] = [data];
-            else
-              _mySchedule[ind][dateOfRelease]!.add(data);
-          }
-        } else {
-          final String firstAired = element['first_aired'];
-          final title = element['show']['title'] ?? '-';
-          final id = element['show']['ids']['trakt'] ?? 0;
-          final tmdbId = element['show']['ids']['tmdb'] ?? -1;
-          print(tmdbId);
-          if (tmdbId != -1)
-            Provider.of<PhotoProvider>(ctx, listen: false)
-                .fetchImagesFor(tmdbId, id, keys.dataType);
+    final decodedData = _extractData(response, ctx);
 
-          final dateOfRelease = firstAired.split('T').first;
-          final user = Provider.of<User>(ctx, listen: false);
-          Map<int, Data> watchingMap = {};
+    decodedData.forEach((element) {
+      String dateOfRelease = element.releasedDate;
 
-          //loop just one time on watching.
-          //this helps by decreasing the number of looping each time we want
-          //to check if the show is currently watching or not
-          if (watchingMap.isEmpty) watchingMap = user.WatchingtoMap();
+      final id = element.id;
+      bool isFirst = false;
+      if (keys.isMovie()) {
+        isFirst =
+            Provider.of<User>(ctx, listen: false).movieWatchList[id] != null;
+      } else {
+        dateOfRelease = dateOfRelease.split('T').first;
 
-          //if the show has been watched, in the watching list, or currently watching
-          //turn is First to true which will notify that this show should be in my schedule
-          final isFirst = user.showWatchList[id] != null ||
-              user.watchedShows[id] != null ||
-              watchingMap[id] != null;
+        final user = Provider.of<User>(ctx, listen: false);
+        Map<int, Data> watchingMap = {};
+        //loop just one time on watching.
+        //this helps by decreasing the number of looping each time we want
+        //to check if the show is currently watching or not
+        if (watchingMap.isEmpty) watchingMap = user.WatchingtoMap();
 
-          Data data = Data.compressed(id, title, firstAired);
-          if (schedule[ind][dateOfRelease] == null) {
-            schedule[ind]
-                [dateOfRelease] = [Data.compressed(id, title, firstAired)];
-          } else {
-            schedule[ind][dateOfRelease]!
-                .add(Data.compressed(id, title, firstAired));
-          }
-          if (isFirst) {
-            if (_mySchedule[ind][dateOfRelease] == null)
-              _mySchedule[ind][dateOfRelease] = [data];
-            else
-              _mySchedule[ind][dateOfRelease]!.add(data);
-          }
-        }
-      },
-    );
+        //if the show has been watched, in the watching list, or currently watching
+        //turn is First to true which will notify that this show should be in my schedule
+        isFirst = user.showWatchList[id] != null ||
+            user.watchedShows[id] != null ||
+            watchingMap[id] != null;
+      }
+
+      if (schedule[ind][dateOfRelease] == null) {
+        schedule[ind][dateOfRelease] = [element];
+      } else {
+        schedule[ind][dateOfRelease]!.add(element);
+      }
+      if (isFirst) {
+        if (_mySchedule[ind][dateOfRelease] == null)
+          _mySchedule[ind][dateOfRelease] = [element];
+        else
+          _mySchedule[ind][dateOfRelease]!.add(element);
+      }
+    });
 
     return isAll ? schedule[ind][date]! : (_mySchedule[ind][date] ?? []);
   }

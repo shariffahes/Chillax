@@ -37,7 +37,7 @@ class ListAll extends StatelessWidget {
 
     Future<List<Data>> _fetchData() async {
       if (genre != null)
-        return _dataProvider.fetchDataBy(genre, context);
+        return _dataProvider.fetchDataBy(context,genre: genre);
       else
         return _dataProvider.searchFor(searchText!, context);
     }
