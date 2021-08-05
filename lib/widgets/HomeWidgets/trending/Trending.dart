@@ -17,10 +17,10 @@ class Trending extends StatefulWidget {
 }
 
 class _TrendingState extends State<Trending> {
-  Map<int, List<Data>> _itemsData = {
-    0: [Movie(0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', 0)],
+  Map<int, List<int>> _itemsData = {
+    0: [-1],
     1: [
-      Show(0, '-', '-', '-', 0, '-', ['-'], '-', '-', '-', '-', '-', 0, '-', 0),
+      -1,
     ]
   };
 
@@ -83,7 +83,7 @@ class _TrendingState extends State<Trending> {
 }
 
 class InfoRow extends StatelessWidget {
-  final List<Data> _list;
+  final List<int> _list;
   final int ind;
 
   const InfoRow(
@@ -93,24 +93,25 @@ class InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var duration = keys.isMovie()
-        ? (_list.cast<Movie>())[ind].duration
-        : (_list.cast<Show>())[ind].runTime;
+    Data data = DataProvider.dataDB[_list[ind]] ?? keys.defaultData;
+
+    var duration =
+        keys.isMovie() ? (data as Movie).duration : (data as Show).runTime;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         icons(
           Icons.star_outline,
-          (_list.isNotEmpty ? _list[ind].rate : '-'),
+          (_list.isNotEmpty ? data.rate : '-'),
         ),
         icons(Icons.calendar_today_outlined,
-            (_list.isNotEmpty ? _list[ind].yearOfRelease.toString() : '-')),
+            (_list.isNotEmpty ? data.yearOfRelease.toString() : '-')),
         icons(
             Icons.timer_outlined, _list.isNotEmpty ? duration.toString() : '-'),
         icons(
           Icons.language,
-          (_list.isNotEmpty ? _list[ind].language : '-'),
+          (_list.isNotEmpty ? data.language : '-'),
         ),
       ],
     );
@@ -141,7 +142,7 @@ class icons extends StatelessWidget {
 class ViewCards extends StatelessWidget {
   final AutoScrollController _controller;
   final Function(int ind) _scrollToIndex;
-  List<Data> list;
+  List<int> list;
   ViewCards(
     this._controller,
     this._scrollToIndex,
@@ -156,59 +157,67 @@ class ViewCards extends StatelessWidget {
         physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
         controller: _controller,
         scrollDirection: Axis.horizontal,
-        itemBuilder: (_, index) => AutoScrollTag(
-          key: ValueKey(index),
-          controller: _controller,
-          index: index,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.of(context)
-                  .pushNamed(PreviewItem.route, arguments: list[index]);
-            },
-            onPanUpdate: (details) {
-              if (details.delta.dx > 0)
-                _scrollToIndex((index - 1) == 0 ? list.length - 1 : index - 1);
-              else
-                _scrollToIndex((index + 1) % list.length);
-            },
-            child: Consumer<PhotoProvider>(
-              builder: (ctx, image, child) {
-                List<String> backdrop = [keys.defaultImage, keys.defaultImage];
-                if (keys.isMovie())
-                  backdrop = image.getMovieImages(list[index].id) ?? backdrop;
-                else {
-                  backdrop = image.getShowImages(list[index].id) ?? backdrop;
-                }
-
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(
-                      12.0,
-                    ),
-                    image: DecorationImage(
-                      image: NetworkImage(backdrop[1]),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  margin: const EdgeInsets.all(5),
-                  height: 300,
-                  width: 360,
-                  child: child,
-                );
+        itemBuilder: (_, index) {
+          int id = list[index];
+          return AutoScrollTag(
+            key: ValueKey(index),
+            controller: _controller,
+            index: index,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).pushNamed(PreviewItem.route,
+                    arguments:
+                        (DataProvider.dataDB[list[index]] ?? keys.defaultData));
               },
-              child: Text(
-                list[index].name,
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  backgroundColor: Colors.white70,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              onPanUpdate: (details) {
+                if (details.delta.dx > 0)
+                  _scrollToIndex(
+                      (index - 1) == 0 ? list.length - 1 : index - 1);
+                else
+                  _scrollToIndex((index + 1) % list.length);
+              },
+              child: Consumer<PhotoProvider>(
+                builder: (ctx, image, child) {
+                  List<String> backdrop = [
+                    keys.defaultImage,
+                    keys.defaultImage
+                  ];
+                  if (keys.isMovie())
+                    backdrop = image.getMovieImages(list[index]) ?? backdrop;
+                  else {
+                    backdrop = image.getShowImages(list[index]) ?? backdrop;
+                  }
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(
+                        12.0,
+                      ),
+                      image: DecorationImage(
+                        image: NetworkImage(backdrop[1]),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    margin: const EdgeInsets.all(5),
+                    height: 300,
+                    width: 360,
+                    child: child,
+                  );
+                },
+                child: Text(
+                  DataProvider.dataDB[id]?.name ?? '-',
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    backgroundColor: Colors.white70,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
         itemCount: list.length,
       ),
     );

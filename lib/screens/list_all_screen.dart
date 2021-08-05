@@ -1,6 +1,7 @@
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/widgets/ListWidget/ListItems.dart';
+import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../models/providers/Movies.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class ListAll extends StatelessWidget {
 
     DataProvider _dataProvider =
         Provider.of<DataProvider>(context, listen: false);
-    List<Data> _data = _dataProvider.getDataBy(movieType, showType);
+    List<int> _data = _dataProvider.getDataBy(movieType, showType);
 
     Future<void> load() async {
       await _dataProvider.loadMore(movieType, showType, context,
@@ -35,9 +36,9 @@ class ListAll extends StatelessWidget {
       _controller.loadComplete();
     }
 
-    Future<List<Data>> _fetchData() async {
+    Future<List<int>> _fetchData() async {
       if (genre != null)
-        return _dataProvider.fetchDataBy(context,genre: genre);
+        return _dataProvider.fetchDataBy(context, genre: genre);
       else
         return _dataProvider.searchFor(searchText!, context);
     }
@@ -51,15 +52,13 @@ class ListAll extends StatelessWidget {
           Navigator.pop(context, 1);
           return true;
         },
-        child: FutureBuilder<List<Data>>(
+        child: FutureBuilder<List<int>>(
           future: (genre != null || searchText != null ? _fetchData() : null),
           builder: (_, snapshot) {
             if (snapshot.hasError) return Text('An error has occured :(');
 
             if (snapshot.connectionState == ConnectionState.waiting)
-              return Center(
-                child: CircularProgressIndicator(),
-              );
+              return Universal.loadingWidget();
             //_data = !snapshot.hasData ? _data : snapshot.data!.cast<Movie>();
             return Consumer<DataProvider>(
               builder: (_, prov, __) {

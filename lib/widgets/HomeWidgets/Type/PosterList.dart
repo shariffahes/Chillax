@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PosterList extends StatefulWidget {
-  final List<Data> _items;
+  final List<int> _items;
 
   PosterList(this._items);
 
@@ -21,14 +21,13 @@ class _PosterListState extends State<PosterList> {
   Widget build(BuildContext context) {
     return ListView(
       scrollDirection: Axis.horizontal,
-      children: widget._items
-          .map(
-            (item) => PosterItem(
-              item,
-              Universal.footerContainer(item.rate,Icons.star),
-            ),
-          )
-          .toList(),
+      children: widget._items.map((item) {
+        Data data = DataProvider.dataDB[item] ?? keys.defaultData;
+        return PosterItem(
+          data,
+          Universal.footerContainer(data.rate, Icons.star),
+        );
+      }).toList(),
     );
   }
 }

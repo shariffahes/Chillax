@@ -182,7 +182,7 @@ class InfoColumn extends StatelessWidget {
             "Similar",
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
-          FutureBuilder<List<Data>>(
+          FutureBuilder<List<int>>(
               future: Provider.of<DataProvider>(context, listen: false)
                   .fetchDataBy(context, id: _data.id),
               builder: (ctx, snapshot) {
@@ -201,7 +201,7 @@ class PreviewList extends StatelessWidget {
   PreviewList(this._cast, this._data, this.isCast);
 
   final List<People>? _cast;
-  final List<Data>? _data;
+  final List<int>? _data;
   bool isCast;
 
   @override
@@ -227,11 +227,11 @@ class PreviewList extends StatelessWidget {
                       ))
                   .toList()
               : _data!
-                  .map((e) => AspectRatio(
+                  .map((id) => AspectRatio(
                         aspectRatio: 3 / 4,
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: ActorItem(null, e, false),
+                          child: ActorItem(null, id, false),
                         ),
                       ))
                   .toList(),
@@ -317,15 +317,16 @@ class CustomAppBar extends StatelessWidget {
 class ActorItem extends StatelessWidget {
   final bool isCast;
   final People? _cast;
-  final Data? _data;
+  final int? id;
   ActorItem(
     this._cast,
-    this._data,
+    this.id,
     this.isCast,
   );
 
   @override
   Widget build(BuildContext context) {
+    Data data = DataProvider.dataDB[id] ?? keys.defaultData;
     return ClipRRect(
       borderRadius: BorderRadius.only(
         topRight: Radius.circular(44),
@@ -339,8 +340,8 @@ class ActorItem extends StatelessWidget {
               profile = image.getPersonProfiles(_cast!.id) ?? profile;
             else
               profile = keys.isMovie()
-                  ? image.getMovieImages(_data!.id) ?? profile
-                  : image.getShowImages(_data!.id) ?? profile;
+                  ? image.getMovieImages(data.id) ?? profile
+                  : image.getShowImages(data.id) ?? profile;
 
             return Image.network(
               profile[0],
@@ -360,7 +361,7 @@ class ActorItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _data?.name ?? _cast!.name,
+                      _cast?.name ?? data.name,
                       style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -391,7 +392,7 @@ class ActorItem extends StatelessWidget {
                     onPressed: () {
                       if (!isCast)
                         Navigator.of(context)
-                            .pushNamed(PreviewItem.route, arguments: _data);
+                            .pushNamed(PreviewItem.route, arguments: data);
                     },
                   ))
             ],

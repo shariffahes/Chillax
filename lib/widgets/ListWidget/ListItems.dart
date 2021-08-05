@@ -1,10 +1,12 @@
+import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/widgets/ListWidget/CardItem.dart';
+import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class ListItems extends StatelessWidget {
-  final List<Data> _movieList;
+  final List<int> _movieList;
   final RefreshController _controller;
   final void Function() load;
 
@@ -22,10 +24,10 @@ class ListItems extends StatelessWidget {
               body = Icon(Icons.arrow_upward);
               break;
             case LoadStatus.loading:
-              body = CircularProgressIndicator();
+              body = Universal.loadingWidget();
               break;
             case LoadStatus.failed:
-              body = Text('Failed');
+              body = Universal.failedWidget();
               break;
             default:
               body = Icon(Icons.refresh);
@@ -40,9 +42,13 @@ class ListItems extends StatelessWidget {
       controller: _controller,
       onLoading: load,
       child: ListView.builder(
-        itemBuilder: (_, index) => CardItem(
-          _movieList[index],
-        ),
+        itemBuilder: (_, index) {
+          Data data =
+              DataProvider.dataDB[_movieList[index]] ?? keys.defaultData;
+          return CardItem(
+           data,
+          );
+        },
         itemCount: _movieList.length,
       ),
     );

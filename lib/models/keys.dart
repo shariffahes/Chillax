@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:http/http.dart' as http;
 
 // a static class used to get useful info such as api key and urls
@@ -35,6 +36,13 @@ class keys {
     "Western"
   ];
   static int mainList = 4;
+  static  Data get defaultData {
+    return isMovie()
+        ? Movie(0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', 0)
+        : Show(
+            0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', '-', 0, '-', 0);
+  }
+
   static const String apiKey =
       "4b919f5ec98bd3a8ae5e4603d87a919a22dedbbbb009839540bd43eae25b68f2";
 

@@ -146,8 +146,10 @@ class Episode {
 }
 
 class DataProvider with ChangeNotifier {
-  Map<MovieTypes, List<Movie>> _movies = {};
-  Map<TvTypes, List<Show>> _tvShows = {};
+  static Map<int, Data> dataDB = {};
+  List<List<int>> _movies = List.filled(MovieTypes.values.length, []);
+  //static Map<TvTypes, List<Show>> tvShowsDB = {};
+  List<List<int>> _tvShows = List.filled(TvTypes.values.length, []);
   List<Map<String, List<Data>>> _mySchedule = [];
 
   //tracks the list of episode for the movie id
@@ -168,18 +170,20 @@ class DataProvider with ChangeNotifier {
   Future<DataProvider> fetchDataListBy(Object type, BuildContext ctx,
       {int page = 1}) async {
     if (type is MovieTypes) {
+      int ind = type.index;
       //when the movies or shows for this type is already fetched do not
       //fetch them again.
-      if (_movies[type] != null && _movies[type]!.isNotEmpty) return this;
+      if (_movies.isNotEmpty && _movies[ind].isNotEmpty) return this;
 
       MovieTypes localType = type;
       final stringURL = _prepareURL(localType, null);
       final decodedData = await _fetchData(stringURL);
 
       final data = _extractData(decodedData, ctx);
-      _movies[localType] = data.cast<Movie>();
+      _movies[ind] = data.cast<int>();
     } else if (type is TvTypes) {
-      if (_tvShows[type] != null && _tvShows[type]!.isNotEmpty) return this;
+      int ind = type.index;
+      if (_tvShows[ind].isNotEmpty) return this;
 
       TvTypes localType = type;
       final stringURL = _prepareURL(
@@ -188,7 +192,7 @@ class DataProvider with ChangeNotifier {
       );
       final decodedData = await _fetchData(stringURL);
       final data = _extractData(decodedData, ctx);
-      _tvShows[localType] = data.cast<Show>();
+      _tvShows[ind] = data.cast<int>();
     } else {
       print('invalid type');
     }
@@ -198,7 +202,7 @@ class DataProvider with ChangeNotifier {
   }
 
 //this method is called when user need to get specific genres
-  Future<List<Data>> fetchDataBy(BuildContext ctx,
+  Future<List<int>> fetchDataBy(BuildContext ctx,
       {int? id, String? genre}) async {
     //each time you open a genre, it will be reset to first page
     //movies and shows data are always cleared from the map when we move
@@ -214,37 +218,38 @@ class DataProvider with ChangeNotifier {
 
     final results = decodedData as List<dynamic>;
 
-    final List<Data> _data = _extractData(results, ctx);
+    final List<int> _data = _extractData(results, ctx);
 
     //reminder: clear data after finish
     if (keys.isMovie())
-      _movies[MovieTypes.genre] = _data.cast<Movie>();
+      _movies[MovieTypes.genre.index] = _data;
     else
-      _tvShows[TvTypes.genre] = _data.cast<Show>();
+      _tvShows[TvTypes.genre.index] = _data;
 
     return _data;
   }
 
-  List<Data> getDataBy(MovieTypes? movieType, TvTypes? showType) {
+  List<int> getDataBy(MovieTypes? movieType, TvTypes? showType) {
     if (movieType != null) {
-      if (_movies[movieType] == null) return [];
+      int ind = movieType.index;
+      if (_movies[ind].isEmpty) return [];
 
-      return [..._movies[movieType]!];
+      return [..._movies[ind]];
     } else {
-      if (_tvShows[showType] == null) return [];
+      if (_tvShows[showType!.index].isEmpty) return [];
 
-      return [..._tvShows[showType]!];
+      return [..._tvShows[showType.index]];
     }
   }
 
 //called to clear the data in the movie map
   void clearMovieCache(MovieTypes type) {
-    if (_movies[type] != null) _movies[type]!.clear();
+    if (_movies[type.index].isNotEmpty) _movies[type.index].clear();
   }
 
 //called when need to extract the data from an http request
-  List<Data> _extractData(List<dynamic> results, BuildContext ctx) {
-    List<Data> itemsInfo = [];
+  List<int> _extractData(List<dynamic> results, BuildContext ctx) {
+    List<int> itemsInfo = [];
 
     for (var item in results) {
       dynamic info;
@@ -261,8 +266,9 @@ class DataProvider with ChangeNotifier {
       //fetch the images from tmdb.
       //fetch is not sync to avoid the long wait to get the image
       //so we fetch the image and notify listeners when finished
-      Provider.of<PhotoProvider>(ctx, listen: false)
-          .fetchImagesFor(tmdbId, id, keys.dataType);
+      if (tmdbId != -1)
+        Provider.of<PhotoProvider>(ctx, listen: false)
+            .fetchImagesFor(tmdbId, id, keys.dataType);
 
       print(id);
       final title = info['title'] ?? '-';
@@ -285,9 +291,12 @@ class DataProvider with ChangeNotifier {
       if (keys.isMovie()) {
         final duration = info['runtime'] ?? 0;
         final releasedDate = info['released'] ?? '-';
+        final movie = Movie(id, title, overview, rate, year, lan, genres,
+            certification, releasedDate, homePage, trailer, duration);
+     
+        dataDB[id] = movie;
 
-        itemsInfo.add(Movie(id, title, overview, rate, year, lan, genres,
-            certification, releasedDate, homePage, trailer, duration));
+        itemsInfo.add(id);
       } else {
         final int runtime = info['runtime'] ?? 0;
         final certification = info['certification'] ?? '-';
@@ -295,24 +304,27 @@ class DataProvider with ChangeNotifier {
         final status = info['status'] ?? '-';
         final airedEpisode = info['aired_episodes'] ?? 0;
         final releasedDate = info['first_aired'] ?? '-';
+        final Show show = Show(
+            id,
+            title,
+            overview,
+            rate,
+            year,
+            lan,
+            genres,
+            certification,
+            releasedDate,
+            homePage,
+            trailer,
+            network,
+            runtime,
+            status,
+            airedEpisode);
+   
+   
+        dataDB[id] = show;
 
-        itemsInfo.add(Show(
-          id,
-          title,
-          overview,
-          rate,
-          year,
-          lan,
-          genres,
-          certification,
-          releasedDate,
-          homePage,
-          trailer,
-          network,
-          runtime,
-          status,
-          airedEpisode,
-        ));
+        itemsInfo.add(id);
       }
     }
 
@@ -386,7 +398,7 @@ class DataProvider with ChangeNotifier {
           'trakt-api-key': keys.apiKey,
         },
       );
-      print(response.request);
+
       return json.decode(response.body);
     } catch (error) {
       throw HttpException(error.toString());
@@ -414,9 +426,9 @@ class DataProvider with ChangeNotifier {
 
       final data = _extractData(results, ctx);
       if (keys.isMovie())
-        _movies[movieType]!.addAll(data.cast<Movie>());
+        _movies[movieType!.index].addAll(data.cast<int>());
       else
-        _tvShows[showType]!.addAll(data.cast<Show>());
+        _tvShows[showType!.index].addAll(data.cast<int>());
     } catch (error) {
       print(error);
       throw HttpException(error.toString());
@@ -461,27 +473,27 @@ class DataProvider with ChangeNotifier {
     return _cast;
   }
 
-  Future<List<Data>> searchFor(String searchName, BuildContext ctx) async {
+  Future<List<int>> searchFor(String searchName, BuildContext ctx) async {
     final url =
         _prepareURL(MovieTypes.search, TvTypes.search, searchName: searchName);
     final response = await _fetchData(url);
     final results = response as List<dynamic>;
-    List<Data> _searchData = _extractData(results, ctx);
+    List<int> _searchData = _extractData(results, ctx);
     if (keys.isMovie())
-      _movies[MovieTypes.search] = _searchData.cast<Movie>();
+      _movies[MovieTypes.search.index] = _searchData;
     else
-      _tvShows[TvTypes.search] = _searchData.cast<Show>();
+      _tvShows[TvTypes.search.index] = _searchData;
     return _searchData;
   }
 
   void clearShowCache(TvTypes type) {
-    if (_tvShows[type] != null) _tvShows[type]!.clear();
+    if (_tvShows[type.index].isNotEmpty) _tvShows[type.index].clear();
   }
 
-  List<Show> getShowsBy(TvTypes type) {
-    if (_tvShows[type] == null) return [];
+  List<int> getShowsBy(TvTypes type) {
+    if (_tvShows[type.index].isEmpty) return [];
 
-    return [..._tvShows[type]!];
+    return [..._tvShows[type.index]];
   }
 
   Future<DataProvider> fetchEpisodes(int id) async {
@@ -564,9 +576,9 @@ class DataProvider with ChangeNotifier {
     final decodedData = _extractData(response, ctx);
 
     decodedData.forEach((element) {
-      String dateOfRelease = element.releasedDate;
+      String dateOfRelease = dataDB[element]?.releasedDate ?? '-';
 
-      final id = element.id;
+      final id = element;
       bool isFirst = false;
       if (keys.isMovie()) {
         isFirst =
@@ -589,15 +601,17 @@ class DataProvider with ChangeNotifier {
       }
 
       if (schedule[ind][dateOfRelease] == null) {
-        schedule[ind][dateOfRelease] = [element];
+        schedule[ind][dateOfRelease] = [dataDB[element] ?? keys.defaultData];
       } else {
-        schedule[ind][dateOfRelease]!.add(element);
+        schedule[ind][dateOfRelease]!.add(dataDB[element] ?? keys.defaultData);
       }
       if (isFirst) {
         if (_mySchedule[ind][dateOfRelease] == null)
-          _mySchedule[ind][dateOfRelease] = [element];
+          _mySchedule[ind]
+              [dateOfRelease] = [dataDB[element] ?? keys.defaultData];
         else
-          _mySchedule[ind][dateOfRelease]!.add(element);
+          _mySchedule[ind][dateOfRelease]!
+              .add(dataDB[element] ?? keys.defaultData);
       }
     });
 

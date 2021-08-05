@@ -48,7 +48,7 @@ class Type extends StatelessWidget {
             return Universal.failedWidget();
           if (snapshot.connectionState == ConnectionState.waiting)
             return Universal.loadingWidget();
-          List<Data> _data = snapshot.data!.getDataBy(movieType, showType);
+          List<int> _data = snapshot.data!.getDataBy(movieType, showType);
 
           return Container(
             height: 340,
