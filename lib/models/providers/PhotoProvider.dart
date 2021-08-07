@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -37,22 +38,26 @@ class PhotoProvider with ChangeNotifier {
     return {..._showsImage};
   }
 
+  int requests = 0;
+
   void fetchImagesFor(int tmdbId, int id, DataType type) async {
     //prepare the url
     //check if we are fetching people, shows, or movies.
     final url = Uri.parse(
         'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
     try {
+      await Future.delayed(Duration(seconds: 1));
+
       final response = await http.get(url);
+
       final decodedData = json.decode(response.body);
 
       final List<String> images = _extractData(decodedData, type);
-
+      
       if (type == DataType.person) {
         _peopleProfiles[id] = images;
       } else if (type == DataType.movie) {
         _moviesImage[id] = images;
-        print(images);
       } else if (type == DataType.tvShow) {
         _showsImage[id] = images;
       }

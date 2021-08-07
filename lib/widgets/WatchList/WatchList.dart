@@ -219,7 +219,6 @@ class _WatchListState extends State<WatchList> {
                         });
                       });
                     });
-                    
                   },
                   icon: Icon(
                     widget._userProv.isMovieWatched(widget._data.id)

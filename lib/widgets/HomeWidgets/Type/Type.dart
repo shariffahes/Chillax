@@ -9,7 +9,11 @@ import '../Type/PosterList.dart';
 class Type extends StatelessWidget {
   final MovieTypes? movieType;
   final TvTypes? showType;
-  Type(this.movieType, this.showType);
+
+  Type(
+    this.movieType,
+    this.showType,
+  );
 
   @override
   Widget build(BuildContext context) {

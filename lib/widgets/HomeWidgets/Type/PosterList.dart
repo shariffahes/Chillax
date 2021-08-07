@@ -47,8 +47,10 @@ class PosterItem extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () {
+              Data info = _data;
+              if (_data is Episode) info = DataProvider.dataDB[_data.id]!;
               Navigator.of(context)
-                  .pushNamed(PreviewItem.route, arguments: _data);
+                  .pushNamed(PreviewItem.route, arguments: info);
             },
             child: Container(
               height: 230,

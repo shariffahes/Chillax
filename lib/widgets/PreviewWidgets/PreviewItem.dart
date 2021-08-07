@@ -14,7 +14,7 @@ class PreviewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _data = ModalRoute.of(context)!.settings.arguments as Data;
-
+  
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
@@ -23,15 +23,19 @@ class PreviewItem extends StatelessWidget {
           SliverList(
             delegate: SliverChildListDelegate(
               [
-                FutureBuilder<List<People>>(
+                FutureBuilder<List<People>?>(
                     future: Provider.of<DataProvider>(context, listen: false)
                         .fetchCast(_data.id, context),
                     builder: (_, snapshot) {
-                      if (snapshot.hasError) return Universal.failedWidget();
-                      if (snapshot.connectionState == ConnectionState.waiting)
+                      if (snapshot.connectionState == ConnectionState.waiting) {
                         return Universal.loadingWidget();
+                      }
+                      if (snapshot.hasError) {
+                        print(snapshot.error);
+                        return Universal.failedWidget();
+                      }
 
-                      final List<People> _cast = snapshot.data!;
+                      final List<People>? _cast = snapshot.data;
 
                       return Container(
                         padding: const EdgeInsets.symmetric(
@@ -103,7 +107,7 @@ class InfoColumn extends StatelessWidget {
   );
 
   final Data _data;
-  final List<People> _cast;
+  final List<People>? _cast;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +143,9 @@ class InfoColumn extends StatelessWidget {
                 Text(
                   (keys.isMovie()
                       ? (_data as Movie).duration.toString() + ' mins'
-                      : (_data as Show).runTime.toString() + 'mins'),
+                      : _data is Episode
+                          ? (_data as Episode).runTime.toString() + 'mins'
+                          : (_data as Show).runTime.toString() + 'mins'),
                 ),
               ],
             ),
@@ -154,7 +160,6 @@ class InfoColumn extends StatelessWidget {
                 return Universal.genreContainer(e);
               },
             ).toList(),
-            
           ),
           Divider(
             thickness: 2,
@@ -188,7 +193,12 @@ class InfoColumn extends StatelessWidget {
               builder: (ctx, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting)
                   return Universal.loadingWidget();
-                if (snapshot.hasError) return Universal.failedWidget();
+
+                if (snapshot.hasError) {
+                  print(snapshot.error);
+                  return Universal.failedWidget();
+                }
+
                 return PreviewList(null, snapshot.data, false);
               }),
         ],
@@ -212,7 +222,7 @@ class PreviewList extends StatelessWidget {
         height: 200,
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: isCast
+          children: isCast && _cast != null
               ? _cast!
                   .map((e) => AspectRatio(
                         aspectRatio: 3 / 4,

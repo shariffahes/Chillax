@@ -114,35 +114,53 @@ class Show extends Data {
   final String network;
   final String status;
   final int airedEpisode;
-
+  Map<int, List<Episode>>? episodes;
   Show(
-    int id,
-    String name,
-    String overview,
-    String rate,
-    int yearOfRelease,
-    String language,
-    List<String> genre,
-    String certification,
-    String releasedDate,
-    String homepage,
-    String trailer,
-    this.network,
-    this.runTime,
-    this.status,
-    this.airedEpisode,
-  ) : super(id, name, overview, rate, yearOfRelease, language, genre,
+      int id,
+      String name,
+      String overview,
+      String rate,
+      int yearOfRelease,
+      String language,
+      List<String> genre,
+      String certification,
+      String releasedDate,
+      String homepage,
+      String trailer,
+      this.network,
+      this.runTime,
+      this.status,
+      this.airedEpisode)
+      : super(id, name, overview, rate, yearOfRelease, language, genre,
             certification, releasedDate, homepage, trailer);
+
+  void setEpisodes(Map<int, List<Episode>> eps) {
+    episodes = {...eps};
+  }
 }
 
 //episodes used to track the episode when added to watch list
-class Episode {
-  final int id;
+class Episode extends Data {
+  final int epsId;
   final int tmdbId;
-  final String name;
   final int number;
   final int season;
-  Episode(this.id, this.tmdbId, this.name, this.number, this.season);
+
+  final int runTime;
+  Episode(
+    this.epsId,
+    int showId,
+    String name,
+    String overview,
+    String rate,
+    String airedDate,
+    int year,
+    this.tmdbId,
+    this.season,
+    this.number,
+    this.runTime,
+  ) : super(showId, name, overview, rate, year, '-', [], '-', airedDate, '-',
+            '-');
 }
 
 class DataProvider with ChangeNotifier {
@@ -150,14 +168,11 @@ class DataProvider with ChangeNotifier {
   List<List<int>> _movies = List.filled(MovieTypes.values.length, []);
   //static Map<TvTypes, List<Show>> tvShowsDB = {};
   List<List<int>> _tvShows = List.filled(TvTypes.values.length, []);
-  List<Map<String, List<Data>>> _mySchedule = [];
-
-  //tracks the list of episode for the movie id
-  Map<int, Map<int, List<Episode>>> _seriesEpisodes = {};
-
+  Map<String, List<int>> _myMovieSchedule = {};
+  Map<String, List<int>> _myTvSchedule = {};
   //helps store the schedule for movies and show. Used in calendar
-  List<Map<String, List<Data>>> schedule = [Map(), Map()];
-
+  Map<String, List<int>> movieSchedule = {};
+  static Map<String, Map<int, List<Episode>>> tvSchedule = {};
   //current page keeps track of which page the system should request
   //this is used in view all screen when user needs to load more than 15 items
   //each page loads 15 items
@@ -248,7 +263,10 @@ class DataProvider with ChangeNotifier {
   }
 
 //called when need to extract the data from an http request
-  List<int> _extractData(List<dynamic> results, BuildContext ctx) {
+  List<int> _extractData(
+    List<dynamic> results,
+    BuildContext ctx,
+  ) {
     List<int> itemsInfo = [];
 
     for (var item in results) {
@@ -293,7 +311,7 @@ class DataProvider with ChangeNotifier {
         final releasedDate = info['released'] ?? '-';
         final movie = Movie(id, title, overview, rate, year, lan, genres,
             certification, releasedDate, homePage, trailer, duration);
-     
+
         dataDB[id] = movie;
 
         itemsInfo.add(id);
@@ -304,6 +322,7 @@ class DataProvider with ChangeNotifier {
         final status = info['status'] ?? '-';
         final airedEpisode = info['aired_episodes'] ?? 0;
         final releasedDate = info['first_aired'] ?? '-';
+
         final Show show = Show(
             id,
             title,
@@ -320,8 +339,7 @@ class DataProvider with ChangeNotifier {
             runtime,
             status,
             airedEpisode);
-   
-   
+
         dataDB[id] = show;
 
         itemsInfo.add(id);
@@ -437,11 +455,16 @@ class DataProvider with ChangeNotifier {
   }
 
 //when preview page is opened. you fetch the cast by this method
-  Future<List<People>> fetchCast(int id, BuildContext ctx) async {
+  Future<List<People>?> fetchCast(int id, BuildContext ctx) async {
     final label = keys.isMovie() ? 'movies' : 'shows';
     final stringURL = keys.baseURL + "$label/$id/people";
 
-    final decodedData = await _fetchData(stringURL);
+    final decodedData;
+    try {
+      decodedData = await _fetchData(stringURL);
+    } catch (error) {
+      return null;
+    }
 
     final _results = decodedData['cast'] as List<dynamic>;
 
@@ -497,9 +520,9 @@ class DataProvider with ChangeNotifier {
   }
 
   Future<DataProvider> fetchEpisodes(int id) async {
-    if (_seriesEpisodes[id] != null) return this;
-    final url =
-        Uri.parse('https://api.trakt.tv/shows/$id/seasons?extended=episodes');
+    if ((dataDB[id] as Show).episodes != null) return this;
+    final url = Uri.parse(
+        'https://api.trakt.tv/shows/$id/seasons?extended=episodes,full');
 
     final response = await http.get(
       url,
@@ -519,102 +542,139 @@ class DataProvider with ChangeNotifier {
 
       episodes.forEach(
         (episode) {
-          final int id = episode['ids']['trakt'] ?? 0;
-          final tmdbId = episode['ids']['tmdb'] ?? -1;
-          final name = episode['title'] ?? '-';
-          final num = episode['number'] ?? -1;
-
-          ep.add(Episode(id, tmdbId, name, num, number));
+          final eps = _extractEpisodesData(
+            episode,
+            id,
+          );
+          ep.add(eps);
         },
       );
       info[number] = ep;
     }
-    _seriesEpisodes[id] = info;
+    (dataDB[id] as Show).setEpisodes(info);
 
     return this;
+  }
+
+  Episode _extractEpisodesData(
+    Map info,
+    int showId,
+  ) {
+    final int id = info['ids']['trakt'] ?? 0;
+    final tmdbId = info['ids']['tmdb'] ?? -1;
+    final num = info['number'] ?? -1;
+    final season = info['season'] ?? 0;
+    String name = info['title'] ?? 'Episode $num';
+    name = name.isEmpty ? 'Episode $num' : name;
+    final overview = info['overview'] ?? '-';
+    final int rate = info['rate'] ?? 0;
+    final String first_aired = info['first_aired'] ?? '0';
+    final int year = int.parse(first_aired.split('-').first);
+    final runTime = info['runtime'] ?? 0;
+
+    return Episode(id, showId, name, overview, rate.toString(), first_aired,
+        year, tmdbId, season, num, runTime);
   }
 
   Episode? getEpisodeInfo(int id, int season, int episode, BuildContext ctx) {
     Provider.of<User>(ctx, listen: false).updateNext(id, season, episode + 1);
     episode = episode - 1;
-    if (_seriesEpisodes[id] == null) return null;
-    if (season > _seriesEpisodes[id]!.keys.length) return null;
 
-    if (episode >= _seriesEpisodes[id]![season]!.length)
+    if ((dataDB[id] as Show).episodes == null) return null;
+    Show show = dataDB[id] as Show;
+    final _seriesEpisodes = show.episodes!;
+    if (season > _seriesEpisodes.keys.length) return null;
+
+    if (episode >= _seriesEpisodes[season]!.length)
       return getEpisodeInfo(id, season + 1, 1, ctx);
 
-    return _seriesEpisodes[id]![season]![episode];
+    return _seriesEpisodes[season]![episode];
   }
 
-  Future<List<Data>> getScheduleFor(
+  Future<List<int>> getScheduleFor(
       String date, bool isAll, BuildContext ctx) async {
-    final ind = keys.dataType.index;
-
-    if (schedule.isEmpty) {
-      schedule.add(Map());
-      schedule.add(Map());
-    }
-    if (_mySchedule.isEmpty) {
-      _mySchedule.add(Map());
-      _mySchedule.add(Map());
-    }
-
-    if (schedule[ind][date] != null) {
-      //isAll helps to know if the user wants to see if there is new seasons coming for
-      //his show or wants to see all shows/movies.
-      if (!isAll && _mySchedule[ind][date] == null) return [];
-
-      return isAll ? schedule[ind][date]! : _mySchedule[ind][date]!;
+    if (!keys.isMovie()) {
+      if (isAll && tvSchedule[date] != null)
+        return tvSchedule[date]!.keys.toList();
+      if (!isAll && _myTvSchedule[date] != null) return _myTvSchedule[date]!;
+    } else {
+      if (isAll && movieSchedule[date] != null) return movieSchedule[date]!;
+      if (!isAll && _myMovieSchedule[date] != null)
+        return _myMovieSchedule[date]!;
     }
 
     final label = keys.isMovie() ? 'movies' : 'shows';
     final url =
         'https://api.trakt.tv/calendars/all/$label/$date/1?extended=full';
+    final user = Provider.of<User>(ctx, listen: false);
 
     final response = await _fetchData(url) as List<dynamic>;
+    bool isFirst = false;
 
-    final decodedData = _extractData(response, ctx);
+    if (keys.isMovie()) {
+      final data = _extractData(response, ctx);
+      _myMovieSchedule[date] = [];
+      movieSchedule[date] = data;
 
-    decodedData.forEach((element) {
-      String dateOfRelease = dataDB[element]?.releasedDate ?? '-';
+      data.forEach((item) {
+        isFirst = user.watchedMovies[item] != null ||
+            user.movieWatchList[item] != null;
 
-      final id = element;
-      bool isFirst = false;
-      if (keys.isMovie()) {
-        isFirst =
-            Provider.of<User>(ctx, listen: false).movieWatchList[id] != null;
-      } else {
-        dateOfRelease = dateOfRelease.split('T').first;
+        if (isFirst) _myMovieSchedule[date]!.add(item);
+      });
 
-        final user = Provider.of<User>(ctx, listen: false);
-        Map<int, Data> watchingMap = {};
-        //loop just one time on watching.
-        //this helps by decreasing the number of looping each time we want
-        //to check if the show is currently watching or not
-        if (watchingMap.isEmpty) watchingMap = user.WatchingtoMap();
+      return movieSchedule[date]!;
+    } else {
+      print('object');
+      _myTvSchedule[date] = [];
+      Map<int, List<Episode>> todaySchedule = {};
+      int prevId = -1;
+      List<Episode> epsInfo = [];
+      List<int> myEpisodes = [];
+      String dateOfRelease = '';
+      response.forEach((element) {
+        //stage 1: Data
+        final id = element['show']['ids']['trakt'];
+        dateOfRelease = element['first_aired'].split('T').first;
 
-        //if the show has been watched, in the watching list, or currently watching
-        //turn is First to true which will notify that this show should be in my schedule
-        isFirst = user.showWatchList[id] != null ||
-            user.watchedShows[id] != null ||
-            watchingMap[id] != null;
-      }
+        if (prevId != -1 && prevId != id) {
+          Map<int, Data> watchingMap = {};
+          //loop just one time on watching.
+          //this helps by decreasing the number of looping each time we want
+          //to check if the show is currently watching or not
+          if (watchingMap.isEmpty) watchingMap = user.WatchingtoMap();
+          //if the show has been watched, in the watching list, or currently watching
+          //turn is First to true which will notify that this show should be in my schedule
+          isFirst = user.showWatchList[prevId] != null ||
+              user.watchedShows[prevId] != null ||
+              watchingMap[prevId] != null;
+          todaySchedule[prevId] = [...epsInfo];
+          myEpisodes.add(prevId);
 
-      if (schedule[ind][dateOfRelease] == null) {
-        schedule[ind][dateOfRelease] = [dataDB[element] ?? keys.defaultData];
-      } else {
-        schedule[ind][dateOfRelease]!.add(dataDB[element] ?? keys.defaultData);
-      }
-      if (isFirst) {
-        if (_mySchedule[ind][dateOfRelease] == null)
-          _mySchedule[ind]
-              [dateOfRelease] = [dataDB[element] ?? keys.defaultData];
-        else
-          _mySchedule[ind][dateOfRelease]!
-              .add(dataDB[element] ?? keys.defaultData);
-      }
-    });
+          if (isFirst) {
+            if (_myTvSchedule[dateOfRelease] == null ||
+                _myTvSchedule[dateOfRelease]!.isEmpty)
+              _myTvSchedule[dateOfRelease] = [prevId];
+            else
+              _myTvSchedule[dateOfRelease]!.add(prevId);
+          }
+          epsInfo.clear();
+        }
 
-    return isAll ? schedule[ind][date]! : (_mySchedule[ind][date] ?? []);
+        if (dataDB[id] == null) {
+          _extractData([element], ctx);
+        }
+
+        //Stage 2: episodes
+        final episode = _extractEpisodesData(element['episode'], id);
+
+        epsInfo.add(episode);
+        prevId = id;
+      });
+      tvSchedule[dateOfRelease] = {...todaySchedule};
+      return isAll ? myEpisodes : _myTvSchedule[dateOfRelease]!;
+    }
+
+    //return isAll ? schedule[ind][date]! : (_mySchedule[ind][date] ?? []);
   }
 }
