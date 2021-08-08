@@ -108,7 +108,7 @@ class InfoColumn extends StatelessWidget {
                               ? user.removeFromList(_data.id)
                               : user.addToWatchList(keys.isMovie()
                                   ? _data as Movie
-                                  : _data as Show);
+                                  : _data as Show,);
                         },
                         icon: Icon(
                           isMovieAdded || isShowAdded

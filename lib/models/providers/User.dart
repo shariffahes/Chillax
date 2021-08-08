@@ -2,6 +2,7 @@ import 'package:discuss_it/main.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class Track {
@@ -24,12 +25,16 @@ class User with ChangeNotifier {
   final List<Show> _watching = [];
   Map<int, Track> track = {};
 
+  //this used in get schedule to indicate if there is any changes which require rebuild;
+  bool isChange = false;
+
   User({required Map<int, Movie> wl, required Map<int, Movie> wtched}) {
     _watchList = wl;
     _watched = wtched;
   }
 
   void startWatching(int id) {
+    isChange = true;
     _watching.add(_tvWatchList[id]!);
     removeFromList(id);
   }
@@ -39,6 +44,7 @@ class User with ChangeNotifier {
   }
 
   void addToWatchList(Object item) async {
+    isChange = true;
     if (item is Movie) {
       _watchList[item.id] = item;
       notifyListeners();
@@ -52,6 +58,10 @@ class User with ChangeNotifier {
 
     } else if (item is Show) {
       _tvWatchList[item.id] = item;
+      notifyListeners();
+    } else if (item is Episode) {
+      Show show = DataProvider.dataDB[item.id]! as Show;
+      addToWatchList(show);
       notifyListeners();
     }
   }
@@ -73,6 +83,7 @@ class User with ChangeNotifier {
   }
 
   void removeFromList(int id) {
+    isChange = true;
     if (keys.isMovie()) {
       _watchList.remove(id);
       // _delete(id);
@@ -149,6 +160,7 @@ class User with ChangeNotifier {
   }
 
   void deleteItem(int id) {
+    isChange = true;
     if (_watched[id] != null) {
       _watchList[id] = _watched[id]!;
       _watched.remove(id);
@@ -169,7 +181,7 @@ class User with ChangeNotifier {
     }
   }
 
-  Map<int, Data> WatchingtoMap() {
+  Map<int, Data> watchingtoMap() {
     Map<int, Data> map = {};
 
     _watching.forEach((element) {

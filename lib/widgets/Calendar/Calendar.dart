@@ -13,15 +13,13 @@ class Calendar extends StatefulWidget {
   _CalendarState createState() => _CalendarState();
 }
 
-class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
+class _CalendarState extends State<Calendar>
+    with SingleTickerProviderStateMixin {
   DateTime today = DateTime.now();
   var isAllFilter = true;
-  var isFilterOpened = false;
   late DateTime currentDay;
   late List<Widget> dropMenu;
   late TabController _tabController;
-  late AnimationController _controller;
-  String title = keys.isMovie() ? 'All movies' : 'All shows';
   List<String> days = [
     'Mon',
     'Tue',
@@ -66,38 +64,6 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
         });
       },
     );
-    _controller =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
-    List<ElevatedButton> dropButtons = [
-      ElevatedButton(
-        onPressed: () {
-          filterData(true);
-        },
-        child: Text(keys.isMovie() ? 'All movies' : 'All shows'),
-      ),
-      ElevatedButton(
-        onPressed: () {
-          filterData(false);
-        },
-        child: Text(keys.isMovie() ? 'My movies' : 'My shows'),
-      ),
-    ];
-    dropMenu = dropButtons
-        .map(
-          (button) => Container(
-            height: 50,
-            width: 120,
-            alignment: Alignment.topCenter,
-            child: ScaleTransition(
-              scale: CurvedAnimation(
-                parent: _controller,
-                curve: Curves.easeOut,
-              ),
-              child: button,
-            ),
-          ),
-        )
-        .toList();
   }
 
   void showDate() {
@@ -117,14 +83,8 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
   }
 
   void filterData(bool isAll) {
-    _controller.reverse();
     setState(() {
       isAllFilter = isAll;
-      isFilterOpened = false;
-      if (isAll)
-        title = keys.isMovie() ? 'All movies' : 'All shows';
-      else
-        title = keys.isMovie() ? 'My movies' : 'My shows';
     });
   }
 
@@ -190,35 +150,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
 
     return Scaffold(
       appBar: appBar,
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (isFilterOpened) ...dropMenu.toList(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (!isFilterOpened)
-                ElevatedButton(onPressed: () {}, child: Text(title)),
-              IconButton(
-                  onPressed: () {
-                    isFilterOpened
-                        ? _controller.reverse()
-                        : _controller.forward();
-                    setState(() {
-                      isFilterOpened = !isFilterOpened;
-                    });
-                  },
-                  icon: Icon(
-                    isFilterOpened ? Icons.close : Icons.filter_list_alt,
-                    size: 40,
-                    color: Colors.red,
-                  ))
-            ],
-          ),
-        ],
-      ),
+      floatingActionButton: FilterButton(filterData, false),
       body: TabBarView(
         controller: _tabController,
         children: days
@@ -231,6 +163,98 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
                 ))
             .toList(),
       ),
+    );
+  }
+}
+
+class FilterButton extends StatefulWidget {
+  final Function(bool) filterData;
+  bool isFilterOpened;
+  FilterButton(this.filterData, this.isFilterOpened);
+  @override
+  _FilterButtonState createState() => _FilterButtonState();
+}
+
+class _FilterButtonState extends State<FilterButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  String title = keys.isMovie() ? 'All movies' : 'All shows';
+  List<Widget> dropMenu = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 300),
+        reverseDuration: Duration(milliseconds: 200));
+    List<ElevatedButton> dropButtons = [
+      ElevatedButton(
+        onPressed: () {
+          widget.filterData(true);
+          _controller.reverse();
+          title = keys.isMovie() ? 'All movies' : 'All shows';
+        },
+        child: Text(keys.isMovie() ? 'All movies' : 'All shows'),
+      ),
+      ElevatedButton(
+        onPressed: () {
+          widget.filterData(false);
+          _controller.reverse();
+          title = keys.isMovie() ? 'My movies' : 'My shows';
+        },
+        child: Text(keys.isMovie() ? 'My movies' : 'My shows'),
+      ),
+    ];
+    dropMenu = dropButtons
+        .map(
+          (button) => Container(
+            height: 50,
+            width: 120,
+            alignment: Alignment.topCenter,
+            child: ScaleTransition(
+              scale: CurvedAnimation(
+                parent: _controller,
+                curve: Curves.easeOut,
+              ),
+              child: button,
+            ),
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        ...dropMenu.toList(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (!widget.isFilterOpened)
+              ElevatedButton(onPressed: () {}, child: Text(title)),
+            IconButton(
+                onPressed: () {
+                  widget.isFilterOpened
+                      ? _controller.reverse()
+                      : _controller.forward();
+                  setState(() {
+                    widget.isFilterOpened = !widget.isFilterOpened;
+                  });
+                },
+                icon: Icon(
+                  widget.isFilterOpened ? Icons.close : Icons.filter_list_alt,
+                  size: 40,
+                  color: Colors.red,
+                ))
+          ],
+        ),
+      ],
     );
   }
 }
@@ -272,7 +296,6 @@ class MovieGrid extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Universal.footerContainer(time, Icons.timer),
-        Universal.footerContainer('Netflix', Icons.tv)
       ],
     );
   }
@@ -328,7 +351,7 @@ class ShowGrid extends StatelessWidget {
             ),
             Container(
               height: 350,
-              child: EpisodeList(episodes),
+              child: EpisodeList(episodes,(data as Show).network),
             )
           ],
         );

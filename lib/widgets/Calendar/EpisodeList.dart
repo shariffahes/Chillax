@@ -6,7 +6,8 @@ import 'package:intl/intl.dart';
 
 class EpisodeList extends StatelessWidget {
   final List<Episode> episodes;
-  const EpisodeList(this.episodes);
+  final String network;
+  const EpisodeList(this.episodes, this.network);
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +16,18 @@ class EpisodeList extends StatelessWidget {
       itemBuilder: (ctx, ind) {
         return PosterItem(
             episodes[ind],
-            Universal.footerContainer(
-                DateFormat()
-                    .add_jm()
-                    .format(DateTime.parse(episodes[ind].releasedDate)),
-                Icons.timer));
+            Row(children: [
+              Universal.footerContainer(
+                  DateFormat()
+                      .add_jm()
+                      .format(DateTime.parse(episodes[ind].releasedDate)),
+                  Icons.timer),
+              SizedBox(
+                width: 2,
+              ),
+              if(network != '-')
+              Universal.footerContainer(network, Icons.tv)
+            ]));
       },
       itemCount: episodes.length,
     );

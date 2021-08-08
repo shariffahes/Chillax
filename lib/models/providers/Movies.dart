@@ -582,6 +582,7 @@ class DataProvider with ChangeNotifier {
 
     if ((dataDB[id] as Show).episodes == null) return null;
     Show show = dataDB[id] as Show;
+
     final _seriesEpisodes = show.episodes!;
     if (season > _seriesEpisodes.keys.length) return null;
 
@@ -593,24 +594,25 @@ class DataProvider with ChangeNotifier {
 
   Future<List<int>> getScheduleFor(
       String date, bool isAll, BuildContext ctx) async {
-    if (!keys.isMovie()) {
-      if (isAll && tvSchedule[date] != null)
-        return tvSchedule[date]!.keys.toList();
-      if (!isAll && _myTvSchedule[date] != null) return _myTvSchedule[date]!;
-    } else {
-      if (isAll && movieSchedule[date] != null) return movieSchedule[date]!;
-      if (!isAll && _myMovieSchedule[date] != null)
-        return _myMovieSchedule[date]!;
+    final user = Provider.of<User>(ctx, listen: false);
+    if (!user.isChange) {
+      if (!keys.isMovie()) {
+        if (isAll && tvSchedule[date] != null)
+          return tvSchedule[date]!.keys.toList();
+        if (!isAll && _myTvSchedule[date] != null) return _myTvSchedule[date]!;
+      } else {
+        if (isAll && movieSchedule[date] != null) return movieSchedule[date]!;
+        if (!isAll && _myMovieSchedule[date] != null)
+          return _myMovieSchedule[date]!;
+      }
     }
 
     final label = keys.isMovie() ? 'movies' : 'shows';
     final url =
         'https://api.trakt.tv/calendars/all/$label/$date/1?extended=full';
-    final user = Provider.of<User>(ctx, listen: false);
-
     final response = await _fetchData(url) as List<dynamic>;
     bool isFirst = false;
-
+    user.isChange = false;
     if (keys.isMovie()) {
       final data = _extractData(response, ctx);
       _myMovieSchedule[date] = [];
@@ -623,9 +625,8 @@ class DataProvider with ChangeNotifier {
         if (isFirst) _myMovieSchedule[date]!.add(item);
       });
 
-      return movieSchedule[date]!;
+      return isAll ? movieSchedule[date]! : _myMovieSchedule[date]!;
     } else {
-      print('object');
       _myTvSchedule[date] = [];
       Map<int, List<Episode>> todaySchedule = {};
       int prevId = -1;
@@ -642,12 +643,10 @@ class DataProvider with ChangeNotifier {
           //loop just one time on watching.
           //this helps by decreasing the number of looping each time we want
           //to check if the show is currently watching or not
-          if (watchingMap.isEmpty) watchingMap = user.WatchingtoMap();
+          if (watchingMap.isEmpty) watchingMap = user.watchingtoMap();
           //if the show has been watched, in the watching list, or currently watching
           //turn is First to true which will notify that this show should be in my schedule
-          isFirst = user.showWatchList[prevId] != null ||
-              user.watchedShows[prevId] != null ||
-              watchingMap[prevId] != null;
+          isFirst = user.isShowAdded(prevId) || watchingMap[prevId] != null;
           todaySchedule[prevId] = [...epsInfo];
           myEpisodes.add(prevId);
 

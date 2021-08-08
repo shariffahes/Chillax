@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
@@ -143,6 +145,7 @@ class ViewCards extends StatelessWidget {
   final AutoScrollController _controller;
   final Function(int ind) _scrollToIndex;
   List<int> list;
+
   ViewCards(
     this._controller,
     this._scrollToIndex,

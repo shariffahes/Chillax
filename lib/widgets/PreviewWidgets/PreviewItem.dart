@@ -14,7 +14,7 @@ class PreviewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _data = ModalRoute.of(context)!.settings.arguments as Data;
-  
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
@@ -71,7 +71,9 @@ class PreviewItem extends StatelessWidget {
                   onPressed: () {
                     isMovieAdded || isShowAdded
                         ? user.removeFromList(_data.id)
-                        : user.addToWatchList(_data);
+                        : user.addToWatchList(
+                            _data,
+                          );
                   },
                   child: Text(isMovieAdded || isShowAdded
                       ? 'Remove from List'
@@ -147,6 +149,19 @@ class InfoColumn extends StatelessWidget {
                           ? (_data as Episode).runTime.toString() + 'mins'
                           : (_data as Show).runTime.toString() + 'mins'),
                 ),
+                SizedBox(
+                  width: 7,
+                ),
+                if (_data is Show)
+                  Icon(
+                    Icons.circle,
+                    size: 5,
+                  ),
+                if (_data is Show)
+                  SizedBox(
+                    width: 7,
+                  ),
+                if (_data is Show) Text((_data as Show).network)
               ],
             ),
           ),

@@ -71,7 +71,7 @@ class PosterItem extends StatelessWidget {
 
                           isMovieAdded || isShowAdded
                               ? user.removeFromList(_data.id)
-                              : user.addToWatchList(_data);
+                              : user.addToWatchList(_data,);
                         },
                         icon: Icon(
                           isShowAdded || isMovieAdded

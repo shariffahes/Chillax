@@ -134,6 +134,7 @@ class _WatchListState extends State<WatchList> {
                       final id = widget._data.id;
                       final track = widget._userProv.track[id] ??
                           Track(currentEp: 1, currentSeason: 1);
+                          
                       Episode? ep = snapshot.data!.getEpisodeInfo(
                           id, track.currentSeason, track.currentEp, context);
                       if (ep == null)
