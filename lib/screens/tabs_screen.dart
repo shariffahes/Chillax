@@ -1,7 +1,6 @@
 import '../screens/home_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/schedule_screen.dart';
-import '../screens/search_screen.dart';
 import '../screens/watch_list_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +29,6 @@ class TabsScreenState extends State<TabsScreen> {
       },
       {
         'page': UpcomingScreen(),
-        
       },
       {
         'page': ProfileScreen(),
@@ -57,20 +55,21 @@ class TabsScreenState extends State<TabsScreen> {
             bottomLeft: Radius.circular(_index == 2 ? 0 : 66),
           )),
           toolbarHeight: 100,
-          bottom: _index == 3 ? null : TabBar(
-            labelColor: Colors.white,
-            tabs: [
-              Tab(
-                icon: Icon(Icons.local_movies),
-                text: 'Movies',
-              ),
-              Tab(
-                icon: Icon(Icons.tv_rounded),
-                text: 'Shows',
-              )
-            ],
-          ),
-       
+          bottom: _index == 3
+              ? null
+              : TabBar(
+                  labelColor: Colors.white,
+                  tabs: [
+                    Tab(
+                      icon: Icon(Icons.local_movies),
+                      text: 'Movies',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.tv_rounded),
+                      text: 'Shows',
+                    )
+                  ],
+                ),
         ),
         bottomNavigationBar: BottomNavigationBar(
           selectedItemColor: Colors.red,

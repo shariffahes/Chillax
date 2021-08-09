@@ -1,4 +1,4 @@
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
@@ -25,7 +25,7 @@ class SearchLists extends StatelessWidget {
                   leading: Consumer<PhotoProvider>(
                     builder: (ctx, image, _) {
                       final poster =
-                          image.getMovieImages(movie.id) ?? [keys.defaultImage];
+                          image.getMovieImages(movie.id) ?? [Global.defaultImage];
                       return Image.network(poster[0]);
                     },
                   ),

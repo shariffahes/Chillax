@@ -1,5 +1,5 @@
 import 'package:discuss_it/models/Enums.dart';
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/widgets/ListWidget/ListItems.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -21,7 +21,7 @@ class ListAll extends StatelessWidget {
     MovieTypes? movieType;
     TvTypes? showType;
 
-    if (keys.isMovie())
+    if (Global.isMovie())
       movieType = discoverType as MovieTypes;
     else
       showType = discoverType as TvTypes;

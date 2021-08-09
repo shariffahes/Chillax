@@ -1,4 +1,3 @@
-import 'package:discuss_it/models/keys.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
@@ -17,75 +16,45 @@ void main() {
 class MyApp extends StatelessWidget {
   static Database? db;
 
-  Future<List<Map<int, Movie>>> setDB() async {
+  Future<void> setDB() async {
     var databasePath = await getDatabasesPath();
     String path = databasePath + '/chill_time.db';
+    print(path);
     db = await openDatabase(
       path,
       version: 1,
-      onCreate: (db, version) async {
-        await db.execute(
-            'CREATE TABLE WatchList (id INT PRIMARY KEY,name TEXT, overview TEXT, rate TEXT, releaseDate INTEGER, language TEXT, duration INTEGER, genre TEXT, certification TEXT,watched INTEGER)');
+      onCreate: (dataB, version) async {
+        await dataB.execute(
+            'CREATE TABLE MovieWatch (id INT PRIMARY KEY,name TEXT, overview TEXT, rate TEXT, year INTEGER, language TEXT, duration INTEGER, genre TEXT, certification TEXT,releaseDate TEXT,homePage TEXT,trailer TEXT,watched INTEGER)');
+        await dataB.execute(
+            'CREATE TABLE ShowWatch (id INT PRIMARY KEY,name TEXT, overview TEXT, rate TEXT, year INTEGER, language TEXT, genre TEXT, certification TEXT,releaseDate TEXT,homePage TEXT,trailer TEXT,network TEXT,runTime INTEGER,status TEXT,airedEpisodes INTEGER,watched INTEGER,currentEps INT,currentSeason INT)');
       },
     );
-
-    var info = await db!.query('WatchList', where: 'watched = ${0}');
-    final Map<int, Movie> watchList = {};
-    info.forEach((element) {
-      //watchList[element['id'] as int] = Movie.fromMap(element);
-    });
-    final Map<int, Movie> watched = {};
-    info = await db!.query('WatchList', where: 'watched = ${1}');
-    info.forEach((element) {
-      //watched[element['id'] as int] = Movie.fromMap(element);
-    });
-    final list = [watchList, watched];
-    return list;
   }
 
   @override
   Widget build(BuildContext context) {
-
-    return FutureBuilder<List<Map<int, Movie>>>(
-        // future: setDB(),
-        builder: (ctx, snapshot) {
-      if (snapshot.hasError) {
-        print('object');
-        return AlertDialog(
-          title: Text('An error has occured'),
-          content: Text(
-            'An error has occured retrieving local data. Please try again',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {},
-              child: Text('Try again'),
+    return FutureBuilder<void>(
+        future: setDB(),
+        builder: (ctx, _) {
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider(create: (_) => DataProvider()),
+              ChangeNotifierProvider(create: (_) => User()),
+              ChangeNotifierProvider(create: (_) => PhotoProvider()),
+            ],
+            child: MaterialApp(
+              routes: {
+                ListAll.route: (ctx) => ListAll(),
+                PreviewItem.route: (ctx) => PreviewItem(),
+              },
+              title: 'Discuss it',
+              theme: ThemeData(
+                primarySwatch: Colors.red,
+              ),
+              home: TabsScreen(),
             ),
-            TextButton(
-              onPressed: () {},
-              child: Text('close app'),
-            ),
-          ],
-        );
-      }
-      return MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => DataProvider()),
-          ChangeNotifierProvider(create: (_) => User(wl: {}, wtched: {})),
-          ChangeNotifierProvider(create: (_) => PhotoProvider()),
-        ],
-        child: MaterialApp(
-          routes: {
-            ListAll.route: (ctx) => ListAll(),
-            PreviewItem.route: (ctx) => PreviewItem(),
-          },
-          title: 'Discuss it',
-          theme: ThemeData(
-            primarySwatch: Colors.red,
-          ),
-          home: TabsScreen(),
-        ),
-      );
-    });
+          );
+        });
   }
 }

@@ -1,5 +1,5 @@
 import 'package:discuss_it/models/Enums.dart';
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/widgets/Calendar/Calendar.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +16,7 @@ class UpcomingScreen extends StatelessWidget {
 
 class Movies extends StatelessWidget {
   Widget build(BuildContext context) {
-    keys.dataType = DataType.movie;
+    Global.dataType = DataType.movie;
     return Calendar();
       
   }
@@ -24,7 +24,7 @@ class Movies extends StatelessWidget {
 
 class Shows extends StatelessWidget {
   Widget build(BuildContext context) {
-    keys.dataType = DataType.tvShow;
+    Global.dataType = DataType.tvShow;
     return  Calendar();
       
   }

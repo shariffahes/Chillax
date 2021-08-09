@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:discuss_it/models/Enums.dart';
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -27,7 +27,7 @@ class ItemLists extends StatelessWidget {
       itemBuilder: (_, index) => InkWell(
         onTap: () {
           Navigator.of(context).pushNamed(ListAll.route, arguments: {
-            'discover_type': keys.isMovie() ? MovieTypes.genre : TvTypes.genre,
+            'discover_type': Global.isMovie() ? MovieTypes.genre : TvTypes.genre,
             'genre': _items[index]
           });
         },

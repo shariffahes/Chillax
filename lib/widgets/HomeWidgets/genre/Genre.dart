@@ -1,10 +1,10 @@
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:flutter/material.dart';
 import '../genre/ItemLists.dart';
 
 class Genre extends StatelessWidget {
   Genre();
-  final _items = keys.genres.toList();
+  final _items = Global.genres.toList();
   @override
   Widget build(BuildContext context) {
     return Column(

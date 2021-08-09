@@ -1,5 +1,5 @@
 import 'package:discuss_it/models/Enums.dart';
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
@@ -44,8 +44,8 @@ class CardItem extends StatelessWidget {
                   borderRadius: roundedBorder(22, 55),
                   child: Consumer<PhotoProvider>(
                     builder: (ctx, image, _) {
-                      List<String> poster = [keys.defaultImage];
-                      if (keys.isMovie())
+                      List<String> poster = [Global.defaultImage];
+                      if (Global.isMovie())
                         poster = image.getMovieImages(_data.id) ?? poster;
                       else
                         poster = image.getShowImages(_data.id) ?? poster;
@@ -100,23 +100,9 @@ class InfoColumn extends StatelessWidget {
                   ),
                   Consumer<User>(
                     builder: (ctx, user, _) {
-                      final isMovieAdded = user.isMovieAdded(_data.id);
-                      final isShowAdded = user.isShowAdded(_data.id);
-                      return IconButton(
-                        onPressed: () {
-                          isMovieAdded || isShowAdded
-                              ? user.removeFromList(_data.id)
-                              : user.addToWatchList(keys.isMovie()
-                                  ? _data as Movie
-                                  : _data as Show,);
-                        },
-                        icon: Icon(
-                          isMovieAdded || isShowAdded
-                              ? Icons.check_circle
-                              : Icons.add_circle,
-                          size: 35,
-                        ),
-                      );
+                      final status = user.getStatus(_data.id);
+
+                      return Universal.createIcon(status, user, _data);
                     },
                   ),
                 ],

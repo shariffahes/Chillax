@@ -1,4 +1,5 @@
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
@@ -22,7 +23,7 @@ class _PosterListState extends State<PosterList> {
     return ListView(
       scrollDirection: Axis.horizontal,
       children: widget._items.map((item) {
-        Data data = DataProvider.dataDB[item] ?? keys.defaultData;
+        Data data = DataProvider.dataDB[item] ?? Global.defaultData;
         return PosterItem(
           data,
           Universal.footerContainer(data.rate, Icons.star),
@@ -59,28 +60,9 @@ class PosterItem extends StatelessWidget {
                   ImagePoster(_data.id),
                   Consumer<User>(
                     builder: (ctx, user, _) {
-                      bool isMovieAdded = user.isMovieAdded(_data.id);
-                      bool isShowAdded = user.isShowAdded(_data.id);
-
-                      return IconButton(
-                        alignment: AlignmentDirectional.topStart,
-                        padding: EdgeInsets.zero,
-                        onPressed: () {
-                          final isMovieAdded = user.isMovieAdded(_data.id);
-                          final isShowAdded = user.isShowAdded(_data.id);
-
-                          isMovieAdded || isShowAdded
-                              ? user.removeFromList(_data.id)
-                              : user.addToWatchList(_data,);
-                        },
-                        icon: Icon(
-                          isShowAdded || isMovieAdded
-                              ? Icons.check_circle
-                              : Icons.add_circle_rounded,
-                          size: 35,
-                          color: Colors.amber,
-                        ),
-                      );
+                      Status status = user.getStatus(_data.id);
+                    
+                      return Universal.createIcon(status, user, _data);
                     },
                   )
                 ],
@@ -118,8 +100,8 @@ class ImagePoster extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         child: Consumer<PhotoProvider>(
           builder: (ctx, image, _) {
-            List<String> posters = [keys.defaultImage];
-            if (keys.isMovie())
+            List<String> posters = [Global.defaultImage];
+            if (Global.isMovie())
               posters = image.getMovieImages(id) ?? posters;
             else
               posters = image.getShowImages(id) ?? posters;

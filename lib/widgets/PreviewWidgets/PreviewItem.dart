@@ -1,15 +1,52 @@
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/People.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
-import 'package:discuss_it/screens/list_all_screen.dart';
+
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PreviewItem extends StatelessWidget {
   static const String route = '/preview_item';
+
+  Widget textContent(Status status) {
+    String title = '';
+    switch (status) {
+      case Status.watchList:
+        title = 'Remove From WatchList';
+        break;
+      case Status.watched:
+        title = 'Remove From Watched';
+        break;
+      case Status.watching:
+        title = 'Remove From Watching';
+        break;
+      case Status.none:
+        title = 'Add to WatchList';
+        break;
+    }
+    return Text(title);
+  }
+
+  void action(Status status, User user, Data _data) {
+    switch (status) {
+      case Status.watchList:
+        user.removeFromWatchList(_data.id);
+        break;
+      case Status.watched:
+        user.removeFromWatched(_data.id);
+        break;
+      case Status.watching:
+        user.removeFromWatching(_data.id);
+        break;
+      case Status.none:
+        user.addToWatchList(_data);
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +93,8 @@ class PreviewItem extends StatelessWidget {
           children: [
             Consumer<User>(
               builder: (ctx, user, _) {
-                final isMovieAdded = user.isMovieAdded(_data.id);
-                final isShowAdded = user.isShowAdded(_data.id);
+                final status = user.getStatus(_data.id);
+
                 return ElevatedButton(
                   style: ButtonStyle(
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -69,15 +106,9 @@ class PreviewItem extends StatelessWidget {
                         Size(210, 60),
                       )),
                   onPressed: () {
-                    isMovieAdded || isShowAdded
-                        ? user.removeFromList(_data.id)
-                        : user.addToWatchList(
-                            _data,
-                          );
+                    action(status, user, _data);
                   },
-                  child: Text(isMovieAdded || isShowAdded
-                      ? 'Remove from List'
-                      : 'Add to list'),
+                  child: textContent(status),
                 );
               },
             ),
@@ -143,7 +174,7 @@ class InfoColumn extends StatelessWidget {
                   width: 7,
                 ),
                 Text(
-                  (keys.isMovie()
+                  (Global.isMovie()
                       ? (_data as Movie).duration.toString() + ' mins'
                       : _data is Episode
                           ? (_data as Episode).runTime.toString() + 'mins'
@@ -285,8 +316,8 @@ class CustomAppBar extends StatelessWidget {
           Positioned.fill(
             child: Consumer<PhotoProvider>(
               builder: (ctx, image, _) {
-                List<String> backdrop = [keys.defaultImage, keys.defaultImage];
-                if (keys.isMovie())
+                List<String> backdrop = [Global.defaultImage, Global.defaultImage];
+                if (Global.isMovie())
                   backdrop = image.getMovieImages(_data.id) ?? backdrop;
                 else
                   backdrop = image.getShowImages(_data.id) ?? backdrop;
@@ -351,7 +382,7 @@ class ActorItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Data data = DataProvider.dataDB[id] ?? keys.defaultData;
+    Data data = DataProvider.dataDB[id] ?? Global.defaultData;
     return ClipRRect(
       borderRadius: BorderRadius.only(
         topRight: Radius.circular(44),
@@ -360,11 +391,11 @@ class ActorItem extends StatelessWidget {
       child: GridTile(
         child: Consumer<PhotoProvider>(
           builder: (ctx, image, _) {
-            var profile = [keys.defaultImage];
+            var profile = [Global.defaultImage];
             if (isCast)
               profile = image.getPersonProfiles(_cast!.id) ?? profile;
             else
-              profile = keys.isMovie()
+              profile = Global.isMovie()
                   ? image.getMovieImages(data.id) ?? profile
                   : image.getShowImages(data.id) ?? profile;
 

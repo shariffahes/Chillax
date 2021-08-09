@@ -1,4 +1,4 @@
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/Calendar/EpisodeList.dart';
@@ -178,7 +178,7 @@ class FilterButton extends StatefulWidget {
 class _FilterButtonState extends State<FilterButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  String title = keys.isMovie() ? 'All movies' : 'All shows';
+  String title = Global.isMovie() ? 'All movies' : 'All shows';
   List<Widget> dropMenu = [];
 
   @override
@@ -193,17 +193,17 @@ class _FilterButtonState extends State<FilterButton>
         onPressed: () {
           widget.filterData(true);
           _controller.reverse();
-          title = keys.isMovie() ? 'All movies' : 'All shows';
+          title = Global.isMovie() ? 'All movies' : 'All shows';
         },
-        child: Text(keys.isMovie() ? 'All movies' : 'All shows'),
+        child: Text(Global.isMovie() ? 'All movies' : 'All shows'),
       ),
       ElevatedButton(
         onPressed: () {
           widget.filterData(false);
           _controller.reverse();
-          title = keys.isMovie() ? 'My movies' : 'My shows';
+          title = Global.isMovie() ? 'My movies' : 'My shows';
         },
-        child: Text(keys.isMovie() ? 'My movies' : 'My shows'),
+        child: Text(Global.isMovie() ? 'My movies' : 'My shows'),
       ),
     ];
     dropMenu = dropButtons
@@ -281,7 +281,7 @@ class Item extends StatelessWidget {
 
         final List<int> ids = snapshot.data!;
 
-        return keys.isMovie() ? MovieGrid(ids) : ShowGrid(ids, currDate);
+        return Global.isMovie() ? MovieGrid(ids) : ShowGrid(ids, currDate);
       },
     );
   }

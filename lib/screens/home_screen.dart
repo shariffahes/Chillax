@@ -3,7 +3,7 @@ import 'package:discuss_it/widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/material.dart';
 import '../widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/rendering.dart';
-import '../models/keys.dart';
+import '../models/Global.dart';
 import '../widgets/HomeWidgets/Type/Type.dart';
 import '../widgets/HomeWidgets/genre/Genre.dart';
 import '../widgets/HomeWidgets/trending/Trending.dart';
@@ -22,9 +22,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   //Prepare the home screen main titles
   final List<MovieTypes> listOfMovieTitles =
-      MovieTypes.values.skip(keys.mainList).toList();
+      MovieTypes.values.skip(Global.mainList).toList();
   final List<TvTypes> listOfShowTitles =
-      TvTypes.values.skip(keys.mainList).toList();
+      TvTypes.values.skip(Global.mainList).toList();
   @override
   Widget build(BuildContext context) {
     return TabBarView(
@@ -37,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
+
+
 class MainScreen extends StatelessWidget {
   final DataType type;
   MainScreen(
@@ -48,7 +50,7 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    keys.dataType = type;
+    Global.dataType = type;
 
     return SingleChildScrollView(
       child: Column(children: [

@@ -1,3 +1,6 @@
+import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/material.dart';
 
 class Universal {
@@ -65,5 +68,60 @@ class Universal {
         ),
       ),
     );
+  }
+
+  static Widget createIcon(Status st, User user, Data _data) {
+    switch (st) {
+      case Status.watchList:
+        return IconButton(
+          alignment: AlignmentDirectional.topStart,
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            user.removeFromWatchList(_data.id);
+          },
+          icon: Icon(
+            Icons.check_circle,
+            size: 35,
+            color: Colors.red,
+          ),
+        );
+      case Status.watched:
+        return ElevatedButton(
+          onPressed: () {
+            user.removeFromWatched(_data.id);
+          },
+          child: Text(
+            'Watched',
+          ),
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+          ),
+        );
+      case Status.watching:
+        return ElevatedButton(
+          onPressed: () {
+            user.removeFromWatching(_data.id);
+          },
+          child: Text(
+            'Watching',
+          ),
+          style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.red)),
+        );
+
+      case Status.none:
+        return IconButton(
+          alignment: AlignmentDirectional.topStart,
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            user.addToWatchList(_data);
+          },
+          icon: Icon(
+            Icons.add_circle_rounded,
+            size: 35,
+            color: Colors.red,
+          ),
+        );
+    }
   }
 }

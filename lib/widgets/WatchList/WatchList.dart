@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
@@ -29,7 +30,7 @@ class _WatchListState extends State<WatchList> {
     String sub2;
     String showTitle = '';
 
-    if (keys.isMovie()) {
+    if (Global.isMovie()) {
       final movie = widget._data as Movie;
       title = movie.name;
       sub1 = 'Movie';
@@ -85,10 +86,10 @@ class _WatchListState extends State<WatchList> {
                     child: Consumer<PhotoProvider>(
                       builder: (ctx, image, _) {
                         List<String> backdrop = [
-                          keys.defaultImage,
-                          keys.defaultImage
+                          Global.defaultImage,
+                          Global.defaultImage
                         ];
-                        if (keys.isMovie())
+                        if (Global.isMovie())
                           backdrop =
                               image.getMovieImages(widget._data.id) ?? backdrop;
                         else
@@ -96,8 +97,10 @@ class _WatchListState extends State<WatchList> {
                               image.getShowImages(widget._data.id) ?? backdrop;
 
                         return Stack(children: [
-                          Image.network(backdrop[1]),
-                          if (!keys.isMovie())
+                          Image.network(
+                            backdrop[1],
+                          ),
+                          if (!Global.isMovie())
                             Positioned(
                                 bottom: 0,
                                 left: 0,
@@ -134,12 +137,12 @@ class _WatchListState extends State<WatchList> {
                       final id = widget._data.id;
                       final track = widget._userProv.track[id] ??
                           Track(currentEp: 1, currentSeason: 1);
-                          
+
                       Episode? ep = snapshot.data!.getEpisodeInfo(
                           id, track.currentSeason, track.currentEp, context);
-                      if (ep == null)
-                        print('finish');
-                      else {
+                      if (ep == null) {
+                        widget._userProv.moveToWatched(id);
+                      } else {
                         title = ep.name;
                         sub1 = 'E${ep.number}S${ep.season}';
                       }
@@ -194,8 +197,9 @@ class _WatchListState extends State<WatchList> {
                           SizedBox(
                             height: 8,
                           ),
-                          if (!keys.isMovie() &&
-                              widget._userProv.isShowAdded(widget._data.id))
+                          if (widget._data is Show &&
+                              widget._userProv.getStatus(widget._data.id) ==
+                                  Status.watchList)
                             OutlinedButton(
                               onPressed: () {
                                 widget._userProv.startWatching(widget._data.id);
@@ -222,7 +226,8 @@ class _WatchListState extends State<WatchList> {
                     });
                   },
                   icon: Icon(
-                    widget._userProv.isMovieWatched(widget._data.id)
+                    widget._userProv.getStatus(widget._data.id) ==
+                            Status.watched
                         ? Icons.check_circle_rounded
                         : Icons.check_circle_outline_rounded,
                     size: 33,

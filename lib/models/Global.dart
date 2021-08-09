@@ -1,11 +1,15 @@
 import 'dart:convert';
+import 'package:discuss_it/main.dart';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/User.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 // a static class used to get useful info such as api key and urls
 //helps in preventing repition
-class keys {
+class Global {
   static DataType dataType = DataType.movie;
   static List<String> genres = [
     "Action",
@@ -36,8 +40,8 @@ class keys {
     "Western"
   ];
   static int mainList = 4;
-  
-  static  Data get defaultData {
+
+  static Data get defaultData {
     return isMovie()
         ? Movie(0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', 0)
         : Show(
@@ -59,6 +63,6 @@ class keys {
   }
 
   static bool isMovie() {
-    return keys.dataType == DataType.movie;
+    return Global.dataType == DataType.movie;
   }
 }

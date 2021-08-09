@@ -1,4 +1,4 @@
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/widgets/ListWidget/CardItem.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
@@ -44,7 +44,7 @@ class ListItems extends StatelessWidget {
       child: ListView.builder(
         itemBuilder: (_, index) {
           Data data =
-              DataProvider.dataDB[_movieList[index]] ?? keys.defaultData;
+              DataProvider.dataDB[_movieList[index]] ?? Global.defaultData;
           return CardItem(
            data,
           );

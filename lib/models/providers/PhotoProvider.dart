@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:discuss_it/models/Enums.dart';
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -77,15 +77,15 @@ class PhotoProvider with ChangeNotifier {
 
         final profile = profiles.isNotEmpty
             ? (profiles[0]['file_path'] == null
-                ? keys.defaultImage
-                : keys.baseImageURL + '/w185' + profiles[0]['file_path'])
-            : keys.defaultImage;
+                ? Global.defaultImage
+                : Global.baseImageURL + '/w185' + profiles[0]['file_path'])
+            : Global.defaultImage;
 
         final backDropProfile = profiles.isNotEmpty
             ? (profiles[0]['file_path'] == null
-                ? keys.defaultImage
-                : keys.baseImageURL + '/h632' + profiles[0]['file_path'])
-            : keys.defaultImage;
+                ? Global.defaultImage
+                : Global.baseImageURL + '/h632' + profiles[0]['file_path'])
+            : Global.defaultImage;
 
         _images.add(profile);
         _images.add(backDropProfile);
@@ -100,12 +100,12 @@ class PhotoProvider with ChangeNotifier {
             : {};
 
         final imageURL = posterImages['file_path'] == null
-            ? keys.defaultImage
-            : keys.baseImageURL + '/w500' + posterImages['file_path'];
+            ? Global.defaultImage
+            : Global.baseImageURL + '/w500' + posterImages['file_path'];
 
         final backDropURL = backdropImages['file_path'] == null
-            ? keys.defaultImage
-            : keys.baseImageURL + '/w1280' + backdropImages['file_path'];
+            ? Global.defaultImage
+            : Global.baseImageURL + '/w1280' + backdropImages['file_path'];
 
         _images.add(imageURL);
         _images.add(backDropURL);

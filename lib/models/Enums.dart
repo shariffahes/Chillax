@@ -50,3 +50,7 @@ extension ParseToStringImg on DataType {
     return this.toString().split('.').last;
   }
 }
+
+enum Status {
+  watchList, watching, watched, none
+}

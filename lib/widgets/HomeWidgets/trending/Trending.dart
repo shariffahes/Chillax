@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:discuss_it/models/Enums.dart';
-import 'package:discuss_it/models/keys.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
@@ -42,13 +42,13 @@ class _TrendingState extends State<Trending> {
   void initState() {
     super.initState();
 
-    Object discover = keys.isMovie() ? widget.movieType : widget.showType;
+    Object discover = Global.isMovie() ? widget.movieType : widget.showType;
 
     Provider.of<DataProvider>(context, listen: false)
         .fetchDataListBy(discover, context)
         .then((value) {
       setState(() {
-        _itemsData[keys.dataType.index] = keys.isMovie()
+        _itemsData[Global.dataType.index] = Global.isMovie()
             ? value.getDataBy(widget.movieType, null)
             : value.getDataBy(null, widget.showType);
       });
@@ -64,7 +64,7 @@ class _TrendingState extends State<Trending> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            keys.isMovie()
+            Global.isMovie()
                 ? widget.movieType.toNormalString()
                 : widget.showType.toNormalString(),
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
@@ -73,12 +73,12 @@ class _TrendingState extends State<Trending> {
         ViewCards(
           _controller,
           _scrollToIndex,
-          _itemsData[keys.dataType.index]!,
+          _itemsData[Global.dataType.index]!,
         ),
         SizedBox(
           height: 13,
         ),
-        InfoRow(_itemsData[keys.dataType.index]!, ind),
+        InfoRow(_itemsData[Global.dataType.index]!, ind),
       ],
     );
   }
@@ -95,10 +95,10 @@ class InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Data data = DataProvider.dataDB[_list[ind]] ?? keys.defaultData;
+    Data data = DataProvider.dataDB[_list[ind]] ?? Global.defaultData;
 
     var duration =
-        keys.isMovie() ? (data as Movie).duration : (data as Show).runTime;
+        Global.isMovie() ? (data as Movie).duration : (data as Show).runTime;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -170,7 +170,7 @@ class ViewCards extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).pushNamed(PreviewItem.route,
                     arguments:
-                        (DataProvider.dataDB[list[index]] ?? keys.defaultData));
+                        (DataProvider.dataDB[list[index]] ?? Global.defaultData));
               },
               onPanUpdate: (details) {
                 if (details.delta.dx > 0)
@@ -182,10 +182,10 @@ class ViewCards extends StatelessWidget {
               child: Consumer<PhotoProvider>(
                 builder: (ctx, image, child) {
                   List<String> backdrop = [
-                    keys.defaultImage,
-                    keys.defaultImage
+                    Global.defaultImage,
+                    Global.defaultImage
                   ];
-                  if (keys.isMovie())
+                  if (Global.isMovie())
                     backdrop = image.getMovieImages(list[index]) ?? backdrop;
                   else {
                     backdrop = image.getShowImages(list[index]) ?? backdrop;

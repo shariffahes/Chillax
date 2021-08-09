@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../providers/PhotoProvider.dart';
-import '/models/keys.dart';
+import '../Global.dart';
 import '/models/providers/People.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -62,19 +62,6 @@ class Data {
 class Movie extends Data {
   final int duration;
 
-  // Movie.fromMap(Map<String, Object?> list) {
-  //   this.id = list['id'] as int;
-  //   this.name = list['name'] as String;
-  //   this.overview = list['overview'] as String;
-  //   this.rate = list['rate'] as String;
-  //   this.releaseDate = list['releaseDate'] as int;
-  //   this.language = list['language'] as String;
-  //   this.duration = list['duration'] as int;
-  //   final String genre = list['name'] as String;
-  //   this.genre = genre.split(',');
-  //   this.certification = list['certification'] as String;
-  // }
-
   Movie(
     int id,
     String name,
@@ -91,21 +78,41 @@ class Movie extends Data {
   ) : super(id, name, overview, rate, yearOfRelease, language, genre,
             certification, releasedDate, homePage, trailer);
 
-  // Map<String, Object> toMap() {
-  //   return {
-  //     'id': id,
-  //     'name': name,
-  //     'overview': overview,
-  //     'rate': rate,
-  //     'releaseDate': releaseDate,
-  //     'language': language,
-  //     'duration': duration,
-  //     'genre': genreToString(),
-  //     'certification': certification,
-  //     'watched': 0,
-  //   };
-  // }
+  static Movie fromMap(Map<String, Object?> list) {
+    int id = list['id'] as int;
+    String name = list['name'] as String;
+    String overview = list['overview'] as String;
+    String rate = list['rate'] as String;
+    int year = list['year'] as int;
+    String language = list['language'] as String;
+    String releasedDate = list['releaseDate'] as String;
+    int duration = list['duration'] as int;
+    String namedGenre = list['genre'] as String;
+    List<String> genre = namedGenre.split(',');
+    String certification = list['certification'] as String;
+    String homePage = list['homePage'] as String;
+    String trailer = list['trailer'] as String;
+    return Movie(id, name, overview, rate, year, language, genre,
+        certification, releasedDate, homePage, trailer, duration);
+  }
 
+   Map<String, Object> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'overview': overview,
+      'rate': rate,
+      'year': yearOfRelease,
+      'language': language,
+      'duration': duration,
+      'genre': genreToString(),
+      'certification': certification,
+      'releaseDate': releasedDate,
+      'homePage': homePage,
+      'trailer': trailer,
+      'watched': 0,
+    };
+  }
 }
 
 //show is data with special modification
@@ -136,6 +143,63 @@ class Show extends Data {
 
   void setEpisodes(Map<int, List<Episode>> eps) {
     episodes = {...eps};
+  }
+
+  static Show fromMap(Map<String, Object?> list) {
+    int id = list['id'] as int;
+    String name = list['name'] as String;
+    String overview = list['overview'] as String;
+    String rate = list['rate'] as String;
+    int year = list['year'] as int;
+    String language = list['language'] as String;
+    String releasedDate = list['releaseDate'] as String;
+    int runtime = list['runTime'] as int;
+    String namedGenre = list['genre'] as String;
+    List<String> genre = namedGenre.split(',');
+    String certification = list['certification'] as String;
+    String homePage = list['homePage'] as String;
+    String trailer = list['trailer'] as String;
+    String network = list['network'] as String;
+    String status = list['status'] as String;
+    int airedEpisodes = list['airedEpisodes'] as int;
+
+    return Show(
+        id,
+        name,
+        overview,
+        rate,
+        year,
+        language,
+        genre,
+        certification,
+        releasedDate,
+        homePage,
+        trailer,
+        network,
+        runtime,
+        status,
+        airedEpisodes);
+  }
+
+   Map<String, Object> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'overview': overview,
+      'rate': rate,
+      'year': yearOfRelease,
+      'language': language,
+      'runTime': runTime,
+      'genre': genreToString(),
+      'certification': certification,
+      'releaseDate': releasedDate,
+      'homePage': homePage,
+      'trailer': trailer,
+      'network': network,
+      'status': status,
+      'airedEpisodes': airedEpisode,
+      'watched': 0,
+    };
   }
 }
 
@@ -222,7 +286,7 @@ class DataProvider with ChangeNotifier {
     //each time you open a genre, it will be reset to first page
     //movies and shows data are always cleared from the map when we move
     //to the next genre
-    currentPage[keys.dataType.index][MovieTypes.genre.index] = 1;
+    currentPage[Global.dataType.index][MovieTypes.genre.index] = 1;
     MovieTypes movieType =
         genre == null ? MovieTypes.similar : MovieTypes.genre;
     TvTypes tvType = genre == null ? TvTypes.similar : TvTypes.genre;
@@ -236,7 +300,7 @@ class DataProvider with ChangeNotifier {
     final List<int> _data = _extractData(results, ctx);
 
     //reminder: clear data after finish
-    if (keys.isMovie())
+    if (Global.isMovie())
       _movies[MovieTypes.genre.index] = _data;
     else
       _tvShows[TvTypes.genre.index] = _data;
@@ -272,7 +336,7 @@ class DataProvider with ChangeNotifier {
     for (var item in results) {
       dynamic info;
 
-      if (keys.isMovie()) {
+      if (Global.isMovie()) {
         info = item['movie'] ?? item;
       } else {
         info = item['show'] ?? item;
@@ -286,7 +350,7 @@ class DataProvider with ChangeNotifier {
       //so we fetch the image and notify listeners when finished
       if (tmdbId != -1)
         Provider.of<PhotoProvider>(ctx, listen: false)
-            .fetchImagesFor(tmdbId, id, keys.dataType);
+            .fetchImagesFor(tmdbId, id, Global.dataType);
 
       print(id);
       final title = info['title'] ?? '-';
@@ -306,7 +370,7 @@ class DataProvider with ChangeNotifier {
       final List<String> genres =
           extractedGenres.getRange(0, maxRange).toList().cast<String>();
 
-      if (keys.isMovie()) {
+      if (Global.isMovie()) {
         final duration = info['runtime'] ?? 0;
         final releasedDate = info['released'] ?? '-';
         final movie = Movie(id, title, overview, rate, year, lan, genres,
@@ -353,22 +417,22 @@ class DataProvider with ChangeNotifier {
   String _prepareURL(MovieTypes? movie, TvTypes? tv,
       {page = 1, String? genre, String? searchName, int? id}) {
     String stringURL;
-    if (keys.dataType == DataType.movie) {
+    if (Global.dataType == DataType.movie) {
       switch (movie) {
         case MovieTypes.genre:
           stringURL =
-              '${keys.baseURL}movies/recommended/daily?&page=$page&limit=${15}&genres=${genre!.toLowerCase()}&extended=full';
+              '${Global.baseURL}movies/recommended/daily?&page=$page&limit=${15}&genres=${genre!.toLowerCase()}&extended=full';
           break;
         case MovieTypes.search:
           stringURL =
-              "${keys.baseURL}search/movie?query=$searchName&extended=full&page=$page";
+              "${Global.baseURL}search/movie?query=$searchName&extended=full&page=$page";
           break;
         case MovieTypes.similar:
-          stringURL = '${keys.baseURL}movies/$id/related?extended=full';
+          stringURL = '${Global.baseURL}movies/$id/related?extended=full';
           break;
         default:
           stringURL =
-              '${keys.baseURL}movies/${movie!.toShortString()}?page=$page&limit=${15}&extended=full';
+              '${Global.baseURL}movies/${movie!.toShortString()}?page=$page&limit=${15}&extended=full';
 
           break;
       }
@@ -376,26 +440,26 @@ class DataProvider with ChangeNotifier {
       switch (tv) {
         case TvTypes.played:
           stringURL =
-              '${keys.baseURL}shows/played/daily?page=$page&limit=${15}&extended=full';
+              '${Global.baseURL}shows/played/daily?page=$page&limit=${15}&extended=full';
           break;
         case TvTypes.recommended:
           stringURL =
-              '${keys.baseURL}shows/recommended/weekly?page=$page&limit=${15}&extended=full';
+              '${Global.baseURL}shows/recommended/weekly?page=$page&limit=${15}&extended=full';
           break;
         case TvTypes.genre:
           stringURL =
-              '${keys.baseURL}shows/recommended/daily?genres=${genre!.toLowerCase()}&page=$page&limit=${15}&extended=full';
+              '${Global.baseURL}shows/recommended/daily?genres=${genre!.toLowerCase()}&page=$page&limit=${15}&extended=full';
           break;
         case TvTypes.search:
           stringURL =
-              "${keys.baseURL}search/show?query=$searchName&extended=full&page=$page";
+              "${Global.baseURL}search/show?query=$searchName&extended=full&page=$page";
           break;
         case TvTypes.similar:
-          stringURL = '${keys.baseURL}shows/$id/related?extended=full';
+          stringURL = '${Global.baseURL}shows/$id/related?extended=full';
           break;
         default:
           stringURL =
-              "${keys.baseURL}shows/${tv!.toShortString()}?extended=full&page=$page&limit${15}";
+              "${Global.baseURL}shows/${tv!.toShortString()}?extended=full&page=$page&limit${15}";
           break;
       }
     }
@@ -413,7 +477,7 @@ class DataProvider with ChangeNotifier {
         headers: {
           'Content-Type': 'application/json',
           'trakt-api-version': '2',
-          'trakt-api-key': keys.apiKey,
+          'trakt-api-key': Global.apiKey,
         },
       );
 
@@ -429,13 +493,13 @@ class DataProvider with ChangeNotifier {
       MovieTypes? movieType, TvTypes? showType, BuildContext ctx,
       {String? genre, String? searchName}) async {
     //find if it is movie or show list
-    final index = keys.isMovie() ? movieType!.index : showType!.index;
+    final index = Global.isMovie() ? movieType!.index : showType!.index;
     //start incrementing the previous value
-    currentPage[keys.dataType.index][index]++;
+    currentPage[Global.dataType.index][index]++;
 
 //prepare url and fetch data
     final url = _prepareURL(movieType, showType,
-        page: currentPage[keys.dataType.index][index],
+        page: currentPage[Global.dataType.index][index],
         genre: genre,
         searchName: searchName);
     try {
@@ -443,7 +507,7 @@ class DataProvider with ChangeNotifier {
       final results = decodedData as List<dynamic>;
 
       final data = _extractData(results, ctx);
-      if (keys.isMovie())
+      if (Global.isMovie())
         _movies[movieType!.index].addAll(data.cast<int>());
       else
         _tvShows[showType!.index].addAll(data.cast<int>());
@@ -456,8 +520,8 @@ class DataProvider with ChangeNotifier {
 
 //when preview page is opened. you fetch the cast by this method
   Future<List<People>?> fetchCast(int id, BuildContext ctx) async {
-    final label = keys.isMovie() ? 'movies' : 'shows';
-    final stringURL = keys.baseURL + "$label/$id/people";
+    final label = Global.isMovie() ? 'movies' : 'shows';
+    final stringURL = Global.baseURL + "$label/$id/people";
 
     final decodedData;
     try {
@@ -502,7 +566,7 @@ class DataProvider with ChangeNotifier {
     final response = await _fetchData(url);
     final results = response as List<dynamic>;
     List<int> _searchData = _extractData(results, ctx);
-    if (keys.isMovie())
+    if (Global.isMovie())
       _movies[MovieTypes.search.index] = _searchData;
     else
       _tvShows[TvTypes.search.index] = _searchData;
@@ -529,7 +593,7 @@ class DataProvider with ChangeNotifier {
       headers: {
         'Content-Type': 'application/json',
         'trakt-api-version': '2',
-        'trakt-api-key': keys.apiKey,
+        'trakt-api-key': Global.apiKey,
       },
     );
     final results = json.decode(response.body) as List<dynamic>;
@@ -596,7 +660,7 @@ class DataProvider with ChangeNotifier {
       String date, bool isAll, BuildContext ctx) async {
     final user = Provider.of<User>(ctx, listen: false);
     if (!user.isChange) {
-      if (!keys.isMovie()) {
+      if (!Global.isMovie()) {
         if (isAll && tvSchedule[date] != null)
           return tvSchedule[date]!.keys.toList();
         if (!isAll && _myTvSchedule[date] != null) return _myTvSchedule[date]!;
@@ -607,13 +671,13 @@ class DataProvider with ChangeNotifier {
       }
     }
 
-    final label = keys.isMovie() ? 'movies' : 'shows';
+    final label = Global.isMovie() ? 'movies' : 'shows';
     final url =
         'https://api.trakt.tv/calendars/all/$label/$date/1?extended=full';
     final response = await _fetchData(url) as List<dynamic>;
     bool isFirst = false;
     user.isChange = false;
-    if (keys.isMovie()) {
+    if (Global.isMovie()) {
       final data = _extractData(response, ctx);
       _myMovieSchedule[date] = [];
       movieSchedule[date] = data;
@@ -646,7 +710,8 @@ class DataProvider with ChangeNotifier {
           if (watchingMap.isEmpty) watchingMap = user.watchingtoMap();
           //if the show has been watched, in the watching list, or currently watching
           //turn is First to true which will notify that this show should be in my schedule
-          isFirst = user.isShowAdded(prevId) || watchingMap[prevId] != null;
+         final status = user.getStatus(prevId);
+          isFirst = status == Status.watching || status == Status.watched ;
           todaySchedule[prevId] = [...epsInfo];
           myEpisodes.add(prevId);
 
