@@ -102,6 +102,7 @@ class PreviewItem extends StatelessWidget {
                           borderRadius: BorderRadius.circular(22),
                         ),
                       ),
+                      backgroundColor: MaterialStateProperty.all<Color>(Color.fromRGBO(172, 60, 204, 1)),
                       fixedSize: MaterialStateProperty.all<Size>(
                         Size(210, 60),
                       )),
@@ -114,7 +115,7 @@ class PreviewItem extends StatelessWidget {
             ),
             CircleAvatar(
               radius: 30,
-              backgroundColor: Colors.red,
+              backgroundColor: Color.fromRGBO(172, 60, 204, 1),
               child: CircleAvatar(
                 backgroundColor: Colors.white,
                 radius: 27,
@@ -354,6 +355,7 @@ class CustomAppBar extends StatelessWidget {
               ),
               child: CircleAvatar(
                 radius: 42,
+                backgroundColor: Color.fromRGBO(172, 60, 204, 1),
                 child: Text(
                   _data.rate,
                   style: TextStyle(
@@ -445,6 +447,8 @@ class ActorItem extends StatelessWidget {
                   right: 0,
                   child: ElevatedButton(
                     child: Text('View more'),
+                    style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(
+                            Color.fromRGBO(172, 60, 204, 1))),
                     onPressed: () {
                       if (!isCast)
                         Navigator.of(context)

@@ -96,10 +96,10 @@ class _CalendarState extends State<Calendar>
       labelPadding: EdgeInsets.only(
         bottom: 14,
       ),
-      labelColor: Colors.red,
+      labelColor: Color.fromRGBO(172, 60, 204, 1),
       unselectedLabelColor: Colors.white,
       indicator: BoxDecoration(
-          border: Border.all(color: Colors.red, width: 5),
+          border: Border.all(color: Color.fromRGBO(0, 0, 128, 1), width: 5),
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.all(
             Radius.circular(15),
@@ -190,6 +190,10 @@ class _FilterButtonState extends State<FilterButton>
         reverseDuration: Duration(milliseconds: 200));
     List<ElevatedButton> dropButtons = [
       ElevatedButton(
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(
+          Color.fromRGBO(172, 60, 204, 1),
+        )),
         onPressed: () {
           widget.filterData(true);
           _controller.reverse();
@@ -198,6 +202,9 @@ class _FilterButtonState extends State<FilterButton>
         child: Text(Global.isMovie() ? 'All movies' : 'All shows'),
       ),
       ElevatedButton(
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(
+                Color.fromRGBO(172, 60, 204, 1))),
         onPressed: () {
           widget.filterData(false);
           _controller.reverse();
@@ -226,7 +233,6 @@ class _FilterButtonState extends State<FilterButton>
 
   @override
   Widget build(BuildContext context) {
-    
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -237,7 +243,13 @@ class _FilterButtonState extends State<FilterButton>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (!widget.isFilterOpened)
-              ElevatedButton(onPressed: () {}, child: Text(title)),
+              ElevatedButton(
+                onPressed: () {},
+                child: Text(title),
+                style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                        Color.fromRGBO(172, 60, 204, 1))),
+              ),
             IconButton(
                 onPressed: () {
                   widget.isFilterOpened
@@ -248,10 +260,9 @@ class _FilterButtonState extends State<FilterButton>
                   });
                 },
                 icon: Icon(
-                  widget.isFilterOpened ? Icons.close : Icons.filter_list_alt,
-                  size: 40,
-                  color: Colors.red,
-                ))
+                    widget.isFilterOpened ? Icons.close : Icons.filter_list_alt,
+                    size: 40,
+                    color: Color.fromRGBO(172, 60, 204, 1)))
           ],
         ),
       ],
@@ -351,7 +362,7 @@ class ShowGrid extends StatelessWidget {
             ),
             Container(
               height: 350,
-              child: EpisodeList(episodes,(data as Show).network),
+              child: EpisodeList(episodes, (data as Show).network),
             )
           ],
         );

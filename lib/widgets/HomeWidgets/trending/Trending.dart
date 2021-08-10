@@ -133,7 +133,7 @@ class icons extends StatelessWidget {
         Icon(
           icon,
           size: 44,
-          color: Colors.red,
+          color: Color.fromRGBO(172, 60, 204, 1),
         ),
         Text(value),
       ],
@@ -193,7 +193,7 @@ class ViewCards extends StatelessWidget {
 
                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: Color.fromRGBO(172, 60, 204, 1),
                       borderRadius: BorderRadius.circular(
                         12.0,
                       ),

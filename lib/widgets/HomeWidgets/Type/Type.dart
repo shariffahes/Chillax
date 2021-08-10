@@ -38,7 +38,7 @@ class Type extends StatelessWidget {
                 },
               );
             },
-            child: Text('View all'),
+            child: Text('View all',style: TextStyle(color: Color.fromRGBO(172, 60, 204, 1)),),
           ),
         ],
       ),

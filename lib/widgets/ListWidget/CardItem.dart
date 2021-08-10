@@ -1,4 +1,3 @@
-import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';

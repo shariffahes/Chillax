@@ -82,19 +82,20 @@ class Universal {
           icon: Icon(
             Icons.check_circle,
             size: 35,
-            color: Colors.red,
+            color: Color.fromRGBO(172, 60, 204, 1),
           ),
         );
       case Status.watched:
         return ElevatedButton(
+          style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(
+            Color.fromRGBO(172, 60, 204, 1),
+          )),
           onPressed: () {
             user.removeFromWatched(_data.id);
           },
           child: Text(
             'Watched',
-          ),
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
           ),
         );
       case Status.watching:
@@ -106,7 +107,9 @@ class Universal {
             'Watching',
           ),
           style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.red)),
+              backgroundColor: MaterialStateProperty.all<Color>(
+            Color.fromRGBO(172, 60, 204, 1),
+          )),
         );
 
       case Status.none:
@@ -119,7 +122,7 @@ class Universal {
           icon: Icon(
             Icons.add_circle_rounded,
             size: 35,
-            color: Colors.red,
+            color: Color.fromRGBO(172, 60, 204, 1),
           ),
         );
     }

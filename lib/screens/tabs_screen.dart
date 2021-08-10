@@ -49,6 +49,7 @@ class TabsScreenState extends State<TabsScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          brightness: Brightness.dark,
           elevation: _index == 2 ? 0 : 10,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
@@ -72,7 +73,7 @@ class TabsScreenState extends State<TabsScreen> {
                 ),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Colors.red,
+          selectedItemColor: Color.fromRGBO(0, 0, 128, 1),
           unselectedItemColor: Colors.black,
           currentIndex: _index,
           onTap: selectTab,
