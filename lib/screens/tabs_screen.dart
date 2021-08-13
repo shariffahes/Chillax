@@ -1,3 +1,5 @@
+import 'package:discuss_it/models/Global.dart';
+
 import '../screens/home_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/schedule_screen.dart';
@@ -73,7 +75,7 @@ class TabsScreenState extends State<TabsScreen> {
                 ),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Color.fromRGBO(0, 0, 128, 1),
+          selectedItemColor: Global.primary,
           unselectedItemColor: Colors.black,
           currentIndex: _index,
           onTap: selectTab,

@@ -1,4 +1,5 @@
 import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/material.dart';
@@ -82,20 +83,21 @@ class Universal {
           icon: Icon(
             Icons.check_circle,
             size: 35,
-            color: Color.fromRGBO(172, 60, 204, 1),
+            color: Global.accent,
           ),
         );
       case Status.watched:
         return ElevatedButton(
           style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all<Color>(
-            Color.fromRGBO(172, 60, 204, 1),
+            Global.accent,
           )),
           onPressed: () {
             user.removeFromWatched(_data.id);
           },
           child: Text(
             'Watched',
+            style: TextStyle(color: Colors.black),
           ),
         );
       case Status.watching:
@@ -105,10 +107,11 @@ class Universal {
           },
           child: Text(
             'Watching',
+            style: TextStyle(color: Colors.black),
           ),
           style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all<Color>(
-            Color.fromRGBO(172, 60, 204, 1),
+            Global.accent,
           )),
         );
 
@@ -122,7 +125,7 @@ class Universal {
           icon: Icon(
             Icons.add_circle_rounded,
             size: 35,
-            color: Color.fromRGBO(172, 60, 204, 1),
+            color: Global.accent,
           ),
         );
     }

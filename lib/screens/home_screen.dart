@@ -1,3 +1,4 @@
+import 'package:discuss_it/main.dart';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/material.dart';
@@ -15,10 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  @override
-  void initState() {
-    super.initState();
-  }
+
 
   //Prepare the home screen main titles
   final List<MovieTypes> listOfMovieTitles =
@@ -36,8 +34,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 }
-
-
 
 class MainScreen extends StatelessWidget {
   final DataType type;

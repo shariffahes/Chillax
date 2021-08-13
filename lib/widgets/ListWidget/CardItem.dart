@@ -35,25 +35,26 @@ class CardItem extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Container(
-                height: 180,
-                child: ClipRRect(
-                  borderRadius: roundedBorder(22, 55),
-                  child: Consumer<PhotoProvider>(
-                    builder: (ctx, image, _) {
-                      List<String> poster = [Global.defaultImage];
-                      if (Global.isMovie())
-                        poster = image.getMovieImages(_data.id) ?? poster;
-                      else
-                        poster = image.getShowImages(_data.id) ?? poster;
+            Container(
+              height: 180,
+              margin: const EdgeInsets.all(15.0),
+              decoration: BoxDecoration(
+                  color: Global.primary,
+                  borderRadius: roundedBorder(22, 55)),
+              child: ClipRRect(
+                borderRadius: roundedBorder(22, 55),
+                child: Consumer<PhotoProvider>(
+                  builder: (ctx, image, _) {
+                    List<String> poster = [Global.defaultImage];
+                    if (Global.isMovie())
+                      poster = image.getMovieImages(_data.id) ?? poster;
+                    else
+                      poster = image.getShowImages(_data.id) ?? poster;
 
-                      return Image(
-                        image: NetworkImage(poster[0]),
-                      );
-                    },
-                  ),
+                    return Image(
+                      image: NetworkImage(poster[0]),
+                    );
+                  },
                 ),
               ),
             ),

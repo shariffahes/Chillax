@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:discuss_it/main.dart';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Track {
   late int currentEp;
@@ -23,6 +26,18 @@ class User with ChangeNotifier {
   Map<int, Show> _tvWatched = {};
   List<Show> _watching = [];
   Map<int, Track> track = {};
+
+  User() {
+    if (!Global.isMovieSet)
+      Global.getMovieFromLocalDB(
+          setMovieWL: setMovieWatchList, setMovieWatched: setMovieWatchedList);
+    if (!Global.isShowSet)
+      Global.getShowFromLocalDB(
+          setShowWL: setTvWatchList,
+          setShowWatched: setTvWatchedList,
+          setTrack: setTrack,
+          setWatching: setWatching);
+  }
 
   //this used in get schedule to indicate if there is any changes which require rebuild;
   bool isChange = false;
@@ -86,6 +101,7 @@ class User with ChangeNotifier {
         track[id]!.currentEp = nextEp;
         track[id]!.currentSeason = nextSeason;
         _updateEpisode(id, nextEp, nextSeason);
+        return;
       }
     }
     notifyListeners();
@@ -107,7 +123,53 @@ class User with ChangeNotifier {
 
 //helper methods
 
-  void updateNext(int id, int season, int episode) {
+  Future<Episode?> getEpisodeInfo(
+    int id,
+    BuildContext ctx, {
+    int? season,
+    int? episode,
+  }) async {
+    List<int> current = _getNext(id);
+    season = season ?? current[1];
+    episode = episode ?? current[0];
+
+    _updateNext(id, season, episode + 1);
+    Show show = DataProvider.dataDB[id] as Show;
+
+    episode = episode - 1;
+    if (show.episodes == null) {
+      return null;
+    }
+    final _seriesEpisodes = show.episodes!;
+
+    if (season > _seriesEpisodes.keys.length) {
+      print('no more seasons');
+      return null;
+    }
+
+    if (_seriesEpisodes[season]!.isEmpty) {
+      await Provider.of<DataProvider>(ctx,listen: false).fetchSeasons(id,season: season);
+    }
+
+    if (episode >= _seriesEpisodes[season]!.length) {
+      print('get episode again with new season ${season + 1}');
+      return getEpisodeInfo(
+        id,
+        ctx,
+        season: season + 1,
+        episode: 1,
+      );
+    }
+
+    return _seriesEpisodes[season]![episode];
+  }
+
+  List<int> _getNext(int id) {
+    if (track[id] == null) return [1, 1];
+    return [track[id]!.currentEp, track[id]!.currentSeason];
+  }
+
+  void _updateNext(int id, int season, int episode) {
     if (track[id] == null) {
       track[id] =
           Track(currentEp: 1, currentSeason: 1, nextEp: episode, nextSeason: 1);
@@ -168,6 +230,7 @@ class User with ChangeNotifier {
     return Status.none;
   }
 
+//OPTIMIZE SEARCH!!
   bool isWatching(int id) {
     for (var show in _watching) {
       if (show.id == id) return true;
@@ -179,7 +242,8 @@ class User with ChangeNotifier {
   void moveToWatched(int id) {
     Show show = _watching.firstWhere((element) => element.id == id);
     _tvWatched[id] = show;
-    _watching.remove(show);
+    //_watching.remove(show);
+
     _update(id, 1, DataType.tvShow);
   }
 
@@ -212,6 +276,7 @@ class User with ChangeNotifier {
   }
 
   void _delete(int id, DataType type) async {
+    track[id] = Track(currentEp: 1, currentSeason: 1);
     if (type == DataType.movie)
       await MyApp.db!.delete('MovieWatch', where: 'id = $id');
     else
@@ -242,25 +307,31 @@ class User with ChangeNotifier {
 //setters
   void setMovieWatchList(Map<int, Movie> movieWl) {
     _movieWatchList = {...movieWl};
+    notifyListeners();
   }
 
   void setMovieWatchedList(Map<int, Movie> watched) {
     _movieWatched = {...watched};
+    notifyListeners();
   }
 
   void setTvWatchList(Map<int, Show> tvWL) {
     _tvWatchList = {...tvWL};
+    notifyListeners();
   }
 
   void setTvWatchedList(Map<int, Show> tvWatched) {
     _tvWatched = {...tvWatched};
+    notifyListeners();
   }
 
   void setTrack(Map<int, Track> trak) {
     track = {...trak};
+    notifyListeners();
   }
 
   void setWatching(List<Show> wtching) {
     _watching = [...wtching];
+    notifyListeners();
   }
 }

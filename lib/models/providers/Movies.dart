@@ -1,6 +1,5 @@
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -92,11 +91,11 @@ class Movie extends Data {
     String certification = list['certification'] as String;
     String homePage = list['homePage'] as String;
     String trailer = list['trailer'] as String;
-    return Movie(id, name, overview, rate, year, language, genre,
-        certification, releasedDate, homePage, trailer, duration);
+    return Movie(id, name, overview, rate, year, language, genre, certification,
+        releasedDate, homePage, trailer, duration);
   }
 
-   Map<String, Object> toMap() {
+  Map<String, Object> toMap() {
     return {
       'id': id,
       'name': name,
@@ -181,7 +180,7 @@ class Show extends Data {
         airedEpisodes);
   }
 
-   Map<String, Object> toMap() {
+  Map<String, Object> toMap() {
     return {
       'id': id,
       'name': name,
@@ -386,24 +385,26 @@ class DataProvider with ChangeNotifier {
         final status = info['status'] ?? '-';
         final airedEpisode = info['aired_episodes'] ?? 0;
         final releasedDate = info['first_aired'] ?? '-';
-
+        final episodesInfo =
+            dataDB[id] != null ? (dataDB[id] as Show).episodes : null;
         final Show show = Show(
-            id,
-            title,
-            overview,
-            rate,
-            year,
-            lan,
-            genres,
-            certification,
-            releasedDate,
-            homePage,
-            trailer,
-            network,
-            runtime,
-            status,
-            airedEpisode);
-
+          id,
+          title,
+          overview,
+          rate,
+          year,
+          lan,
+          genres,
+          certification,
+          releasedDate,
+          homePage,
+          trailer,
+          network,
+          runtime,
+          status,
+          airedEpisode,
+        );
+        show.episodes = episodesInfo;
         dataDB[id] = show;
 
         itemsInfo.add(id);
@@ -468,9 +469,9 @@ class DataProvider with ChangeNotifier {
   }
 
 //responsible to get the json data from trakt
-  Future<dynamic> _fetchData(String url) async {
-    final parsedURL = Uri.parse(url);
-
+  Future<dynamic> _fetchData(String url, {Uri? uri}) async {
+    Uri parsedURL = Uri.parse(url);
+    if (uri != null) parsedURL = uri;
     try {
       final response = await http.get(
         parsedURL,
@@ -640,22 +641,6 @@ class DataProvider with ChangeNotifier {
         year, tmdbId, season, num, runTime);
   }
 
-  Episode? getEpisodeInfo(int id, int season, int episode, BuildContext ctx) {
-    Provider.of<User>(ctx, listen: false).updateNext(id, season, episode + 1);
-    episode = episode - 1;
-
-    if ((dataDB[id] as Show).episodes == null) return null;
-    Show show = dataDB[id] as Show;
-
-    final _seriesEpisodes = show.episodes!;
-    if (season > _seriesEpisodes.keys.length) return null;
-
-    if (episode >= _seriesEpisodes[season]!.length)
-      return getEpisodeInfo(id, season + 1, 1, ctx);
-
-    return _seriesEpisodes[season]![episode];
-  }
-
   Future<List<int>> getScheduleFor(
       String date, bool isAll, BuildContext ctx) async {
     final user = Provider.of<User>(ctx, listen: false);
@@ -710,8 +695,8 @@ class DataProvider with ChangeNotifier {
           if (watchingMap.isEmpty) watchingMap = user.watchingtoMap();
           //if the show has been watched, in the watching list, or currently watching
           //turn is First to true which will notify that this show should be in my schedule
-         final status = user.getStatus(prevId);
-          isFirst = status == Status.watching || status == Status.watched ;
+          final status = user.getStatus(prevId);
+          isFirst = status == Status.watching || status == Status.watched;
           todaySchedule[prevId] = [...epsInfo];
           myEpisodes.add(prevId);
 
@@ -740,5 +725,62 @@ class DataProvider with ChangeNotifier {
     }
 
     //return isAll ? schedule[ind][date]! : (_mySchedule[ind][date] ?? []);
+  }
+
+  List<int> imageRequested = [];
+  Future<void> fetchImage(int id, DataType type, BuildContext ctx) async {
+    String url = Global.baseURL;
+    if (imageRequested.contains(id)) return;
+    imageRequested.add(id);
+    if (type == DataType.tvShow) {
+      url += 'shows/$id';
+    } else if (type == DataType.movie) {
+      url += 'movies/$id';
+    }
+
+    final response = await _fetchData(url);
+    final tmdbID = response['ids']['tmdb'] ?? -1;
+
+    if (tmdbID != -1)
+      Provider.of<PhotoProvider>(ctx, listen: false)
+          .fetchImagesFor(tmdbID, id, type);
+  }
+
+  Future<void> fetchSeasons(int id, {int season = 1}) async {
+    Show data = dataDB[id] as Show;
+
+    String url = Global.baseURL + 'shows/$id/seasons';
+    Uri uri = Uri.parse(url);
+    List<dynamic> response;
+
+    if (data.episodes == null) {
+      response = await _fetchData(url, uri: uri) as List<dynamic>;
+      data.episodes = {};
+      response.forEach((item) {
+        int season = item['number'] ?? -1;
+        if (season != 0) data.episodes![season] = [];
+      });
+      print('fetch done ${data.episodes}');
+    }
+
+    if (data.episodes![season] == null || data.episodes![season]!.isEmpty) {
+      url += '/$season';
+      uri = Uri.parse(url);
+      print(uri);
+      response = await _fetchData(url, uri: uri) as List<dynamic>;
+
+      response.forEach(
+        (element) {
+          final name = element['title'] ?? '-';
+          final epsId = element['ids']['trakt'] ?? -1;
+          final tmdbId = element['ids']['tmdb'] ?? -1;
+          final number = element['number'] ?? -1;
+          Episode eps = Episode(
+              epsId, id, name, '-', '-', '-', 0, tmdbId, season, number, 0);
+          data.episodes![season]!.add(eps);
+        },
+      );
+      print('${data.episodes}');
+    }
   }
 }

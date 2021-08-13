@@ -28,7 +28,10 @@ class PreviewItem extends StatelessWidget {
         title = 'Add to WatchList';
         break;
     }
-    return Text(title);
+    return Text(
+      title,
+      style: TextStyle(color: Colors.black),
+    );
   }
 
   void action(Status status, User user, Data _data) {
@@ -102,7 +105,8 @@ class PreviewItem extends StatelessWidget {
                           borderRadius: BorderRadius.circular(22),
                         ),
                       ),
-                      backgroundColor: MaterialStateProperty.all<Color>(Color.fromRGBO(172, 60, 204, 1)),
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(Global.accent),
                       fixedSize: MaterialStateProperty.all<Size>(
                         Size(210, 60),
                       )),
@@ -115,7 +119,7 @@ class PreviewItem extends StatelessWidget {
             ),
             CircleAvatar(
               radius: 30,
-              backgroundColor: Color.fromRGBO(172, 60, 204, 1),
+              backgroundColor: Global.accent,
               child: CircleAvatar(
                 backgroundColor: Colors.white,
                 radius: 27,
@@ -317,7 +321,10 @@ class CustomAppBar extends StatelessWidget {
           Positioned.fill(
             child: Consumer<PhotoProvider>(
               builder: (ctx, image, _) {
-                List<String> backdrop = [Global.defaultImage, Global.defaultImage];
+                List<String> backdrop = [
+                  Global.defaultImage,
+                  Global.defaultImage
+                ];
                 if (Global.isMovie())
                   backdrop = image.getMovieImages(_data.id) ?? backdrop;
                 else
@@ -355,13 +362,13 @@ class CustomAppBar extends StatelessWidget {
               ),
               child: CircleAvatar(
                 radius: 42,
-                backgroundColor: Color.fromRGBO(172, 60, 204, 1),
+                backgroundColor: Global.accent,
                 child: Text(
                   _data.rate,
                   style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
               ),
             ),
@@ -446,9 +453,13 @@ class ActorItem extends StatelessWidget {
                   left: 0,
                   right: 0,
                   child: ElevatedButton(
-                    child: Text('View more'),
-                    style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(
-                            Color.fromRGBO(172, 60, 204, 1))),
+                    child: Text(
+                      'View more',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Global.accent)),
                     onPressed: () {
                       if (!isCast)
                         Navigator.of(context)

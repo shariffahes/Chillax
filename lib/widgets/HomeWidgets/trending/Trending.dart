@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
@@ -12,6 +10,7 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 class Trending extends StatefulWidget {
   MovieTypes movieType;
   TvTypes showType;
+ 
   Trending(this.movieType, this.showType);
 
   @override
@@ -53,6 +52,8 @@ class _TrendingState extends State<Trending> {
             : value.getDataBy(null, widget.showType);
       });
     });
+
+   
   }
 
   @override
@@ -133,7 +134,7 @@ class icons extends StatelessWidget {
         Icon(
           icon,
           size: 44,
-          color: Color.fromRGBO(172, 60, 204, 1),
+          color: Global.primary,
         ),
         Text(value),
       ],
@@ -169,8 +170,8 @@ class ViewCards extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 Navigator.of(context).pushNamed(PreviewItem.route,
-                    arguments:
-                        (DataProvider.dataDB[list[index]] ?? Global.defaultData));
+                    arguments: (DataProvider.dataDB[list[index]] ??
+                        Global.defaultData));
               },
               onPanUpdate: (details) {
                 if (details.delta.dx > 0)

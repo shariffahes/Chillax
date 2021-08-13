@@ -192,25 +192,28 @@ class _FilterButtonState extends State<FilterButton>
       ElevatedButton(
         style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color>(
-          Color.fromRGBO(172, 60, 204, 1),
+          Global.accent,
         )),
         onPressed: () {
           widget.filterData(true);
           _controller.reverse();
           title = Global.isMovie() ? 'All movies' : 'All shows';
         },
-        child: Text(Global.isMovie() ? 'All movies' : 'All shows'),
+        child: Text(
+          Global.isMovie() ? 'All movies' : 'All shows',
+          style: TextStyle(color: Colors.black),
+        ),
       ),
       ElevatedButton(
         style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(
-                Color.fromRGBO(172, 60, 204, 1))),
+            backgroundColor: MaterialStateProperty.all<Color>(Global.accent)),
         onPressed: () {
           widget.filterData(false);
           _controller.reverse();
           title = Global.isMovie() ? 'My movies' : 'My shows';
         },
-        child: Text(Global.isMovie() ? 'My movies' : 'My shows'),
+        child: Text(Global.isMovie() ? 'My movies' : 'My shows',
+            style: TextStyle(color: Colors.black)),
       ),
     ];
     dropMenu = dropButtons
@@ -245,10 +248,13 @@ class _FilterButtonState extends State<FilterButton>
             if (!widget.isFilterOpened)
               ElevatedButton(
                 onPressed: () {},
-                child: Text(title),
+                child: Text(
+                  title,
+                  style: TextStyle(color: Colors.black),
+                ),
                 style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                        Color.fromRGBO(172, 60, 204, 1))),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Global.accent)),
               ),
             IconButton(
                 onPressed: () {
@@ -262,7 +268,7 @@ class _FilterButtonState extends State<FilterButton>
                 icon: Icon(
                     widget.isFilterOpened ? Icons.close : Icons.filter_list_alt,
                     size: 40,
-                    color: Color.fromRGBO(172, 60, 204, 1)))
+                    color: Global.accent))
           ],
         ),
       ],

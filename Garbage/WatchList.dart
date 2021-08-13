@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 class WatchList extends StatefulWidget {
   final Data _data;
   final User _userProv;
-  final bool isWatching;
+  bool isWatching;
 
   WatchList(this._data, this._userProv, {this.isWatching = false});
 
@@ -23,6 +23,7 @@ class WatchList extends StatefulWidget {
 class _WatchListState extends State<WatchList> {
   var isLoading = false;
   var isVisible = true;
+
   @override
   Widget build(BuildContext context) {
     String title;
@@ -45,6 +46,7 @@ class _WatchListState extends State<WatchList> {
         showTitle = show.name;
       } else {
         final Show show = widget._data as Show;
+
         title = show.name;
         sub1 = 'Series';
         sub2 = show.airedEpisode.toString() + ' ep';
@@ -78,61 +80,17 @@ class _WatchListState extends State<WatchList> {
             padding: const EdgeInsets.only(right: 8.0),
             child: Row(
               children: [
-                Container(
-                  width: 170,
-                  padding: const EdgeInsets.only(right: 8.0, top: 10.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.elliptical(70, 90)),
-                    child: Consumer<PhotoProvider>(
-                      builder: (ctx, image, _) {
-                        List<String> backdrop = [
-                          Global.defaultImage,
-                          Global.defaultImage
-                        ];
-                        if (Global.isMovie())
-                          backdrop =
-                              image.getMovieImages(widget._data.id) ?? backdrop;
-                        else
-                          backdrop =
-                              image.getShowImages(widget._data.id) ?? backdrop;
-
-                        return Stack(children: [
-                          Image.network(
-                            backdrop[1],
-                          ),
-                          if (!Global.isMovie())
-                            Positioned(
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                child: Container(
-                                    alignment: AlignmentDirectional.center,
-                                    width: double.infinity,
-                                    color: Colors.black54,
-                                    height: 30,
-                                    child: Text(
-                                      (widget._data as Show).status,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )))
-                        ]);
-                      },
-                    ),
-                  ),
-                ),
+                WLImageView(widget._data),
                 FutureBuilder<DataProvider>(
                   future: widget.isWatching
                       ? Provider.of<DataProvider>(context, listen: false)
                           .fetchEpisodes(widget._data.id)
                       : null,
                   builder: (ctx, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting)
-                      return Universal.loadingWidget();
-
-                    if (snapshot.hasError) return Universal.failedWidget();
+                    if (snapshot.hasError) {
+                      print('err: ${snapshot.error}');
+                      return Universal.failedWidget();
+                    }
                     if (snapshot.hasData) {
                       final id = widget._data.id;
                       final track = widget._userProv.track[id] ??
@@ -140,11 +98,12 @@ class _WatchListState extends State<WatchList> {
 
                       Episode? ep = snapshot.data!.getEpisodeInfo(
                           id, track.currentSeason, track.currentEp, context);
+
                       if (ep == null) {
                         widget._userProv.moveToWatched(id);
                       } else {
                         title = ep.name;
-                        sub1 = 'E${ep.number}S${ep.season}';
+                        sub1 = 'S${ep.season}E${ep.number}';
                       }
                     }
 
@@ -157,7 +116,7 @@ class _WatchListState extends State<WatchList> {
                           Text(
                             title,
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -170,6 +129,7 @@ class _WatchListState extends State<WatchList> {
                                 sub1,
                                 style: TextStyle(
                                   color: Colors.grey.shade700,
+                                  fontSize: 14,
                                 ),
                               ),
                               SizedBox(
@@ -217,7 +177,9 @@ class _WatchListState extends State<WatchList> {
                   onPressed: () {
                     setState(() {
                       isVisible = false;
+
                       Timer(Duration(milliseconds: 500), () {
+                        print('run now');
                         widget._userProv.watchComplete(widget._data.id);
                         setState(() {
                           isVisible = true;
@@ -227,15 +189,69 @@ class _WatchListState extends State<WatchList> {
                   },
                   icon: Icon(
                     widget._userProv.getStatus(widget._data.id) ==
-                            Status.watched
-                        ? Icons.check_circle_rounded
-                        : Icons.check_circle_outline_rounded,
-                    size: 33,
+                            Status.watching
+                        ? Icons.check_circle_outline
+                        : widget._userProv.getStatus(widget._data.id) ==
+                                Status.watched
+                            ? Icons.check_circle_rounded
+                            : Icons.circle_outlined,
+                    size: 28,
                   ),
                 )
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class WLImageView extends StatelessWidget {
+  final Data data;
+  const WLImageView(this.data);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 170,
+      height: 95,
+      padding: const EdgeInsets.only(right: 8.0, top: 1.0),
+      margin: const EdgeInsets.only(top: 6.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.all(Radius.elliptical(80, 110)),
+        child: Consumer<PhotoProvider>(
+          builder: (ctx, image, _) {
+            List<String> backdrop = [Global.defaultImage, Global.defaultImage];
+            if (Global.isMovie())
+              backdrop = image.getMovieImages(data.id) ?? backdrop;
+            else
+              backdrop = image.getShowImages(data.id) ?? backdrop;
+
+            return Stack(children: [
+              Image.network(
+                backdrop[1],
+              ),
+              if (!Global.isMovie())
+                Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                        alignment: AlignmentDirectional.center,
+                        width: double.infinity,
+                        color: Colors.black54,
+                        height: 30,
+                        child: Text(
+                          (data as Show).status,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )))
+            ]);
+          },
         ),
       ),
     );

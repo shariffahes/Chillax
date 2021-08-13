@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
@@ -8,7 +9,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'screens/tabs_screen.dart';
 import 'package:flutter/material.dart';
-
 
 void main() {
   runApp(MyApp());
@@ -34,14 +34,19 @@ MaterialColor createMaterialColor(Color color) {
   return MaterialColor(color.value, swatch);
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   static Database? db;
 
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   Future<void> setDB() async {
     var databasePath = await getDatabasesPath();
     String path = databasePath + '/chill_time.db';
     print(path);
-    db = await openDatabase(
+    MyApp.db = await openDatabase(
       path,
       version: 1,
       onCreate: (dataB, version) async {
@@ -71,9 +76,9 @@ class MyApp extends StatelessWidget {
               },
               title: 'Discuss it',
               theme: ThemeData(
-                  accentColor: Color.fromRGBO(172, 60, 204, 1),
-                  primaryColor: Color.fromRGBO(0, 0, 128, 1),
-                  ),
+                accentColor: Global.accent,
+                primaryColor: Global.primary,
+              ),
               home: TabsScreen(),
             ),
           );

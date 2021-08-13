@@ -1,3 +1,4 @@
+import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import '../../../models/Enums.dart';
 import '../../../models/providers/Movies.dart';
@@ -38,7 +39,7 @@ class Type extends StatelessWidget {
                 },
               );
             },
-            child: Text('View all',style: TextStyle(color: Color.fromRGBO(172, 60, 204, 1)),),
+            child: Text('View all',style: TextStyle(color: Global.primary),),
           ),
         ],
       ),

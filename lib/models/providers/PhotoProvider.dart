@@ -46,14 +46,17 @@ class PhotoProvider with ChangeNotifier {
     final url = Uri.parse(
         'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
     try {
-      await Future.delayed(Duration(seconds: 1));
+      //no need to refetch if image available
+      if (peopleImages[id] != null ||
+          showsImages[id] != null ||
+          moviesImages[id] != null) return;
 
       final response = await http.get(url);
 
       final decodedData = json.decode(response.body);
 
       final List<String> images = _extractData(decodedData, type);
-      
+
       if (type == DataType.person) {
         _peopleProfiles[id] = images;
       } else if (type == DataType.movie) {
@@ -64,6 +67,7 @@ class PhotoProvider with ChangeNotifier {
     } catch (error) {
       print(error);
     }
+    
     notifyListeners();
   }
 
