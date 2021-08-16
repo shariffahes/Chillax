@@ -1,7 +1,6 @@
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
-import 'package:discuss_it/models/providers/PhotoProvider.dart';
-import 'package:discuss_it/widgets/Calendar/EpisodeList.dart';
+// import 'package:discuss_it/widgets/Calendar/EpisodeList.dart';
 import 'package:discuss_it/widgets/HomeWidgets/Type/PosterList.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
@@ -366,10 +365,10 @@ class ShowGrid extends StatelessWidget {
             SizedBox(
               height: 10,
             ),
-            Container(
-              height: 350,
-              child: EpisodeList(episodes, (data as Show).network),
-            )
+            // Container(
+            //   height: 350,
+            //   child: EpisodeList(episodes, (data as Show).network),
+            // )
           ],
         );
       },

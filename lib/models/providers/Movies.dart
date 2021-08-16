@@ -760,7 +760,7 @@ class DataProvider with ChangeNotifier {
         int season = item['number'] ?? -1;
         if (season != 0) data.episodes![season] = [];
       });
-      print('fetch done ${data.episodes}');
+      
     }
 
     if (data.episodes![season] == null || data.episodes![season]!.isEmpty) {

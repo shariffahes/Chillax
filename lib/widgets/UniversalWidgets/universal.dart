@@ -33,11 +33,11 @@ class Universal {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                color: Colors.amber,
-                size: 20,
-              ),
+                Icon(
+                  icon,
+                  color: Colors.amber,
+                  size: 20,
+                ),
               SizedBox(
                 width: 4,
               ),

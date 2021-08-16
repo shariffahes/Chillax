@@ -24,36 +24,50 @@ class _WatchListCardState extends State<WatchListCard>
 
   @override
   void initState() {
-    super.initState();
     _animationController =
-        AnimationController(vsync: this, duration: Duration(seconds: 4));
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
 
     _offsetAnimation = Tween<Offset>(begin: Offset.zero, end: Offset(1.5, 0))
         .animate(_animationController);
+    super.initState();
   }
 
-  void moveToNextEps(
-    int sec,
-    int milliSec,
-  ) {
-    _animationController.forward();
-    Future.delayed(Duration(seconds: sec, milliseconds: milliSec), () {
-      _animationController.reverse();
-    });
+  @override
+  void dispose() {
+    _animationController.dispose();
+
+    super.dispose();
   }
 
+  void moveToNextEps(Status statusOfData, User userProv, int id) {
+    if (statusOfData == Status.watching) {
+      _animationController.forward();
+
+      Future.delayed(Duration(milliseconds: 500), () {
+        setState(() {
+          userProv.watchComplete(id);
+        });
+      });
+    } else {
+      setState(() {
+        userProv.watchComplete(id);
+      });
+    }
+  }
+
+  Episode? eps;
   @override
   Widget build(BuildContext context) {
     final userProv = widget.userProv;
     final data = widget._data;
-    Episode? eps;
+
     Status statusOfData = userProv.getStatus(widget._data.id);
     Track? track = userProv.track[data.id];
     int season = track?.currentSeason ?? widget.season;
     return Container(
       key: UniqueKey(),
       width: 200,
-      height: 130,
+      height: 135,
       color: Colors.white,
       margin: const EdgeInsets.all(5),
       padding: const EdgeInsets.all(5),
@@ -65,43 +79,45 @@ class _WatchListCardState extends State<WatchListCard>
                 .getEpisodeInfo(data.id, context, season: season)
             : null,
         builder: (ctx, snapshot) {
+          String title = 'Episode Completed.';
+
           if (snapshot.hasError) {
-            print(snapshot.error);
             return Universal.failedWidget();
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            print('waiting');
-            _animationController.forward(from: 2);
-            return Container(
-              color: Colors.amber,
-              width: double.infinity,
-              height: 130,
-              child: Center(
-                child: Text(
-                  'loading Season Info...',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-            );
+            //_animationController.forward();
           }
 
           if (snapshot.connectionState == ConnectionState.done) {
             eps = snapshot.data;
-            print(eps?.name);
-            _animationController.reverse();
+
+            Future.delayed(Duration(milliseconds: 510), () {
+              if (snapshot.data == null)
+                userProv.completeShow(data.id);
+              else {
+                if (!_animationController.isDismissed &&
+                        _animationController.isAnimating ||
+                    _animationController.isCompleted) {
+                  _animationController.reverse();
+                }
+              }
+            });
+            if (statusOfData == Status.watching && snapshot.data == null) {
+              title = 'Watch complete. \n No more episodes';
+            }
           }
 
           return LayoutBuilder(
             builder: (ctx, constraints) {
               return Stack(children: [
                 Container(
-                  color: Colors.amber,
+                  color: Global.accent,
                   width: double.infinity,
-                  height: 130,
+                  height: 135,
                   child: Center(
                       child: Text(
-                    'loading next Episode ...',
+                    title,
                     style: TextStyle(fontWeight: FontWeight.w500),
                   )),
                 ),
@@ -112,7 +128,20 @@ class _WatchListCardState extends State<WatchListCard>
                     background: Container(
                       color: Colors.amber,
                     ),
-                    onDismissed: (_) => moveToNextEps(0, 650),
+                    secondaryBackground: Container(
+                      padding: const EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerRight,
+                      color: Colors.red,
+                      child: Text('Delete'),
+                    ),
+                    onDismissed: (dir) {
+                      if (dir == DismissDirection.endToStart) {
+                        userProv.deleteItem(data.id);
+                    
+                      } else {
+                        moveToNextEps(statusOfData, userProv, data.id);
+                      }
+                    },
                     child: Container(
                       color: Colors.white,
                       child: Row(
@@ -131,21 +160,7 @@ class _WatchListCardState extends State<WatchListCard>
                                         : Icons.check_circle_outline,
                                 size: 28),
                             onPressed: () {
-                              if (statusOfData == Status.watching) {
-                                moveToNextEps(0, 780);
-                                userProv
-                                    .getEpisodeInfo(data.id, ctx)
-                                    .then((episode) {
-                                  setState(() {
-                                    eps = episode;
-                                    userProv.watchComplete(data.id);
-                                  });
-                                });
-                              } else {
-                                setState(() {
-                                  userProv.watchComplete(data.id);
-                                });
-                              }
+                              moveToNextEps(statusOfData, userProv, data.id);
                             },
                           )
                         ],
@@ -179,7 +194,6 @@ class ElipseImageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('build image');
     return Container(
       width: cnst.minWidth * 0.4,
       child: ClipRRect(
@@ -256,10 +270,21 @@ class InfoColumn extends StatelessWidget {
   final Status status;
   final Episode? episode;
   final User _userProv;
-  const InfoColumn(
-      this.constraints, this._data, this.status, this.episode, this._userProv);
 
-  List<Widget> createFooter(String title, double percentUntilFinish) {
+  const InfoColumn(
+    this.constraints,
+    this._data,
+    this.status,
+    this.episode,
+    this._userProv,
+  );
+
+  void _startWatching(BuildContext ctx) {
+    _userProv.startWatching(_data.id);
+  }
+
+  List<Widget> createFooter(
+      String title, double percentUntilFinish, BuildContext ctx) {
     if (Global.isMovie()) return [Container()];
     if (status == Status.watchList)
       return [
@@ -267,7 +292,7 @@ class InfoColumn extends StatelessWidget {
             height: 37,
             child: OutlinedButton(
                 onPressed: () {
-                  _userProv.startWatching(_data.id);
+                  _startWatching(ctx);
                 },
                 child: Text('Start watching')))
       ];
@@ -290,7 +315,6 @@ class InfoColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('build info column');
     String title = _data.name;
     String sub1 = _data is Movie ? 'Movie' : 'Series';
     String sub2 = _data is Movie
@@ -300,21 +324,23 @@ class InfoColumn extends StatelessWidget {
     double percent = 0;
 
     if (status == Status.watching) {
-      print('search episode $episode');
       if (episode == null) {
-        print('null found');
         return Container();
       }
       footer = episode!.name;
 
-      String numberOfEpisode = episode!.number.toString().length < 2
-          ? 'E0${episode!.number.toString()}'
-          : episode!.number.toString();
-      String season = episode!.season.toString().length < 2
-          ? 'S0${episode!.season.toString()}'
-          : episode!.number.toString();
+      String numberOfEpisode = 'E' +
+          (episode!.number.toString().length < 2
+              ? '0${episode!.number.toString()}'
+              : episode!.number.toString());
+      String season = 'S' +
+          (episode!.season.toString().length < 2
+              ? '0${episode!.season.toString()}'
+              : episode!.number.toString());
 
-      int totalNbOfEps = (_data as Show).episodes![episode!.season]!.length;
+      int totalNbOfEps = (DataProvider.dataDB[_data.id] as Show)
+          .episodes![episode!.season]!
+          .length;
       sub1 = season + numberOfEpisode;
       sub2 = totalNbOfEps.toString() + ' Eps';
       percent = episode!.number.toDouble() / totalNbOfEps.toDouble();
@@ -339,7 +365,7 @@ class InfoColumn extends StatelessWidget {
           ),
           Spacer(),
           RowData(sub1, sub2),
-          ...createFooter(title, percent),
+          ...createFooter(title, percent, context),
           SizedBox(
             height: 8,
           ),

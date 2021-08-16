@@ -1,4 +1,3 @@
-import 'package:discuss_it/main.dart';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import '../widgets/HomeWidgets/genre/Genre.dart';
 import '../widgets/HomeWidgets/trending/Trending.dart';
 
 class HomeScreen extends StatefulWidget {
+  
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }

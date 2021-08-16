@@ -61,7 +61,7 @@ class PosterItem extends StatelessWidget {
                   Consumer<User>(
                     builder: (ctx, user, _) {
                       Status status = user.getStatus(_data.id);
-                    
+
                       return Universal.createIcon(status, user, _data);
                     },
                   )
@@ -70,18 +70,35 @@ class PosterItem extends StatelessWidget {
             ),
           ),
           Container(
-            width: 140,
-            height: 60,
+            width: 180,
             padding: const EdgeInsets.only(top: 10, bottom: 2),
             child: Text(
               _data.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
             ),
           ),
+          SizedBox(
+            height: 3,
+          ),
           footer,
+          SizedBox(
+            height: 6,
+          ),
+          Text(
+            _data is Show
+                ? (_data as Show).status.toUpperCase()
+                : _data.yearOfRelease.toString(),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.grey.shade800,
+              fontSize: 15,
+            ),
+          )
         ],
       ),
     );

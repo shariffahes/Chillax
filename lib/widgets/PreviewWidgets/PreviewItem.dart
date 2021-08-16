@@ -147,8 +147,21 @@ class InfoColumn extends StatelessWidget {
   final Data _data;
   final List<People>? _cast;
 
+  List<Widget> setTitle(String title) {
+    return [
+      Divider(
+        thickness: 2,
+      ),
+      Text(
+        title,
+        style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
+      )
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isShow = _data is Show;
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -179,7 +192,7 @@ class InfoColumn extends StatelessWidget {
                   width: 7,
                 ),
                 Text(
-                  (Global.isMovie()
+                  (!isShow
                       ? (_data as Movie).duration.toString() + ' mins'
                       : _data is Episode
                           ? (_data as Episode).runTime.toString() + 'mins'
@@ -188,16 +201,27 @@ class InfoColumn extends StatelessWidget {
                 SizedBox(
                   width: 7,
                 ),
-                if (_data is Show)
+                if (isShow) ...[
                   Icon(
                     Icons.circle,
                     size: 5,
                   ),
-                if (_data is Show)
                   SizedBox(
                     width: 7,
                   ),
-                if (_data is Show) Text((_data as Show).network)
+                  Text((_data as Show).network),
+                  SizedBox(
+                    width: 7,
+                  ),
+                  Icon(
+                    Icons.circle,
+                    size: 5,
+                  ),
+                  SizedBox(
+                    width: 7,
+                  ),
+                  Text((_data as Show).status)
+                ]
               ],
             ),
           ),
@@ -212,32 +236,18 @@ class InfoColumn extends StatelessWidget {
               },
             ).toList(),
           ),
-          Divider(
-            thickness: 2,
-          ),
-          Text(
-            "Story line",
-            style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
-          ),
+          ...setTitle('Story Line '),
           Text(
             _data.overview,
             style: TextStyle(wordSpacing: 1, height: 2, fontSize: 15),
           ),
-          Divider(
-            thickness: 2,
-          ),
-          Text(
-            "Cast",
-            style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
-          ),
+          if (isShow) ...[
+            ...setTitle('Seasons'),
+          ],
+          ...setTitle('Media'),
+          ...setTitle('Cast'),
           PreviewList(_cast, null, true),
-          Divider(
-            thickness: 2,
-          ),
-          Text(
-            "Similar",
-            style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
-          ),
+          ...setTitle('Similar'),
           FutureBuilder<List<int>>(
               future: Provider.of<DataProvider>(context, listen: false)
                   .fetchDataBy(context, id: _data.id),
@@ -249,7 +259,6 @@ class InfoColumn extends StatelessWidget {
                   print(snapshot.error);
                   return Universal.failedWidget();
                 }
-
                 return PreviewList(null, snapshot.data, false);
               }),
         ],

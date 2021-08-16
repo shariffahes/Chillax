@@ -2,6 +2,7 @@ import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/User.dart';
+import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:discuss_it/widgets/WatchList/WatchListCard.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +36,7 @@ class Movies extends StatelessWidget {
     );
   }
 
-  Widget createListView(List<Data> data, User userProv) {
+  Widget createListView(List<Data> data, User userProv, BuildContext ctx) {
     return ConstrainedBox(
       constraints: BoxConstraints(minHeight: 56.0),
       child: Container(
@@ -44,7 +45,12 @@ class Movies extends StatelessWidget {
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: data.length,
-            itemBuilder: (ctx, index) => WatchListCard(data[index], userProv)),
+            itemBuilder: (ctx, index) => GestureDetector(
+                onTap: () {
+                  Navigator.of(ctx)
+                      .pushNamed(PreviewItem.route, arguments: data[index]);
+                },
+                child: WatchListCard(data[index], userProv))),
       ),
     );
   }
@@ -67,10 +73,10 @@ class Movies extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                setTitle('Movie WatchList'),
-                createListView(_watchList, userProv),
-                setTitle('Watch Again'),
-                createListView(_watchedList, userProv),
+                if (_watchList.isNotEmpty) setTitle('Movie WatchList'),
+                createListView(_watchList, userProv, context),
+                if (_watchedList.isNotEmpty) setTitle('Watch Again'),
+                createListView(_watchedList, userProv, context),
               ],
             );
           }),
@@ -94,7 +100,7 @@ class Shows extends StatelessWidget {
     );
   }
 
-  Widget createListView(List<Data> data, User userProv) {
+  Widget createListView(List<Data> data, User userProv, BuildContext ctx) {
     return ConstrainedBox(
       constraints: BoxConstraints(minHeight: 56.0),
       child: Container(
@@ -103,7 +109,12 @@ class Shows extends StatelessWidget {
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: data.length,
-            itemBuilder: (ctx, index) => WatchListCard(data[index], userProv)),
+            itemBuilder: (ctx, index) => GestureDetector(
+                onTap: () {
+                  Navigator.of(ctx)
+                      .pushNamed(PreviewItem.route, arguments: data[index]);
+                },
+                child: WatchListCard(data[index], userProv))),
       ),
     );
   }
@@ -125,10 +136,10 @@ class Shows extends StatelessWidget {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  setTitle('Currently Watching'),
-                  createListView(shows, userProv),
-                  setTitle('WatchList'),
-                  createListView(watchList, userProv),
+                  if (shows.isNotEmpty) setTitle('Currently Watching'),
+                  createListView(shows, userProv, context),
+                  if (watchList.isNotEmpty) setTitle('WatchList'),
+                  createListView(watchList, userProv, context),
                 ],
               );
             }),

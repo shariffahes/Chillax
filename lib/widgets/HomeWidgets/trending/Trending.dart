@@ -158,6 +158,8 @@ class ViewCards extends StatelessWidget {
     return AspectRatio(
       aspectRatio: 7 / 4,
       child: ListView.builder(
+        key: PageStorageKey('trending'),
+        
         physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
         controller: _controller,
         scrollDirection: Axis.horizontal,

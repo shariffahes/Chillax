@@ -60,11 +60,12 @@ class User with ChangeNotifier {
   }
 
 //start watching a series
-  void startWatching(int id) {
+  void startWatching(int id, {int episode = 1, int season = 1}) {
     isChange = true;
     // add to watching / update in sql to -1 and update episodes / remove from wl
     _watching.add(_tvWatchList[id]!);
-    _updateEpisode(id, 1, 1);
+    track[id] = Track(currentEp: episode, currentSeason: season);
+    _updateEpisode(id, episode, season);
     _update(id, -1, DataType.tvShow);
     _tvWatchList.remove(id);
     notifyListeners();
@@ -113,15 +114,24 @@ class User with ChangeNotifier {
     //delete data from everywhere
     if (Global.isMovie()) {
       _movieWatched.remove(id);
-      removeFromWatchList(id);
+      _movieWatchList.remove(id);
     } else {
       _tvWatched.remove(id);
-      _watching.remove(id);
-      removeFromWatchList(id);
+      _watching.remove(DataProvider.dataDB[id]);
+      _tvWatchList.remove(id);
     }
+    notifyListeners();
   }
 
 //helper methods
+
+  void completeShow(int id) {
+    Show show = _watching.firstWhere((element) => element.id == id);
+    _tvWatched[id] = show;
+    _watching.remove(show);
+    notifyListeners();
+    _update(id, 1, DataType.tvShow);
+  }
 
   Future<Episode?> getEpisodeInfo(
     int id,
@@ -129,30 +139,32 @@ class User with ChangeNotifier {
     int? season,
     int? episode,
   }) async {
+    
     List<int> current = _getNext(id);
     season = season ?? current[1];
     episode = episode ?? current[0];
 
     _updateNext(id, season, episode + 1);
+
     Show show = DataProvider.dataDB[id] as Show;
 
     episode = episode - 1;
     if (show.episodes == null) {
-      return null;
+      await Provider.of<DataProvider>(ctx, listen: false)
+          .fetchSeasons(id, season: season);
     }
     final _seriesEpisodes = show.episodes!;
 
     if (season > _seriesEpisodes.keys.length) {
-      print('no more seasons');
       return null;
     }
 
     if (_seriesEpisodes[season]!.isEmpty) {
-      await Provider.of<DataProvider>(ctx,listen: false).fetchSeasons(id,season: season);
+      await Provider.of<DataProvider>(ctx, listen: false)
+          .fetchSeasons(id, season: season);
     }
 
     if (episode >= _seriesEpisodes[season]!.length) {
-      print('get episode again with new season ${season + 1}');
       return getEpisodeInfo(
         id,
         ctx,
@@ -171,8 +183,8 @@ class User with ChangeNotifier {
 
   void _updateNext(int id, int season, int episode) {
     if (track[id] == null) {
-      track[id] =
-          Track(currentEp: 1, currentSeason: 1, nextEp: episode, nextSeason: 1);
+      track[id] = Track(
+          currentEp: 1, currentSeason: 1, nextEp: episode, nextSeason: season);
     } else {
       track[id]!.nextSeason = season;
       track[id]!.nextEp = episode;
@@ -239,13 +251,6 @@ class User with ChangeNotifier {
   }
 
 //sql methods
-  void moveToWatched(int id) {
-    Show show = _watching.firstWhere((element) => element.id == id);
-    _tvWatched[id] = show;
-    //_watching.remove(show);
-
-    _update(id, 1, DataType.tvShow);
-  }
 
   void _updateEpisode(int id, int nextEps, int nextSeason) async {
     await MyApp.db!.update(
