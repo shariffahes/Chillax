@@ -200,10 +200,9 @@ class ElipseImageView extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.elliptical(80, 125)),
           child: Consumer<PhotoProvider>(
             builder: (_, photoProv, __) {
-              final dataType =
-                  Global.isMovie() ? DataType.movie : DataType.tvShow;
+           
               Provider.of<DataProvider>(context, listen: false)
-                  .fetchImage(id, dataType, context);
+                  .fetchImage(id, Global.dataType, context);
               List<String> backdrop = [
                 Global.defaultImage,
                 Global.defaultImage

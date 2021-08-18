@@ -1,37 +1,69 @@
-import 'package:discuss_it/widgets/Seasons/ShowEpisodes.dart';
+import 'package:discuss_it/models/Enums.dart';
+import 'package:discuss_it/models/Global.dart';
+import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:flutter/material.dart';
-
-
-class SeasonsView extends StatelessWidget {
-  SeasonsView({Key? key}) : super(key: key);
-  List<String> url = [
-    'https://m.media-amazon.com/images/M/MV5BZTRhNzg0ZTgtZmMyYy00Yjc5LTkyNTAtNzEzODIyZDE5NTNmXkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_FMjpg_UX1000_.jpg',
-    'https://www.dccomics.com/sites/default/files/field/image/TitansS2_blog_5d5c3b184956c0.38671675.jpg',
-    'https://m.media-amazon.com/images/M/MV5BZTRhNzg0ZTgtZmMyYy00Yjc5LTkyNTAtNzEzODIyZDE5NTNmXkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_FMjpg_UX1000_.jpg',
-    'https://www.dccomics.com/sites/default/files/field/image/TitansS2_blog_5d5c3b184956c0.38671675.jpg',
-    'https://m.media-amazon.com/images/M/MV5BZTRhNzg0ZTgtZmMyYy00Yjc5LTkyNTAtNzEzODIyZDE5NTNmXkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_FMjpg_UX1000_.jpg',
-    'https://www.dccomics.com/sites/default/files/field/image/TitansS2_blog_5d5c3b184956c0.38671675.jpg',
-  ];
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: url
-          .map(
-            (e) => GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                      context: context, builder: (ctx) => EpisodePreview());
-                },
-                child: SeasonCard(e)),
-          )
-          .toList(),
-    );
-  }
-}
+import 'package:provider/provider.dart';
 
 class SeasonCard extends StatelessWidget {
-  const SeasonCard(this.url);
-  final String url;
+  const SeasonCard(this.id, this.season, this.number, this.showName,
+      this.epsName, this.countDown);
+  final int season;
+  final int number;
+  final int countDown;
+  final String epsName;
+  final String showName;
+  final int id;
+
+  List<Widget> renderInfo() {
+    final numberString =
+        (number.toString().length > 1 ? 'E' : 'E0') + number.toString();
+    final seasonString =
+        (season.toString().length > 1 ? 'S' : 'S0') + season.toString();
+    return [
+      SizedBox(
+        height: 10,
+      ),
+      Text(
+        epsName,
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      Row(children: [
+        Text(
+          numberString,
+          style: TextStyle(
+            fontSize: 14,
+          ),
+        ),
+        SizedBox(
+          width: 6,
+        ),
+        Icon(
+          Icons.circle,
+          size: 5,
+        ),
+        SizedBox(
+          width: 5,
+        ),
+        Text(seasonString,
+            style: TextStyle(
+              fontSize: 14,
+            )),
+      ]),
+      Spacer(),
+      Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Text(
+          showName,
+          style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+        ),
+      )
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -51,28 +83,53 @@ class SeasonCard extends StatelessWidget {
             width: 120,
             height: 110,
             margin: const EdgeInsets.only(right: 12),
-            child: Image.network(
-              url,
-              fit: BoxFit.cover,
+            child: Consumer<PhotoProvider>(
+              builder: (ctx, imageProv, __) {
+                Provider.of<DataProvider>(context, listen: false)
+                    .fetchImage(id, Global.dataType, context);
+                List<String> backdrop = [
+                  Global.defaultImage,
+                  Global.defaultImage
+                ];
+                if (Global.isMovie())
+                  backdrop = imageProv.getMovieImages(id) ?? backdrop;
+                else
+                  backdrop = imageProv.getShowImages(id) ?? backdrop;
+
+                return Image.network(
+                  backdrop[1],
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
           Flexible(
             fit: FlexFit.tight,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  'Season 1',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                ),
-                Text('Rate 9.0'),
-                Text('2020'),
-              ],
+              children: [...renderInfo()],
             ),
           ),
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (countDown == -1)
+                    Text('Today')
+                  else if (countDown == 0)
+                    Text('Tomorrow')
+                  else ...[
+                    Text(
+                      countDown.toString(),
+                    ),
+                    Text(
+                      'day(s)',
+                    )
+                  ],
+                ],
+              )),
         ],
       ),
     );

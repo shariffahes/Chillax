@@ -4,7 +4,6 @@ import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/People.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
-
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

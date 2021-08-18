@@ -68,6 +68,7 @@ class User with ChangeNotifier {
     _updateEpisode(id, episode, season);
     _update(id, -1, DataType.tvShow);
     _tvWatchList.remove(id);
+    DataProvider.tvSchedule[id] = {};
     notifyListeners();
   }
 
@@ -139,7 +140,6 @@ class User with ChangeNotifier {
     int? season,
     int? episode,
   }) async {
-    
     List<int> current = _getNext(id);
     season = season ?? current[1];
     episode = episode ?? current[0];

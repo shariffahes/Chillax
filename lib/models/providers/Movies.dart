@@ -1,5 +1,6 @@
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_calendar_carousel/classes/event.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -235,7 +236,7 @@ class DataProvider with ChangeNotifier {
   Map<String, List<int>> _myTvSchedule = {};
   //helps store the schedule for movies and show. Used in calendar
   Map<String, List<int>> movieSchedule = {};
-  static Map<String, Map<int, List<Episode>>> tvSchedule = {};
+  static Map<int, Map<String, Object>> tvSchedule = {};
   //current page keeps track of which page the system should request
   //this is used in view all screen when user needs to load more than 15 items
   //each page loads 15 items
@@ -351,7 +352,6 @@ class DataProvider with ChangeNotifier {
         Provider.of<PhotoProvider>(ctx, listen: false)
             .fetchImagesFor(tmdbId, id, Global.dataType);
 
-      print(id);
       final title = info['title'] ?? '-';
       final overview = info['overview'] ?? '-';
 
@@ -406,7 +406,6 @@ class DataProvider with ChangeNotifier {
         );
         show.episodes = episodesInfo;
         dataDB[id] = show;
-
         itemsInfo.add(id);
       }
     }
@@ -481,6 +480,10 @@ class DataProvider with ChangeNotifier {
           'trakt-api-key': Global.apiKey,
         },
       );
+      //if ferch data is not found
+      if (response.statusCode == 204) {
+        return 'Nan';
+      }
 
       return json.decode(response.body);
     } catch (error) {
@@ -641,7 +644,7 @@ class DataProvider with ChangeNotifier {
         year, tmdbId, season, num, runTime);
   }
 
-  Future<List<int>> getScheduleFor(
+  /* Future<List<int>> getScheduleFor(
       String date, bool isAll, BuildContext ctx) async {
     final user = Provider.of<User>(ctx, listen: false);
     if (!user.isChange) {
@@ -726,6 +729,7 @@ class DataProvider with ChangeNotifier {
 
     //return isAll ? schedule[ind][date]! : (_mySchedule[ind][date] ?? []);
   }
+*/
 
   List<int> imageRequested = [];
   Future<void> fetchImage(int id, DataType type, BuildContext ctx) async {
@@ -760,7 +764,6 @@ class DataProvider with ChangeNotifier {
         int season = item['number'] ?? -1;
         if (season != 0) data.episodes![season] = [];
       });
-      
     }
 
     if (data.episodes![season] == null || data.episodes![season]!.isEmpty) {
@@ -781,6 +784,31 @@ class DataProvider with ChangeNotifier {
         },
       );
       print('${data.episodes}');
+    }
+  }
+
+  Future<void> fetchSchedule() async {
+    List<int> keys = tvSchedule.keys.toList();
+    for (int key in keys) {
+      if (tvSchedule[key]!.isEmpty) {
+        final url = Global.baseURL + 'shows/$key/next_episode?extended=full';
+        final parsedURL = Uri.parse(url);
+        final response = await _fetchData(url, uri: parsedURL);
+        if (response != 'Nan') {
+          Map<String, Object> info = {
+            'date': response['first_aired'],
+            'season': response['season'],
+            'number': response['number'],
+            'name': response['title'],
+            'title': dataDB[key]?.name ?? response['title'],
+            'id': key
+          };
+
+          tvSchedule[key] = info;
+        } else {
+          tvSchedule.remove(key);
+        }
+      }
     }
   }
 }

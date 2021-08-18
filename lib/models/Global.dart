@@ -119,6 +119,7 @@ class Global {
       int id = show['id'] as int;
       watched[id] = Show.fromMap(show);
       DataProvider.dataDB[id] = watched[id]!;
+      DataProvider.tvSchedule[id] = {};
     });
 
     info = await MyApp.db!.query('ShowWatch', where: 'watched=${-1}');
@@ -130,6 +131,7 @@ class Global {
       Show s = Show.fromMap(element);
       currWatching.add(s);
       DataProvider.dataDB[id] = s;
+      DataProvider.tvSchedule[id] = {};
     });
 
     if (ctx == null) {

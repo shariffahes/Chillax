@@ -12,8 +12,8 @@ class EpisodePreview extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            SeasonCard(
-                'https://heroichollywood.com/wp-content/uploads/2019/01/Titans-DC-Universe-Banner-1280x720.jpg'),
+            // SeasonCard(
+            //     'https://heroichollywood.com/wp-content/uploads/2019/01/Titans-DC-Universe-Banner-1280x720.jpg'),
           ],
         ),
       ),
