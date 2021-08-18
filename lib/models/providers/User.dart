@@ -68,6 +68,7 @@ class User with ChangeNotifier {
     _updateEpisode(id, episode, season);
     _update(id, -1, DataType.tvShow);
     _tvWatchList.remove(id);
+    _tvWatched.remove(id);
     DataProvider.tvSchedule[id] = {};
     notifyListeners();
   }
@@ -95,7 +96,13 @@ class User with ChangeNotifier {
       } else if (_tvWatchList[id] != null) {
         _tvWatched[id] = _tvWatchList[id]!;
         _tvWatchList.remove(id);
-        _update(id, 1, DataType.tvShow);
+
+        DataProvider().getLatestEpisode(id).then((trak) {
+          if (trak != null) {
+            _update(id, 1, DataType.tvShow);
+            _updateEpisode(id, trak.currentEp, trak.currentSeason);
+          }
+        });
       } else {
         //if currently watching move to next episode
         final nextEp = track[id]!.nextEp;
@@ -171,6 +178,13 @@ class User with ChangeNotifier {
         season: season + 1,
         episode: 1,
       );
+    }
+
+    DateTime date =
+        DateTime.parse(_seriesEpisodes[season]![episode].releasedDate)
+            .toLocal();
+    if (date.isAfter(DateTime.now())) {
+      return null;
     }
 
     return _seriesEpisodes[season]![episode];
@@ -338,5 +352,12 @@ class User with ChangeNotifier {
   void setWatching(List<Show> wtching) {
     _watching = [...wtching];
     notifyListeners();
+  }
+
+  void checkLatest(Track trak, int id) {
+    if (track[id]!.currentEp == trak.currentEp ||
+        track[id]!.currentSeason > trak.currentSeason) {
+      startWatching(id, episode: trak.currentEp, season: trak.currentSeason);
+    }
   }
 }

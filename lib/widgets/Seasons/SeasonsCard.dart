@@ -116,9 +116,9 @@ class SeasonCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (countDown == -1)
+                  if (countDown == 0)
                     Text('Today')
-                  else if (countDown == 0)
+                  else if (countDown == 1)
                     Text('Tomorrow')
                   else ...[
                     Text(

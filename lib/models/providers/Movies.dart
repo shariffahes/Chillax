@@ -767,23 +767,17 @@ class DataProvider with ChangeNotifier {
     }
 
     if (data.episodes![season] == null || data.episodes![season]!.isEmpty) {
-      url += '/$season';
+      url += '/$season?extended=full';
       uri = Uri.parse(url);
-      print(uri);
+
       response = await _fetchData(url, uri: uri) as List<dynamic>;
 
       response.forEach(
         (element) {
-          final name = element['title'] ?? '-';
-          final epsId = element['ids']['trakt'] ?? -1;
-          final tmdbId = element['ids']['tmdb'] ?? -1;
-          final number = element['number'] ?? -1;
-          Episode eps = Episode(
-              epsId, id, name, '-', '-', '-', 0, tmdbId, season, number, 0);
+          Episode eps = _extractEpisodesData(element, id);
           data.episodes![season]!.add(eps);
         },
       );
-      print('${data.episodes}');
     }
   }
 
@@ -809,6 +803,16 @@ class DataProvider with ChangeNotifier {
           tvSchedule.remove(key);
         }
       }
+    }
+  }
+
+  Future<Track?> getLatestEpisode(int id) async {
+    final url = Global.apiKey + 'shows/$id/last_episode';
+    final response = await _fetchData(url, uri: Uri.parse(url));
+    if (response != 'Nan') {
+      final season = response['season'];
+      final episode = response['number'];
+      return Track(currentEp: episode, currentSeason: season);
     }
   }
 }

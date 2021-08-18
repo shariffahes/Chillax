@@ -120,6 +120,9 @@ class Global {
       watched[id] = Show.fromMap(show);
       DataProvider.dataDB[id] = watched[id]!;
       DataProvider.tvSchedule[id] = {};
+      final int episode = show['currentEps'] as int;
+      final int season = show['currentSeason'] as int;
+      track[id] = Track(currentEp: episode, currentSeason: season);
     });
 
     info = await MyApp.db!.query('ShowWatch', where: 'watched=${-1}');
@@ -130,6 +133,7 @@ class Global {
       track[id] = Track(currentEp: episode, currentSeason: season);
       Show s = Show.fromMap(element);
       currWatching.add(s);
+
       DataProvider.dataDB[id] = s;
       DataProvider.tvSchedule[id] = {};
     });

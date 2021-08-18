@@ -35,7 +35,6 @@ class _WatchListCardState extends State<WatchListCard>
   @override
   void dispose() {
     _animationController.dispose();
-
     super.dispose();
   }
 
@@ -74,14 +73,14 @@ class _WatchListCardState extends State<WatchListCard>
       child: FutureBuilder<Episode?>(
         //check if episodes are loaded or if we are in shows watching
         //load them if they are missing
-        future: statusOfData == Status.watching
-            ? Provider.of<User>(context, listen: false)
-                .getEpisodeInfo(data.id, context, season: season)
-            : null,
+        future:
+            statusOfData == Status.watching 
+                ? userProv.getEpisodeInfo(data.id, context, season: season)
+                : null,
         builder: (ctx, snapshot) {
           String title = 'Episode Completed.';
-
           if (snapshot.hasError) {
+            print('sn: ${snapshot.error}');
             return Universal.failedWidget();
           }
 
@@ -90,6 +89,13 @@ class _WatchListCardState extends State<WatchListCard>
           }
 
           if (snapshot.connectionState == ConnectionState.done) {
+            if (!Global.isMovie() && statusOfData == Status.watched) {
+              Provider.of<DataProvider>(context, listen: false)
+                  .getLatestEpisode(data.id)
+                  .then((track) => track != null
+                      ? userProv.checkLatest(track, data.id)
+                      : null);
+            }
             eps = snapshot.data;
 
             Future.delayed(Duration(milliseconds: 510), () {
@@ -137,7 +143,6 @@ class _WatchListCardState extends State<WatchListCard>
                     onDismissed: (dir) {
                       if (dir == DismissDirection.endToStart) {
                         userProv.deleteItem(data.id);
-                    
                       } else {
                         moveToNextEps(statusOfData, userProv, data.id);
                       }
@@ -200,7 +205,6 @@ class ElipseImageView extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.elliptical(80, 125)),
           child: Consumer<PhotoProvider>(
             builder: (_, photoProv, __) {
-           
               Provider.of<DataProvider>(context, listen: false)
                   .fetchImage(id, Global.dataType, context);
               List<String> backdrop = [

@@ -127,12 +127,16 @@ class Shows extends StatelessWidget {
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting)
             return Universal.loadingWidget();
-          if (snapshot.hasError) return Universal.failedWidget();
+          if (snapshot.hasError) {
+            print('er: ${snapshot.error}');
+            return Universal.failedWidget();
+          }
 
           return SingleChildScrollView(
             child: Consumer<User>(builder: (_, userProv, __) {
               List<Show> shows = userProv.getCurrentlyWatching();
               List<Show> watchList = userProv.showWatchList.values.toList();
+              
               return Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [

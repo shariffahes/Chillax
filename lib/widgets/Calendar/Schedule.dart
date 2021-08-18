@@ -80,12 +80,13 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         final number = currentShow['number'] as int;
         final epsName = currentShow['name'] as String;
         final season = currentShow['season'] as int;
-        DateTime date = DateTime.parse(currentShow['date'] as String);
+        DateTime date = DateTime.parse(currentShow['date'] as String).toLocal();
         final countDown = date.difference(DateTime.now()).inDays;
+
         final id = currentShow['id'] as int;
 
         String formattedDate = DateFormat('yyyy-MM-dd').format(date);
-        date = DateTime.parse(formattedDate);
+        date = DateTime.parse(formattedDate).toLocal();
 
         if (_events[date] == null) {
           _events[date] = [MyEvent(date, _dotEventIndicator, currentShow)];
@@ -108,7 +109,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
             //dismiss();
           },
           child: Container(
-              margin: EdgeInsets.only(top: screenHeight * 0.1), child: list),
+              margin: EdgeInsets.only(top: screenHeight * 0.14), child: list),
         ),
         GestureDetector(
           onVerticalDragEnd: (_) {
@@ -118,7 +119,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
             duration: Duration(milliseconds: 350),
             curve: Curves.fastOutSlowIn,
             width: double.infinity,
-            height: (isExpanded ? screenHeight * 0.52 : screenHeight * 0.10),
+            height: (isExpanded ? screenHeight * 0.52 : screenHeight * 0.13),
             decoration: BoxDecoration(
                 color: Global.primary,
                 borderRadius: BorderRadius.only(
@@ -130,71 +131,77 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                       color: isExpanded ? Colors.black26 : Colors.transparent,
                       spreadRadius: screenHeight)
                 ]),
-            child:
-                Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              Container(
-                margin: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + 20),
-                child: Text(
-                  title,
-                  style: TextStyle(
-                      fontSize: 27,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.amber),
-                ),
-              ),
-              if (isDone)
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Container(
-                    margin: EdgeInsets.only(top: 16),
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: screenHeight * 0.4,
-                    child: CalendarCarousel(
-                      selectedDateTime: selectedDate,
-                      markedDateCustomShapeBorder:
-                          CircleBorder(side: BorderSide(color: Colors.yellow)),
-                      markedDatesMap: EventList(events: _events),
-                      markedDateIconBorderColor: Colors.amber,
-                      weekdayTextStyle: TextStyle(color: Colors.white),
-                      daysTextStyle: TextStyle(color: Colors.white),
-                      weekendTextStyle: TextStyle(color: Global.accent),
-                      headerTextStyle:
-                          TextStyle(color: Colors.amber, fontSize: 22),
-                      onDayPressed: (date, events) {
-                        selectedDate = date;
-                        final diff = date.difference(DateTime.now()).inHours;
-                        final List<Map<String, Object>> data = [];
-                        events.forEach((event) {
-                          data.add((event as MyEvent).data);
-                        });
-
-                        if (diff > -24 && diff <= 0) {
-                          title = 'Today';
-                        } else if (diff >= 0 && diff < 24) {
-                          title = 'Tomorrow';
-                        } else {
-                          title = 'Later';
-                        }
-                        dismiss(currentShows: data);
-                      },
+            child: LayoutBuilder(
+                        builder: (ctx, constraints) => Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + 20),
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                          fontSize: 27,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amber),
                     ),
                   ),
-                ),
-              if (!isExpanded)
-                Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Icon(
-                    Icons.arrow_downward_outlined,
-                    color: Global.accent,
-                  ),
-                ),
-              if (isDone)
-                Icon(
-                  Icons.arrow_upward_rounded,
-                  color: Global.accent,
-                ),
-            ]),
+                  if (isDone)
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child:  Container(
+                          margin: EdgeInsets.only(top: 16),
+                          width: MediaQuery.of(context).size.width * 0.8,
+                          height: constraints.maxHeight * 0.72,
+                          child: CalendarCarousel(
+                            selectedDateTime: selectedDate,
+                            markedDateCustomShapeBorder: CircleBorder(
+                                side: BorderSide(color: Colors.yellow)),
+                            markedDatesMap: EventList(events: _events),
+                            markedDateIconBorderColor: Colors.amber,
+                            weekdayTextStyle: TextStyle(color: Colors.white),
+                            daysTextStyle: TextStyle(color: Colors.white),
+                            weekendTextStyle: TextStyle(color: Global.accent),
+                            headerTextStyle:
+                                TextStyle(color: Colors.amber, fontSize: 22),
+                            onDayPressed: (date, events) {
+                              selectedDate = date;
+                              final diff =
+                                  date.difference(DateTime.now()).inHours;
+                              final List<Map<String, Object>> data = [];
+                              events.forEach((event) {
+                                data.add((event as MyEvent).data);
+                              });
+
+                              if (diff > -24 && diff <= 0) {
+                                title = 'Today';
+                              } else if (diff >= 0 && diff < 24) {
+                                title = 'Tomorrow';
+                              } else {
+                                title = 'Later';
+                              }
+                              dismiss(currentShows: data);
+                            },
+                          ),
+                        ),
+                   
+                    ),
+                    Spacer(),
+                  if (!isExpanded)
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Icon(
+                        Icons.arrow_downward_outlined,
+                        color: Global.accent,
+                      ),
+                    ),
+                  if (isDone)
+                    Icon(
+                      Icons.arrow_upward_rounded,
+                      color: Global.accent,
+                    ),
+                ]),)
           ),
         ),
       ],
