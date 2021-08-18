@@ -16,10 +16,38 @@ class UpcomingScreen extends StatelessWidget {
   }
 }
 
-class Movies extends StatelessWidget {
+class Movies extends StatefulWidget {
+  @override
+  _MoviesState createState() => _MoviesState();
+}
+
+class _MoviesState extends State<Movies> {
+  DateTime date = DateTime.now();
+  void reset(DateTime newDate) {
+    setState(() {
+      date = newDate;
+    });
+  }
+
   Widget build(BuildContext context) {
     Global.dataType = DataType.movie;
-    return Container();
+    return FutureBuilder<List<int>>(
+        future: Provider.of<DataProvider>(context, listen: false)
+            .fetchMoviesSchedule(date, context),
+        builder: (ctx, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Universal.loadingWidget();
+          }
+          if (snapshot.hasError) {
+            return Universal.failedWidget();
+          }
+
+          return ScheduleScreen(
+            date,
+            ids: snapshot.data,
+            resetDate: reset,
+          );
+        });
   }
 }
 
@@ -41,7 +69,7 @@ class Shows extends StatelessWidget {
           final date = DateTime.parse(value['date'] as String);
           if (date.isAfter(DateTime.now())) listOfShows.add(value);
         });
-        return ScheduleScreen(listOfShows);
+        return ScheduleScreen(DateTime.now(),shows: listOfShows);
       },
     );
   }

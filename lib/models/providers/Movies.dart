@@ -1,6 +1,7 @@
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_calendar_carousel/classes/event.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -235,7 +236,7 @@ class DataProvider with ChangeNotifier {
   Map<String, List<int>> _myMovieSchedule = {};
   Map<String, List<int>> _myTvSchedule = {};
   //helps store the schedule for movies and show. Used in calendar
-  Map<String, List<int>> movieSchedule = {};
+  Map<DateTime, List<int>> movieSchedule = {};
   static Map<int, Map<String, Object>> tvSchedule = {};
   //current page keeps track of which page the system should request
   //this is used in view all screen when user needs to load more than 15 items
@@ -480,6 +481,7 @@ class DataProvider with ChangeNotifier {
           'trakt-api-key': Global.apiKey,
         },
       );
+
       //if ferch data is not found
       if (response.statusCode == 204) {
         return 'Nan';
@@ -807,12 +809,31 @@ class DataProvider with ChangeNotifier {
   }
 
   Future<Track?> getLatestEpisode(int id) async {
-    final url = Global.apiKey + 'shows/$id/last_episode';
+    final url = Global.baseURL + 'shows/$id/last_episode';
     final response = await _fetchData(url, uri: Uri.parse(url));
+
     if (response != 'Nan') {
       final season = response['season'];
       final episode = response['number'];
       return Track(currentEp: episode, currentSeason: season);
     }
+  }
+
+  Future<List<int>> fetchMoviesSchedule(DateTime date, BuildContext ctx) async {
+    if (movieSchedule[date] == null) {
+      final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+      final url =
+          'https://api.trakt.tv/calendars/all/movies/$formattedDate/1?extended=full';
+      final response =
+          await _fetchData(url, uri: Uri.parse(url)) as List<dynamic>;
+
+      final data = _extractData(response, ctx);
+
+      movieSchedule[date] = data;
+    }
+   
+
+    return movieSchedule[date]!;
   }
 }

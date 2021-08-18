@@ -132,11 +132,24 @@ class Shows extends StatelessWidget {
             return Universal.failedWidget();
           }
 
+          if (!Global.isMovie()) {
+            User userProv = Provider.of<User>(context, listen: false);
+            List<Show> watched = userProv.watchedShows.values.toList();
+
+            watched.forEach((show) {
+              Provider.of<DataProvider>(context, listen: false)
+                  .getLatestEpisode(show.id)
+                  .then((track) => track != null
+                      ? userProv.checkLatest(track, show.id)
+                      : null);
+            });
+          }
+
           return SingleChildScrollView(
             child: Consumer<User>(builder: (_, userProv, __) {
               List<Show> shows = userProv.getCurrentlyWatching();
               List<Show> watchList = userProv.showWatchList.values.toList();
-              
+
               return Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [

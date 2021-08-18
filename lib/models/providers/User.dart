@@ -63,7 +63,7 @@ class User with ChangeNotifier {
   void startWatching(int id, {int episode = 1, int season = 1}) {
     isChange = true;
     // add to watching / update in sql to -1 and update episodes / remove from wl
-    _watching.add(_tvWatchList[id]!);
+    _watching.add(DataProvider.dataDB[id] as Show);
     track[id] = Track(currentEp: episode, currentSeason: season);
     _updateEpisode(id, episode, season);
     _update(id, -1, DataType.tvShow);
@@ -92,15 +92,17 @@ class User with ChangeNotifier {
         final item = _tvWatched[id];
         _tvWatched.remove(id);
         _tvWatchList[id] = item!;
+        DataProvider.tvSchedule.remove(id);
         _update(id, 0, DataType.tvShow);
       } else if (_tvWatchList[id] != null) {
         _tvWatched[id] = _tvWatchList[id]!;
         _tvWatchList.remove(id);
-
+        DataProvider.tvSchedule[id] = {};
         DataProvider().getLatestEpisode(id).then((trak) {
           if (trak != null) {
             _update(id, 1, DataType.tvShow);
-            _updateEpisode(id, trak.currentEp, trak.currentSeason);
+
+            _updateEpisode(id, trak.currentEp + 1, trak.currentSeason);
           }
         });
       } else {
@@ -123,10 +125,13 @@ class User with ChangeNotifier {
     if (Global.isMovie()) {
       _movieWatched.remove(id);
       _movieWatchList.remove(id);
+      _delete(id, DataType.movie);
     } else {
       _tvWatched.remove(id);
       _watching.remove(DataProvider.dataDB[id]);
       _tvWatchList.remove(id);
+      DataProvider.tvSchedule.remove(id);
+      _delete(id, DataType.tvShow);
     }
     notifyListeners();
   }

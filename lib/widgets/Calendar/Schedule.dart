@@ -1,5 +1,8 @@
 import 'package:discuss_it/models/Global.dart';
+import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/widgets/HomeWidgets/Type/PosterList.dart';
 import 'package:discuss_it/widgets/Seasons/SeasonsCard.dart';
+import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/classes/event.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
@@ -9,13 +12,22 @@ class MyEvent extends Event {
   final date;
   final dotIndicator;
   final Map<String, Object> data;
+
   MyEvent(this.date, this.dotIndicator, this.data)
       : super(date: date, dot: dotIndicator);
 }
 
 class ScheduleScreen extends StatefulWidget {
-  final List<Map<String, Object>> shows;
-  ScheduleScreen(this.shows);
+  List<Map<String, Object>>? shows;
+  List<int>? ids;
+  Function? resetDate;
+  DateTime date;
+  ScheduleScreen(
+    this.date, {
+    this.shows,
+    this.ids,
+    this.resetDate,
+  });
 
   @override
   _ScheduleScreenState createState() => _ScheduleScreenState();
@@ -25,17 +37,22 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     with SingleTickerProviderStateMixin {
   bool isExpanded = false;
   bool isDone = false;
-  DateTime selectedDate = DateTime.now();
+  late DateTime selectedDate;
   late Animation<double> _fadeAnimation;
   late AnimationController _ac;
   Map<DateTime, List<Event>> _events = {};
   late List<Map<String, Object>> shows;
+  late String title;
   @override
   void initState() {
     _ac =
         AnimationController(vsync: this, duration: Duration(milliseconds: 295));
     _fadeAnimation = CurvedAnimation(parent: _ac, curve: Curves.easeIn);
-    shows = widget.shows;
+    shows = widget.shows ?? [];
+    selectedDate = widget.date;
+    final releasedDate = DateFormat('dd MMM').format(widget.date);
+
+    title = widget.ids != null ? 'On theater on $releasedDate' : 'My Schedule';
     super.initState();
   }
 
@@ -46,7 +63,6 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     width: 5.0,
   );
 
-  String title = 'My Schedule';
   List<int> added = [];
   void dismiss({List<Map<String, Object>>? currentShows}) {
     if (currentShows != null) shows = currentShows;
@@ -72,6 +88,19 @@ class _ScheduleScreenState extends State<ScheduleScreen>
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    var grid = GridView.builder(
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: screenWidth * 0.8, childAspectRatio: 3 / 5),
+      itemBuilder: (ctx, ind) {
+        final id = widget.ids![ind];
+        Data data = DataProvider.dataDB[id]!;
+        final String genre = data.genre.length >= 1 ? data.genre[0] : '-';
+        return PosterItem(
+            data, Universal.footerContainer(genre, Icons.movie_filter_rounded));
+      },
+      itemCount: widget.ids?.length,
+    );
 
     var list = ListView.builder(
       itemBuilder: (ctx, index) {
@@ -109,100 +138,118 @@ class _ScheduleScreenState extends State<ScheduleScreen>
             //dismiss();
           },
           child: Container(
-              margin: EdgeInsets.only(top: screenHeight * 0.14), child: list),
+              margin: EdgeInsets.only(top: screenHeight * 0.14),
+              child: widget.ids != null ? grid : list),
         ),
         GestureDetector(
           onVerticalDragEnd: (_) {
             dismiss();
           },
           child: AnimatedContainer(
-            duration: Duration(milliseconds: 350),
-            curve: Curves.fastOutSlowIn,
-            width: double.infinity,
-            height: (isExpanded ? screenHeight * 0.52 : screenHeight * 0.13),
-            decoration: BoxDecoration(
-                color: Global.primary,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(29),
-                  bottomRight: Radius.circular(29),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                      color: isExpanded ? Colors.black26 : Colors.transparent,
-                      spreadRadius: screenHeight)
-                ]),
-            child: LayoutBuilder(
-                        builder: (ctx, constraints) => Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + 20),
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                          fontSize: 27,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber),
-                    ),
+              duration: Duration(milliseconds: 350),
+              curve: Curves.fastOutSlowIn,
+              width: double.infinity,
+              height: (isExpanded ? screenHeight * 0.54 : screenHeight * 0.13),
+              decoration: BoxDecoration(
+                  color: Global.primary,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(29),
+                    bottomRight: Radius.circular(29),
                   ),
-                  if (isDone)
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child:  Container(
-                          margin: EdgeInsets.only(top: 16),
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          height: constraints.maxHeight * 0.72,
-                          child: CalendarCarousel(
-                            selectedDateTime: selectedDate,
-                            markedDateCustomShapeBorder: CircleBorder(
-                                side: BorderSide(color: Colors.yellow)),
-                            markedDatesMap: EventList(events: _events),
-                            markedDateIconBorderColor: Colors.amber,
-                            weekdayTextStyle: TextStyle(color: Colors.white),
-                            daysTextStyle: TextStyle(color: Colors.white),
-                            weekendTextStyle: TextStyle(color: Global.accent),
-                            headerTextStyle:
-                                TextStyle(color: Colors.amber, fontSize: 22),
-                            onDayPressed: (date, events) {
-                              selectedDate = date;
-                              final diff =
-                                  date.difference(DateTime.now()).inHours;
-                              final List<Map<String, Object>> data = [];
-                              events.forEach((event) {
-                                data.add((event as MyEvent).data);
-                              });
+                  boxShadow: [
+                    BoxShadow(
+                        color: isExpanded ? Colors.black26 : Colors.transparent,
+                        spreadRadius: screenHeight)
+                  ]),
+              child: LayoutBuilder(
+                builder: (ctx, constraints) => Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                          margin: EdgeInsets.only(
+                              top: MediaQuery.of(context).padding.top + 15),
+                          child: Column(
+                            children: [
+                              Text(
+                                title,
+                                style: TextStyle(
+                                    fontSize: 27,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.amber),
+                              ),
+                              if (isDone && widget.shows != null)
+                                OutlinedButton(
+                                  child: Text(
+                                    'Return to my schedule',
+                                    style: TextStyle(color: Colors.amber),
+                                  ),
+                                  onPressed: () {
+                                    dismiss(currentShows: widget.shows);
+                                    title = 'My Schedule';
+                                  },
+                                )
+                            ],
+                          )),
+                      if (isDone)
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            height: constraints.maxHeight * 0.65,
+                            child: CalendarCarousel(
+                              selectedDateTime: selectedDate,
+                              markedDateCustomShapeBorder: CircleBorder(
+                                  side: BorderSide(color: Colors.yellow)),
+                              markedDatesMap: EventList(events: _events),
+                              markedDateIconBorderColor: Colors.amber,
+                              weekdayTextStyle: TextStyle(color: Colors.white),
+                              daysTextStyle: TextStyle(color: Colors.white),
+                              weekendTextStyle: TextStyle(color: Global.accent),
+                              headerTextStyle:
+                                  TextStyle(color: Colors.amber, fontSize: 22),
+                              onDayPressed: (date, events) {
+                                selectedDate = date;
+                                if (widget.resetDate != null) {
+                                  widget.resetDate!(date);
+                                  dismiss();
+                                  return;
+                                }
+                                final diff =
+                                    date.difference(DateTime.now()).inHours;
+                                final List<Map<String, Object>> data = [];
+                                events.forEach((event) {
+                                  data.add((event as MyEvent).data);
+                                });
 
-                              if (diff > -24 && diff <= 0) {
-                                title = 'Today';
-                              } else if (diff >= 0 && diff < 24) {
-                                title = 'Tomorrow';
-                              } else {
-                                title = 'Later';
-                              }
-                              dismiss(currentShows: data);
-                            },
+                                if (diff > -24 && diff <= 0) {
+                                  title = 'Today';
+                                } else if (diff >= 0 && diff < 24) {
+                                  title = 'Tomorrow';
+                                } else {
+                                  title = 'Later';
+                                }
+                                dismiss(currentShows: data);
+                              },
+                            ),
                           ),
                         ),
-                   
-                    ),
-                    Spacer(),
-                  if (!isExpanded)
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Icon(
-                        Icons.arrow_downward_outlined,
-                        color: Global.accent,
-                      ),
-                    ),
-                  if (isDone)
-                    Icon(
-                      Icons.arrow_upward_rounded,
-                      color: Global.accent,
-                    ),
-                ]),)
-          ),
+                      Spacer(),
+                      if (!isExpanded)
+                        Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Icon(
+                            Icons.arrow_downward_outlined,
+                            color: Global.accent,
+                          ),
+                        ),
+                      if (isDone)
+                        Icon(
+                          Icons.arrow_upward_rounded,
+                          color: Global.accent,
+                        ),
+                    ]),
+              )),
         ),
       ],
     );

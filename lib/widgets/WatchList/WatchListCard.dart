@@ -73,10 +73,9 @@ class _WatchListCardState extends State<WatchListCard>
       child: FutureBuilder<Episode?>(
         //check if episodes are loaded or if we are in shows watching
         //load them if they are missing
-        future:
-            statusOfData == Status.watching 
-                ? userProv.getEpisodeInfo(data.id, context, season: season)
-                : null,
+        future: statusOfData == Status.watching
+            ? userProv.getEpisodeInfo(data.id, context, season: season)
+            : null,
         builder: (ctx, snapshot) {
           String title = 'Episode Completed.';
           if (snapshot.hasError) {
@@ -89,13 +88,6 @@ class _WatchListCardState extends State<WatchListCard>
           }
 
           if (snapshot.connectionState == ConnectionState.done) {
-            if (!Global.isMovie() && statusOfData == Status.watched) {
-              Provider.of<DataProvider>(context, listen: false)
-                  .getLatestEpisode(data.id)
-                  .then((track) => track != null
-                      ? userProv.checkLatest(track, data.id)
-                      : null);
-            }
             eps = snapshot.data;
 
             Future.delayed(Duration(milliseconds: 510), () {
@@ -113,6 +105,8 @@ class _WatchListCardState extends State<WatchListCard>
               title = 'Watch complete. \n No more episodes';
             }
           }
+          
+         
 
           return LayoutBuilder(
             builder: (ctx, constraints) {
