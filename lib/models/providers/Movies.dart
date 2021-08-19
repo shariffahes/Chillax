@@ -832,7 +832,6 @@ class DataProvider with ChangeNotifier {
 
       movieSchedule[date] = data;
     }
-   
 
     return movieSchedule[date]!;
   }

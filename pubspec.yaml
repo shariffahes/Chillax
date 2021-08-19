@@ -34,7 +34,7 @@ dependencies:
   scroll_to_index: ^2.0.0
   sqflite: ^2.0.0+3
   flutter_calendar_carousel: ^2.0.3
-
+  responsive_sizer: 3.0.4+4
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -52,6 +52,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/logo.png
+    - assets/images/TvSpinning.gif
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

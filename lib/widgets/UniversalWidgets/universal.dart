@@ -3,6 +3,7 @@ import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 
 class Universal {
   static RoundedRectangleBorder roundedShape(double radius) {
@@ -12,7 +13,7 @@ class Universal {
   }
 
   static Widget loadingWidget() {
-    return Center(child: CircularProgressIndicator());
+    return Center(child: Image.asset('assets/images/TvSpinning.gif'));
   }
 
   static Widget failedWidget() {
@@ -25,6 +26,8 @@ class Universal {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
+          height: 3.7.h,
+          width: 15.w,
           alignment: Alignment.center,
           decoration: BoxDecoration(
               color: Colors.grey.shade800,
@@ -32,19 +35,22 @@ class Universal {
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-                Icon(
-                  icon,
-                  color: Colors.amber,
-                  size: 20,
-                ),
+              Icon(
+                icon,
+                color: Colors.amber,
+                size: 18.sp,
+              ),
               SizedBox(
-                width: 4,
+                width: 8.sp,
               ),
               Text(
                 content,
                 style: TextStyle(
                   color: Colors.white,
+                  fontSize: 15.sp,
                 ),
               )
             ],

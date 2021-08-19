@@ -110,13 +110,13 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         final epsName = currentShow['name'] as String;
         final season = currentShow['season'] as int;
         DateTime date = DateTime.parse(currentShow['date'] as String).toLocal();
-        final countDown = date.difference(DateTime.now()).inDays;
 
+        DateFormat formatDate = DateFormat('yyyy-MM-dd');
+        date = DateTime.parse(formatDate.format(date)).toLocal();
+        final today = DateTime.parse(formatDate.format(DateTime.now())).toLocal();
+        final countDown = date.difference(today).inDays;
+      
         final id = currentShow['id'] as int;
-
-        String formattedDate = DateFormat('yyyy-MM-dd').format(date);
-        date = DateTime.parse(formattedDate).toLocal();
-
         if (_events[date] == null) {
           _events[date] = [MyEvent(date, _dotEventIndicator, currentShow)];
           added.add(id);

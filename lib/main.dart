@@ -5,6 +5,7 @@ import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'screens/tabs_screen.dart';
@@ -69,17 +70,19 @@ class _MyAppState extends State<MyApp> {
               ChangeNotifierProvider(create: (_) => User()),
               ChangeNotifierProvider(create: (_) => PhotoProvider()),
             ],
-            child: MaterialApp(
-              routes: {
-                ListAll.route: (ctx) => ListAll(),
-                PreviewItem.route: (ctx) => PreviewItem(),
-              },
-              title: 'Discuss it',
-              theme: ThemeData(
-                accentColor: Global.accent,
-                primaryColor: Global.primary,
+            child: ResponsiveSizer(
+              builder: (ctx,orientation,_) => MaterialApp(
+                routes: {
+                  ListAll.route: (ctx) => ListAll(),
+                  PreviewItem.route: (ctx) => PreviewItem(),
+                },
+                title: 'Discuss it',
+                theme: ThemeData(
+                  accentColor: Global.accent,
+                  primaryColor: Global.primary,
+                ),
+                home: TabsScreen(),
               ),
-              home: TabsScreen(),
             ),
           );
         });
