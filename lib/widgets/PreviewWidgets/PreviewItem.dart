@@ -5,8 +5,12 @@ import 'package:discuss_it/models/providers/People.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class PreviewItem extends StatelessWidget {
   static const String route = '/preview_item';
@@ -242,8 +246,10 @@ class InfoColumn extends StatelessWidget {
           ),
           if (isShow) ...[
             ...setTitle('Seasons'),
+            SeasonsView(_data.id),
           ],
           ...setTitle('Media'),
+          MediaView(_data.tmdb),
           ...setTitle('Cast'),
           PreviewList(_cast, null, true),
           ...setTitle('Similar'),
@@ -479,5 +485,104 @@ class ActorItem extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class MediaView extends StatelessWidget {
+  final tmdbId;
+  const MediaView(this.tmdbId);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<String>>(
+        future: Provider.of<DataProvider>(context, listen: false)
+            .getVideosFor(tmdbId, Global.dataType),
+        builder: (ctx, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return Universal.loadingWidget();
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            return Universal.failedWidget();
+          }
+          List<String> keys = snapshot.data!;
+
+          return Container(
+            height: 200,
+            child: ListView.builder(
+                physics: AlwaysScrollableScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                itemCount: keys.length,
+                itemBuilder: (ctx, ind) {
+                  YoutubePlayerController _controller = YoutubePlayerController(
+                      initialVideoId: keys[ind],
+                      params: YoutubePlayerParams(
+                        desktopMode: true,
+                        showFullscreenButton: true,
+                        autoPlay: false,
+                      ));
+
+                  return Container(
+                    width: 90.w,
+                    margin: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Global.accent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: YoutubePlayerIFrame(
+                      controller: _controller,
+                      gestureRecognizers: {
+                        Factory<VerticalDragGestureRecognizer>(
+                            () => VerticalDragGestureRecognizer()),
+                      },
+                    ),
+                  );
+                }),
+          );
+        });
+  }
+}
+
+class SeasonsView extends StatelessWidget {
+  final int id;
+  const SeasonsView(this.id);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(builder: (ctx, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting)
+        return Universal.loadingWidget();
+      if (snapshot.hasError) {
+        print(snapshot.error);
+        return Universal.failedWidget();
+      }
+
+      return Container(
+        height: 280,
+        child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3,
+            itemBuilder: (ctx, index) {
+              return AspectRatio(
+                  aspectRatio: 2.6 / 4,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 250,
+                        margin: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      Text(
+                        'data',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ));
+            }),
+      );
+    });
   }
 }

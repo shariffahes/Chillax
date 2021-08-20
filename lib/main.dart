@@ -52,9 +52,9 @@ class _MyAppState extends State<MyApp> {
       version: 1,
       onCreate: (dataB, version) async {
         await dataB.execute(
-            'CREATE TABLE MovieWatch (id INT PRIMARY KEY,name TEXT, overview TEXT, rate TEXT, year INTEGER, language TEXT, duration INTEGER, genre TEXT, certification TEXT,releaseDate TEXT,homePage TEXT,trailer TEXT,watched INTEGER)');
+            'CREATE TABLE MovieWatch (id INT PRIMARY KEY,name TEXT, overview TEXT, rate TEXT, year INTEGER, language TEXT, duration INTEGER, genre TEXT, certification TEXT,releaseDate TEXT,homePage TEXT,trailer TEXT,tmdb INTEGER,watched INTEGER)');
         await dataB.execute(
-            'CREATE TABLE ShowWatch (id INT PRIMARY KEY,name TEXT, overview TEXT, rate TEXT, year INTEGER, language TEXT, genre TEXT, certification TEXT,releaseDate TEXT,homePage TEXT,trailer TEXT,network TEXT,runTime INTEGER,status TEXT,airedEpisodes INTEGER,watched INTEGER,currentEps INT,currentSeason INT)');
+            'CREATE TABLE ShowWatch (id INT PRIMARY KEY,name TEXT, overview TEXT, rate TEXT, year INTEGER, language TEXT, genre TEXT, certification TEXT,releaseDate TEXT,homePage TEXT,trailer TEXT,tmdb INTEGER,network TEXT,runTime INTEGER,status TEXT,airedEpisodes INTEGER,watched INTEGER,currentEps INTEGER,currentSeason INTEGER)');
       },
     );
   }

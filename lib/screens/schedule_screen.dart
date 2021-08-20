@@ -66,10 +66,12 @@ class Shows extends StatelessWidget {
         final List<Map<String, Object>> listOfShows = [];
 
         DataProvider.tvSchedule.forEach((key, value) {
-          final date = DateTime.parse(value['date'] as String);
-          if (date.isAfter(DateTime.now())) listOfShows.add(value);
+          final date = DateTime.parse(value['date'] as String).toLocal();
+     
+          if (date.isAfter(DateTime.now().subtract(Duration(days: 1))))
+            listOfShows.add(value);
         });
-        return ScheduleScreen(DateTime.now(),shows: listOfShows);
+        return ScheduleScreen(DateTime.now(), shows: listOfShows);
       },
     );
   }

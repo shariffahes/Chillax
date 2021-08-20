@@ -24,6 +24,7 @@ class Data {
   late final String releasedDate;
   late final String homePage;
   late final String trailer;
+  late final int tmdb;
 
   Data(
       this.id,
@@ -36,11 +37,13 @@ class Data {
       this.certification,
       this.releasedDate,
       this.homePage,
-      this.trailer);
+      this.trailer,
+      this.tmdb);
 
   //special constuctor for filling some data
   Data.compressed(
     this.id,
+    this.tmdb,
     this.name,
     this.releasedDate,
   ) {
@@ -75,9 +78,10 @@ class Movie extends Data {
     String releasedDate,
     String homePage,
     String trailer,
+    int tmdb,
     this.duration,
   ) : super(id, name, overview, rate, yearOfRelease, language, genre,
-            certification, releasedDate, homePage, trailer);
+            certification, releasedDate, homePage, trailer, tmdb);
 
   static Movie fromMap(Map<String, Object?> list) {
     int id = list['id'] as int;
@@ -93,13 +97,28 @@ class Movie extends Data {
     String certification = list['certification'] as String;
     String homePage = list['homePage'] as String;
     String trailer = list['trailer'] as String;
-    return Movie(id, name, overview, rate, year, language, genre, certification,
-        releasedDate, homePage, trailer, duration);
+    int tmdb = list['tmdb'] as int;
+    return Movie(
+      id,
+      name,
+      overview,
+      rate,
+      year,
+      language,
+      genre,
+      certification,
+      releasedDate,
+      homePage,
+      trailer,
+      tmdb,
+      duration,
+    );
   }
 
   Map<String, Object> toMap() {
     return {
       'id': id,
+      'tmdb': tmdb,
       'name': name,
       'overview': overview,
       'rate': rate,
@@ -135,12 +154,13 @@ class Show extends Data {
       String releasedDate,
       String homepage,
       String trailer,
+      int tmdb,
       this.network,
       this.runTime,
       this.status,
       this.airedEpisode)
       : super(id, name, overview, rate, yearOfRelease, language, genre,
-            certification, releasedDate, homepage, trailer);
+            certification, releasedDate, homepage, trailer, tmdb);
 
   void setEpisodes(Map<int, List<Episode>> eps) {
     episodes = {...eps};
@@ -163,6 +183,7 @@ class Show extends Data {
     String network = list['network'] as String;
     String status = list['status'] as String;
     int airedEpisodes = list['airedEpisodes'] as int;
+    int tmdb = list['tmdb'] as int;
 
     return Show(
         id,
@@ -176,6 +197,7 @@ class Show extends Data {
         releasedDate,
         homePage,
         trailer,
+        tmdb,
         network,
         runtime,
         status,
@@ -185,6 +207,7 @@ class Show extends Data {
   Map<String, Object> toMap() {
     return {
       'id': id,
+      'tmdb': tmdb,
       'name': name,
       'overview': overview,
       'rate': rate,
@@ -207,7 +230,6 @@ class Show extends Data {
 //episodes used to track the episode when added to watch list
 class Episode extends Data {
   final int epsId;
-  final int tmdbId;
   final int number;
   final int season;
 
@@ -220,12 +242,12 @@ class Episode extends Data {
     String rate,
     String airedDate,
     int year,
-    this.tmdbId,
+    int tmdbId,
     this.season,
     this.number,
     this.runTime,
   ) : super(showId, name, overview, rate, year, '-', [], '-', airedDate, '-',
-            '-');
+            '-', tmdbId);
 }
 
 class DataProvider with ChangeNotifier {
@@ -345,7 +367,6 @@ class DataProvider with ChangeNotifier {
 
       final id = info['ids']['trakt'] ?? 0;
       final tmdbId = info['ids']['tmdb'] ?? -1;
-
       //fetch the images from tmdb.
       //fetch is not sync to avoid the long wait to get the image
       //so we fetch the image and notify listeners when finished
@@ -373,8 +394,21 @@ class DataProvider with ChangeNotifier {
       if (Global.isMovie()) {
         final duration = info['runtime'] ?? 0;
         final releasedDate = info['released'] ?? '-';
-        final movie = Movie(id, title, overview, rate, year, lan, genres,
-            certification, releasedDate, homePage, trailer, duration);
+        final movie = Movie(
+          id,
+          title,
+          overview,
+          rate,
+          year,
+          lan,
+          genres,
+          certification,
+          releasedDate,
+          homePage,
+          trailer,
+          tmdbId,
+          duration,
+        );
 
         dataDB[id] = movie;
 
@@ -400,6 +434,7 @@ class DataProvider with ChangeNotifier {
           releasedDate,
           homePage,
           trailer,
+          tmdbId,
           network,
           runtime,
           status,
@@ -642,8 +677,19 @@ class DataProvider with ChangeNotifier {
     final int year = int.parse(first_aired.split('-').first);
     final runTime = info['runtime'] ?? 0;
 
-    return Episode(id, showId, name, overview, rate.toString(), first_aired,
-        year, tmdbId, season, num, runTime);
+    return Episode(
+      id,
+      showId,
+      name,
+      overview,
+      rate.toString(),
+      first_aired,
+      year,
+      tmdbId,
+      season,
+      num,
+      runTime,
+    );
   }
 
   /* Future<List<int>> getScheduleFor(
@@ -735,24 +781,17 @@ class DataProvider with ChangeNotifier {
 
   List<int> imageRequested = [];
   Future<void> fetchImage(int id, DataType type, BuildContext ctx) async {
-    String url = Global.baseURL;
     if (imageRequested.contains(id)) return;
     imageRequested.add(id);
-    if (type == DataType.tvShow) {
-      url += 'shows/$id';
-    } else if (type == DataType.movie) {
-      url += 'movies/$id';
-    }
 
-    final response = await _fetchData(url);
-    final tmdbID = response['ids']['tmdb'] ?? -1;
+    final tmdbID = dataDB[id]?.tmdb ?? -1;
 
     if (tmdbID != -1)
       Provider.of<PhotoProvider>(ctx, listen: false)
           .fetchImagesFor(tmdbID, id, type);
   }
 
-  Future<void> fetchSeasons(int id, {int season = 1}) async {
+  Future<void> fetchSeasons(int id, {int? season}) async {
     Show data = dataDB[id] as Show;
 
     String url = Global.baseURL + 'shows/$id/seasons';
@@ -767,19 +806,20 @@ class DataProvider with ChangeNotifier {
         if (season != 0) data.episodes![season] = [];
       });
     }
+    if (season != null) {
+      if (data.episodes![season] == null || data.episodes![season]!.isEmpty) {
+        url += '/$season?extended=full';
+        uri = Uri.parse(url);
 
-    if (data.episodes![season] == null || data.episodes![season]!.isEmpty) {
-      url += '/$season?extended=full';
-      uri = Uri.parse(url);
+        response = await _fetchData(url, uri: uri) as List<dynamic>;
 
-      response = await _fetchData(url, uri: uri) as List<dynamic>;
-
-      response.forEach(
-        (element) {
-          Episode eps = _extractEpisodesData(element, id);
-          data.episodes![season]!.add(eps);
-        },
-      );
+        response.forEach(
+          (element) {
+            Episode eps = _extractEpisodesData(element, id);
+            data.episodes![season]!.add(eps);
+          },
+        );
+      }
     }
   }
 
@@ -790,6 +830,7 @@ class DataProvider with ChangeNotifier {
         final url = Global.baseURL + 'shows/$key/next_episode?extended=full';
         final parsedURL = Uri.parse(url);
         final response = await _fetchData(url, uri: parsedURL);
+
         if (response != 'Nan') {
           Map<String, Object> info = {
             'date': response['first_aired'],
@@ -834,5 +875,21 @@ class DataProvider with ChangeNotifier {
     }
 
     return movieSchedule[date]!;
+  }
+
+  Future<List<String>> getVideosFor(int tmdbId, DataType type) async {
+    final url =
+        'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId/videos?api_key=dd5468d7aa41e016a24fa6bce058252d';
+    final response = await http.get(Uri.parse(url));
+
+    final results = json.decode(response.body);
+    final data = results['results'];
+
+    List<String> keys = [];
+    data.forEach((element) {
+      keys.add(element['key']);
+    });
+
+    return keys;
   }
 }

@@ -44,9 +44,9 @@ class Global {
   static const primary = Color.fromRGBO(0, 0, 128, 1);
   static Data get defaultData {
     return isMovie()
-        ? Movie(0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', 0)
+        ? Movie(0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', 0,-1)
         : Show(
-            0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', '-', 0, '-', 0);
+            0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-',-1, '-', 0, '-', 0,);
   }
 
   static const String apiKey =

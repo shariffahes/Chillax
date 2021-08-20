@@ -1,8 +1,6 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
-import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
