@@ -66,8 +66,8 @@ class _TrendingState extends State<Trending> {
           padding: const EdgeInsets.all(8.0),
           child: Text(
             Global.isMovie()
-                ? widget.movieType.toNormalString()
-                : widget.showType.toNormalString(),
+                ? widget.movieType.toNormalString().capitalize()
+                : widget.showType.toNormalString().capitalize(),
             style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
           ),
         ),

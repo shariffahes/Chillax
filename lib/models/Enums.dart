@@ -54,3 +54,9 @@ extension ParseToStringImg on DataType {
 enum Status {
   watchList, watching, watched, none
 }
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1)}";
+  }
+}

@@ -1,7 +1,7 @@
-import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
+import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +15,7 @@ class SeasonCard extends StatelessWidget {
   final String showName;
   final int id;
 
-  List<Widget> renderInfo() {
+  List<Widget> renderScheduleInfo() {
     final numberString =
         (number.toString().length > 1 ? 'E' : 'E0') + number.toString();
     final seasonString =
@@ -26,7 +26,9 @@ class SeasonCard extends StatelessWidget {
       ),
       Text(
         epsName,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),
       ),
       SizedBox(
         height: 8,
@@ -66,6 +68,49 @@ class SeasonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var countDownWidget = Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (countDown == 0)
+              Text('Today')
+            else if (countDown == 1)
+              Text('Tomorrow')
+            else ...[
+              Text(
+                countDown.toString(),
+              ),
+              Text(
+                'day(s)',
+              )
+            ],
+          ],
+        ));
+    final userProv = Provider.of<User>(context, listen: false);
+    final Track? track = userProv.track[id];
+    Widget setIcon() {
+      if (track == null || track.currentSeason > season)
+        return IconButton(
+            onPressed: () {}, icon: Icon(Icons.check_circle_rounded));
+      else if (track.currentSeason < season)
+        return IconButton(
+            onPressed: () {}, icon: Icon(Icons.check_circle_outline));
+      else if (track.currentSeason == season) {
+        if (track.currentEp > number)
+          return IconButton(
+              onPressed: () {}, icon: Icon(Icons.check_circle_rounded));
+        else if (track.currentEp < number)
+          return IconButton(
+              onPressed: () {}, icon: Icon(Icons.check_circle_outline));
+        else if (track.currentEp == number)
+          return IconButton(
+              onPressed: () {}, icon: Icon(Icons.check_circle_outline));
+      }
+      return Container();
+    }
+
     return Container(
       margin: const EdgeInsets.all(8),
       height: 110,
@@ -107,29 +152,10 @@ class SeasonCard extends StatelessWidget {
             fit: FlexFit.tight,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [...renderInfo()],
+              children: [...renderScheduleInfo()],
             ),
           ),
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (countDown == 0)
-                    Text('Today')
-                  else if (countDown == 1)
-                    Text('Tomorrow')
-                  else ...[
-                    Text(
-                      countDown.toString(),
-                    ),
-                    Text(
-                      'day(s)',
-                    )
-                  ],
-                ],
-              )),
+          if (countDown >= 0) countDownWidget else setIcon(),
         ],
       ),
     );

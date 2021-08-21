@@ -10,6 +10,7 @@ class PhotoProvider with ChangeNotifier {
   //data might grow big
   Map<int, List<String>> _moviesImage = {};
   Map<int, List<String>> _showsImage = {};
+
   Map<int, List<String>> _peopleProfiles = {};
 
   Map<int, List<String>> get moviesImages {
@@ -38,16 +39,20 @@ class PhotoProvider with ChangeNotifier {
 
   int requests = 0;
 
-  void fetchImagesFor(int tmdbId, int id, DataType type) async {
+  void fetchImagesFor(
+    int tmdbId,
+    int id,
+    DataType type,
+  ) async {
     //prepare the url
     //check if we are fetching people, shows, or movies.
-    final url = Uri.parse(
+    var url = Uri.parse(
         'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
     try {
       //no need to refetch if image available
-      if (peopleImages[id] != null ||
-          showsImages[id] != null ||
-          moviesImages[id] != null) return;
+      if (type == DataType.tvShow && showsImages[id] != null) return;
+      if (type == DataType.movie && moviesImages[id] != null) return;
+      if (type == DataType.person && peopleImages[id] != null) return;
 
       final response = await http.get(url);
 
@@ -65,7 +70,7 @@ class PhotoProvider with ChangeNotifier {
     } catch (error) {
       print(error);
     }
-    
+
     notifyListeners();
   }
 

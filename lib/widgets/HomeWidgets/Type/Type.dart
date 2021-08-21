@@ -26,7 +26,7 @@ class Type extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             alignment: AlignmentDirectional.topStart,
             child: Text(
-              movieType?.toNormalString() ?? showType!.toNormalString(),
+              movieType?.toNormalString().capitalize() ?? showType!.toNormalString().capitalize(),
               style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
             ),
           ),

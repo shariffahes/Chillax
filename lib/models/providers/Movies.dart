@@ -141,6 +141,7 @@ class Show extends Data {
   final String network;
   final String status;
   final int airedEpisode;
+
   Map<int, List<Episode>>? episodes;
   Show(
       int id,
@@ -232,7 +233,7 @@ class Episode extends Data {
   final int epsId;
   final int number;
   final int season;
-
+  int? seasonId;
   final int runTime;
   Episode(
     this.epsId,
@@ -248,6 +249,10 @@ class Episode extends Data {
     this.runTime,
   ) : super(showId, name, overview, rate, year, '-', [], '-', airedDate, '-',
             '-', tmdbId);
+
+  void setSeasonId(int id) {
+    seasonId = id;
+  }
 }
 
 class DataProvider with ChangeNotifier {
@@ -780,8 +785,14 @@ class DataProvider with ChangeNotifier {
 */
 
   List<int> imageRequested = [];
-  Future<void> fetchImage(int id, DataType type, BuildContext ctx) async {
-    if (imageRequested.contains(id)) return;
+  Future<void> fetchImage(
+    int id,
+    DataType type,
+    BuildContext ctx,
+  ) async {
+    if (imageRequested.contains(id)) {
+      return;
+    }
     imageRequested.add(id);
 
     final tmdbID = dataDB[id]?.tmdb ?? -1;
@@ -791,7 +802,10 @@ class DataProvider with ChangeNotifier {
           .fetchImagesFor(tmdbID, id, type);
   }
 
-  Future<void> fetchSeasons(int id, {int? season}) async {
+  Future<void> fetchSeasons(
+    int id, {
+    int? season,
+  }) async {
     Show data = dataDB[id] as Show;
 
     String url = Global.baseURL + 'shows/$id/seasons';
@@ -801,9 +815,12 @@ class DataProvider with ChangeNotifier {
     if (data.episodes == null) {
       response = await _fetchData(url, uri: uri) as List<dynamic>;
       data.episodes = {};
+
       response.forEach((item) {
         int season = item['number'] ?? -1;
-        if (season != 0) data.episodes![season] = [];
+        if (season != 0) {
+          data.episodes![season] = [];
+        }
       });
     }
     if (season != null) {
@@ -887,7 +904,12 @@ class DataProvider with ChangeNotifier {
 
     List<String> keys = [];
     data.forEach((element) {
-      keys.add(element['key']);
+      final String types = element['type'];
+
+      if (types.contains('Trailer'))
+        keys.insert(0, element['key']);
+      else
+        keys.add(element['key']);
     });
 
     return keys;
