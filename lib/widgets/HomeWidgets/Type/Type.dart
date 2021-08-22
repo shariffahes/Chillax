@@ -1,5 +1,6 @@
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import '../../../models/Enums.dart';
 import '../../../models/providers/Movies.dart';
 import '../../../screens/list_all_screen.dart';
@@ -23,11 +24,11 @@ class Type extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             alignment: AlignmentDirectional.topStart,
             child: Text(
               movieType?.toNormalString().capitalize() ?? showType!.toNormalString().capitalize(),
-              style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
             ),
           ),
           TextButton(
@@ -56,7 +57,7 @@ class Type extends StatelessWidget {
           List<int> _data = snapshot.data!.getDataBy(movieType, showType);
 
           return Container(
-            height: 340,
+            height: 40.h,
             child: PosterList(_data),
           );
         },

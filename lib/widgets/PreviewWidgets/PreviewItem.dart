@@ -368,7 +368,7 @@ class CustomAppBar extends StatelessWidget {
           ),
           Positioned(
             bottom: 4,
-            left: MediaQuery.of(context).size.width * 0.4,
+            left: MediaQuery.of(context).size.width * 0.4, 
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(55),
@@ -510,7 +510,7 @@ class MediaView extends StatelessWidget {
           List<String> keys = snapshot.data!;
 
           return Container(
-            height: 200,
+            
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -524,7 +524,7 @@ class MediaView extends StatelessWidget {
                     ));
 
                 return Container(
-                  width: 90.w,
+                  width: 85.w,
                   margin: EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: Global.accent,

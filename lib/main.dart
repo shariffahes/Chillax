@@ -61,6 +61,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+
     return FutureBuilder<void>(
         future: setDB(),
         builder: (ctx, _) {
@@ -71,7 +72,7 @@ class _MyAppState extends State<MyApp> {
               ChangeNotifierProvider(create: (_) => PhotoProvider()),
             ],
             child: ResponsiveSizer(
-              builder: (ctx,orientation,_) => MaterialApp(
+              builder: (ctx, orientation, _) => MaterialApp(
                 routes: {
                   ListAll.route: (ctx) => ListAll(),
                   PreviewItem.route: (ctx) => PreviewItem(),

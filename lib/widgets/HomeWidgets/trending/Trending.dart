@@ -5,12 +5,13 @@ import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 class Trending extends StatefulWidget {
   MovieTypes movieType;
   TvTypes showType;
- 
+
   Trending(this.movieType, this.showType);
 
   @override
@@ -20,9 +21,7 @@ class Trending extends StatefulWidget {
 class _TrendingState extends State<Trending> {
   Map<int, List<int>> _itemsData = {
     0: [-1],
-    1: [
-      -1,
-    ]
+    1: [-1]
   };
 
   var ind = 0;
@@ -52,8 +51,6 @@ class _TrendingState extends State<Trending> {
             : value.getDataBy(null, widget.showType);
       });
     });
-
-   
   }
 
   @override
@@ -68,7 +65,7 @@ class _TrendingState extends State<Trending> {
             Global.isMovie()
                 ? widget.movieType.toNormalString().capitalize()
                 : widget.showType.toNormalString().capitalize(),
-            style: TextStyle(fontSize: 33, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
           ),
         ),
         ViewCards(
@@ -133,10 +130,13 @@ class icons extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 44,
+          size: 11.h / 2.5,
           color: Global.primary,
         ),
-        Text(value),
+        Text(
+          value,
+          style: TextStyle(fontSize: 16.sp),
+        ),
       ],
     );
   }
@@ -159,7 +159,6 @@ class ViewCards extends StatelessWidget {
       aspectRatio: 7 / 4,
       child: ListView.builder(
         key: PageStorageKey('trending'),
-        
         physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
         controller: _controller,
         scrollDirection: Axis.horizontal,
@@ -182,42 +181,43 @@ class ViewCards extends StatelessWidget {
                 else
                   _scrollToIndex((index + 1) % list.length);
               },
-              child: Consumer<PhotoProvider>(
-                builder: (ctx, image, child) {
-                  List<String> backdrop = [
-                    Global.defaultImage,
-                    Global.defaultImage
-                  ];
-                  if (Global.isMovie())
-                    backdrop = image.getMovieImages(list[index]) ?? backdrop;
-                  else {
-                    backdrop = image.getShowImages(list[index]) ?? backdrop;
-                  }
+              child: Container(
+                width: 95.w,
+                child: Consumer<PhotoProvider>(
+                  builder: (ctx, image, child) {
+                    List<String> backdrop = [
+                      Global.defaultImage,
+                      Global.defaultImage
+                    ];
+                    if (Global.isMovie())
+                      backdrop = image.getMovieImages(list[index]) ?? backdrop;
+                    else {
+                      backdrop = image.getShowImages(list[index]) ?? backdrop;
+                    }
 
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(172, 60, 204, 1),
-                      borderRadius: BorderRadius.circular(
-                        12.0,
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(172, 60, 204, 1),
+                        borderRadius: BorderRadius.circular(
+                          12.0,
+                        ),
+                        image: DecorationImage(
+                          image: NetworkImage(backdrop[1]),
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      image: DecorationImage(
-                        image: NetworkImage(backdrop[1]),
-                        fit: BoxFit.cover,
-                      ),
+                      margin: const EdgeInsets.all(5),
+                      child: child,
+                    );
+                  },
+                  child: Text(
+                    DataProvider.dataDB[id]?.name ?? '-',
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                      backgroundColor: Colors.white70,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
                     ),
-                    margin: const EdgeInsets.all(5),
-                    height: 300,
-                    width: 360,
-                    child: child,
-                  );
-                },
-                child: Text(
-                  DataProvider.dataDB[id]?.name ?? '-',
-                  textAlign: TextAlign.start,
-                  style: TextStyle(
-                    backgroundColor: Colors.white70,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

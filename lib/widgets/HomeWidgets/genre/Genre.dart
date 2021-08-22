@@ -1,5 +1,6 @@
 import 'package:discuss_it/models/Global.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import '../genre/ItemLists.dart';
 
 class Genre extends StatelessWidget {
@@ -16,7 +17,7 @@ class Genre extends StatelessWidget {
           child: Text(
             'Genre',
             style: TextStyle(
-              fontSize: 33,
+              fontSize: 24.sp,
               fontWeight: FontWeight.bold,
             ),
           ),

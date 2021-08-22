@@ -27,7 +27,6 @@ class Universal {
       children: [
         Container(
           height: 3.7.h,
-          width: 15.w,
           alignment: Alignment.center,
           decoration: BoxDecoration(
               color: Colors.grey.shade800,
@@ -88,7 +87,7 @@ class Universal {
           },
           icon: Icon(
             Icons.check_circle,
-            size: 35,
+            size: 24.sp,
             color: Global.accent,
           ),
         );
@@ -130,7 +129,7 @@ class Universal {
           },
           icon: Icon(
             Icons.add_circle_rounded,
-            size: 35,
+            size: 24.sp,
             color: Global.accent,
           ),
         );

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/classes/event.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:intl/intl.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 
 class MyEvent extends Event {
   final date;
@@ -90,8 +91,8 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     var grid = GridView.builder(
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: screenWidth * 0.8, childAspectRatio: 3 / 5),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: Device.screenType == ScreenType.tablet ? 3 : 2, childAspectRatio: 3 / 5,),
       itemBuilder: (ctx, ind) {
         final id = widget.ids![ind];
         Data data = DataProvider.dataDB[id]!;

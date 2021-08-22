@@ -1,6 +1,7 @@
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import '../widgets/HomeWidgets/search/SearchWidget.dart';
 import 'package:flutter/rendering.dart';
 import '../models/Global.dart';
@@ -9,15 +10,12 @@ import '../widgets/HomeWidgets/genre/Genre.dart';
 import '../widgets/HomeWidgets/trending/Trending.dart';
 
 class HomeScreen extends StatefulWidget {
-  
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-
-
   //Prepare the home screen main titles
   final List<MovieTypes> listOfMovieTitles =
       MovieTypes.values.skip(Global.mainList).toList();
@@ -47,6 +45,10 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Global.dataType = type;
+    print(MediaQuery.of(context).size.height);
+    print(MediaQuery.of(context).size.width);
+    print(kBottomNavigationBarHeight);
+    
 
     return SingleChildScrollView(
       child: Column(children: [
