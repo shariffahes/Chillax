@@ -89,10 +89,12 @@ class _ScheduleScreenState extends State<ScheduleScreen>
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+
     var grid = GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: Device.screenType == ScreenType.tablet ? 3 : 2, childAspectRatio: 3 / 5,),
+        crossAxisCount: Device.screenType == ScreenType.tablet ? 3 : 2,
+        childAspectRatio: 3 / 5,
+      ),
       itemBuilder: (ctx, ind) {
         final id = widget.ids![ind];
         Data data = DataProvider.dataDB[id]!;
@@ -110,8 +112,9 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         final number = currentShow['number'] as int;
         final epsName = currentShow['name'] as String;
         final season = currentShow['season'] as int;
+        final epsId = currentShow['epsId'] as int;
         DateTime date = DateTime.parse(currentShow['date'] as String).toLocal();
-        
+
         DateFormat formatDate = DateFormat('yyyy-MM-dd');
         date = DateTime.parse(formatDate.format(date)).toLocal();
         final today =
@@ -129,7 +132,8 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           }
         }
 
-        return SeasonCard(id, season, number, showName, epsName, countDown);
+        return SeasonCard(
+            id, epsId, season, number, showName, epsName, countDown);
       },
       itemCount: shows.length,
     );

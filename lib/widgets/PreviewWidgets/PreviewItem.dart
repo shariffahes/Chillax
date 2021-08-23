@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class PreviewItem extends StatelessWidget {
@@ -368,7 +369,7 @@ class CustomAppBar extends StatelessWidget {
           ),
           Positioned(
             bottom: 4,
-            left: MediaQuery.of(context).size.width * 0.4, 
+            left: MediaQuery.of(context).size.width * 0.4,
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(55),
@@ -493,6 +494,7 @@ class ActorItem extends StatelessWidget {
 
 class MediaView extends StatelessWidget {
   final tmdbId;
+
   const MediaView(this.tmdbId);
 
   @override
@@ -504,13 +506,12 @@ class MediaView extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting)
             return Universal.loadingWidget();
           if (snapshot.hasError) {
-            print(snapshot.error);
+            print('err${snapshot.error}');
             return Universal.failedWidget();
           }
           List<String> keys = snapshot.data!;
 
           return Container(
-            
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -524,23 +525,48 @@ class MediaView extends StatelessWidget {
                     ));
 
                 return Container(
-                  width: 85.w,
-                  margin: EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Global.accent,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: YoutubePlayerIFrame(
-                      controller: _controller,
-                      gestureRecognizers: {
-                        Factory<VerticalDragGestureRecognizer>(
-                            () => VerticalDragGestureRecognizer()),
-                      },
+                    width: 85.w,
+                    height: (85.w / 16) * 9,
+                    margin: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Global.accent,
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                  ),
-                );
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: YoutubeValueBuilder(
+                          controller: _controller,
+                          builder: (ctx, value) {
+                            return AnimatedCrossFade(
+                              alignment: Alignment.center,
+                              firstChild: YoutubePlayerIFrame(
+                                controller: _controller,
+                                gestureRecognizers: {},
+                              ),
+                              secondChild: Stack(children: [
+                                Positioned.fill(
+                                  child: Image.network(
+                                    YoutubePlayerController.getThumbnail(
+                                        videoId: _controller.initialVideoId,
+                                        quality: ThumbnailQuality.medium),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (ctx, _, __) => Image.asset(
+                                      'assets/images/logo.png',
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                Align(
+                                    alignment: Alignment.center,
+                                    child: CircularProgressIndicator()),
+                              ]),
+                              crossFadeState: value.isReady
+                                  ? CrossFadeState.showFirst
+                                  : CrossFadeState.showSecond,
+                              duration: const Duration(milliseconds: 600),
+                            );
+                          }),
+                    ));
               }).toList()),
             ),
           );
@@ -555,8 +581,8 @@ class SeasonsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<void>(
-        future:
-            Provider.of<DataProvider>(context, listen: false).fetchSeasons(id),
+        future: Provider.of<DataProvider>(context, listen: false)
+            .fetchSeasons(id, context),
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting)
             return Universal.loadingWidget();
@@ -564,9 +590,7 @@ class SeasonsView extends StatelessWidget {
             print(snapshot.error);
             return Universal.failedWidget();
           }
-          Provider.of<DataProvider>(context, listen: false).fetchSeasons(
-            id,
-          );
+
           List<int> seasons =
               (DataProvider.dataDB[id]! as Show).episodes!.keys.toList();
 
@@ -576,6 +600,7 @@ class SeasonsView extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 itemCount: seasons.length,
                 itemBuilder: (ctx, index) {
+                  final seasonId = DataProvider.seasonIds[id]?[index] ?? id;
                   return GestureDetector(
                     onTap: () {
                       showModalBottomSheet(
@@ -596,7 +621,7 @@ class SeasonsView extends StatelessWidget {
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(5.0),
-                              child: ImagePoster(id),
+                              child: ImagePoster(seasonId),
                             ),
                             Text(
                               'Season ${index + 1}',
@@ -620,14 +645,17 @@ class SeasonView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: Provider.of<DataProvider>(context, listen: false)
-            .fetchSeasons(id, season: season),
+        future: Provider.of<DataProvider>(context, listen: false).fetchSeasons(
+          id,
+          context,
+          season: season,
+        ),
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Universal.loadingWidget();
           }
           if (snapshot.hasError) {
-            print(snapshot.error);
+            print('Err: ${snapshot.error}');
             return Universal.failedWidget();
           }
           Show show = DataProvider.dataDB[id] as Show;
@@ -635,16 +663,27 @@ class SeasonView extends StatelessWidget {
           return ListView.builder(
               itemCount: episodes.length,
               itemBuilder: (ctx, ind) {
-                DateTime date =
-                    DateTime.parse(episodes[ind].releasedDate).toLocal();
-                DateFormat formatDate = DateFormat('yyyy-MM-dd');
-                date = DateTime.parse(formatDate.format(date)).toLocal();
-                final today =
-                    DateTime.parse(formatDate.format(DateTime.now())).toLocal();
-                final countDown = date.difference(today).inDays;
+                final extractedDate = episodes[ind].releasedDate;
+                int? countDown;
+
+                if (extractedDate == '0') {
+                  countDown = null;
+                } else {
+                  DateTime date =
+                      DateTime.parse(episodes[ind].releasedDate).toLocal();
+
+                  DateFormat formatDate = DateFormat('yyyy-MM-dd');
+                  date = DateTime.parse(formatDate.format(date)).toLocal();
+                  final today =
+                      DateTime.parse(formatDate.format(DateTime.now()))
+                          .toLocal();
+                  countDown = date.difference(today).inDays;
+                }
+                final epsId = episodes[ind].epsId;
+
                 return Container(
                   margin: EdgeInsets.all(5),
-                  child: SeasonCard(id, season, ind + 1, show.name,
+                  child: SeasonCard(id, epsId, season, ind + 1, show.name,
                       episodes[ind].name, countDown),
                 );
               });

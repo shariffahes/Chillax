@@ -6,14 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SeasonCard extends StatelessWidget {
-  const SeasonCard(this.id, this.season, this.number, this.showName,
+  const SeasonCard(this.id, this.epsId, this.season, this.number, this.showName,
       this.epsName, this.countDown);
   final int season;
   final int number;
-  final int countDown;
+  final int? countDown;
   final String epsName;
   final String showName;
   final int id;
+  final epsId;
 
   List<Widget> renderScheduleInfo() {
     final numberString =
@@ -28,7 +29,10 @@ class SeasonCard extends StatelessWidget {
         epsName,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       SizedBox(
         height: 8,
@@ -130,16 +134,18 @@ class SeasonCard extends StatelessWidget {
             margin: const EdgeInsets.only(right: 12),
             child: Consumer<PhotoProvider>(
               builder: (ctx, imageProv, __) {
-                Provider.of<DataProvider>(context, listen: false)
-                    .fetchImage(id, Global.dataType, context);
+                Provider.of<DataProvider>(context, listen: false).fetchImage(
+                    id, Global.dataType, context,
+                    season: season, episode: number, epsId: epsId);
                 List<String> backdrop = [
                   Global.defaultImage,
                   Global.defaultImage
                 ];
                 if (Global.isMovie())
                   backdrop = imageProv.getMovieImages(id) ?? backdrop;
-                else
-                  backdrop = imageProv.getShowImages(id) ?? backdrop;
+                else {
+                  backdrop = imageProv.getShowImages(epsId) ?? backdrop;
+                }
 
                 return Image.network(
                   backdrop[1],
@@ -155,7 +161,12 @@ class SeasonCard extends StatelessWidget {
               children: [...renderScheduleInfo()],
             ),
           ),
-          if (countDown >= 0) countDownWidget else setIcon(),
+          if (countDown == null)
+            Container()
+          else if (countDown! >= 0)
+            countDownWidget
+          else
+            setIcon(),
         ],
       ),
     );

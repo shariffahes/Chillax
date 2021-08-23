@@ -10,7 +10,6 @@ class PhotoProvider with ChangeNotifier {
   //data might grow big
   Map<int, List<String>> _moviesImage = {};
   Map<int, List<String>> _showsImage = {};
-
   Map<int, List<String>> _peopleProfiles = {};
 
   Map<int, List<String>> get moviesImages {
@@ -39,42 +38,79 @@ class PhotoProvider with ChangeNotifier {
 
   int requests = 0;
 
-  void fetchImagesFor(
+  Future<List<String>> fetchImagesFor(
     int tmdbId,
     int id,
-    DataType type,
-  ) async {
+    DataType type, {
+    int? season,
+    int? seasonId,
+    int? episode,
+    int? epsId,
+  }) async {
     //prepare the url
     //check if we are fetching people, shows, or movies.
     var url = Uri.parse(
         'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
     try {
       //no need to refetch if image available
-      if (type == DataType.tvShow && showsImages[id] != null) return;
-      if (type == DataType.movie && moviesImages[id] != null) return;
-      if (type == DataType.person && peopleImages[id] != null) return;
+      if (episode != null && showsImages[epsId] != null)
+        return showsImages[epsId]!;
+      else if (season != null && showsImages[seasonId] != null)
+        return showsImages[seasonId]!;
+      else if (season == null) {
+        if (type == DataType.tvShow && showsImages[id] != null)
+          return showsImages[id]!;
+        if (type == DataType.movie && moviesImages[id] != null)
+          return moviesImages[id]!;
+        if (type == DataType.person && peopleImages[id] != null)
+          return peopleImages[id]!;
+      }
+
+      if (episode != null) {
+        url = Uri.parse(
+            'https://api.themoviedb.org/3/tv/$tmdbId/season/$season/episode/$episode/images?api_key=dd5468d7aa41e016a24fa6bce058252d&include_image_language=en,null');
+      } else if (season != null) {
+        url = Uri.parse(
+            'https://api.themoviedb.org/3/tv/$tmdbId/season/$season/images?api_key=dd5468d7aa41e016a24fa6bce058252d&include_image_language=en,null');
+      }
 
       final response = await http.get(url);
 
       final decodedData = json.decode(response.body);
 
-      final List<String> images = _extractData(decodedData, type);
+      List<String> images =
+          _extractData(decodedData, type, isEpisode: epsId != null);
 
       if (type == DataType.person) {
         _peopleProfiles[id] = images;
       } else if (type == DataType.movie) {
         _moviesImage[id] = images;
       } else if (type == DataType.tvShow) {
-        _showsImage[id] = images;
+        if (epsId != null) {
+          if (images[1] == Global.defaultImage) {
+            images = await fetchImagesFor(tmdbId, id, type);
+          }
+          _showsImage[epsId] = images;
+        } else if (seasonId != null) {
+          if (images[0] == Global.defaultImage) {
+            images = await fetchImagesFor(tmdbId, id, type);
+          }
+          _showsImage[seasonId] = images;
+        } else {
+          _showsImage[id] = images;
+        }
       }
+      notifyListeners();
+      return images;
     } catch (error) {
       print(error);
+      return [];
     }
-
-    notifyListeners();
+    
   }
 
-  List<String> _extractData(dynamic response, DataType type) {
+  List<String> _extractData(dynamic response, DataType type,
+      {bool isEpisode = false}) {
     List<String> _images = [];
 //fill data according to the type in its right map
 //each has a default image if the images are not avaible
@@ -102,8 +138,9 @@ class PhotoProvider with ChangeNotifier {
         final posterImages = response['posters'] != null
             ? (response['posters'].isNotEmpty ? response['posters'][0] : {})
             : {};
-        final backdropImages = response['backdrops'] != null
-            ? (response['backdrops'].isNotEmpty ? response['backdrops'][0] : {})
+        final path = isEpisode ? 'stills' : 'backdrops';
+        final backdropImages = response[path] != null
+            ? (response[path].isNotEmpty ? response[path][0] : {})
             : {};
 
         final imageURL = posterImages['file_path'] == null

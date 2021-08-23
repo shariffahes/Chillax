@@ -45,9 +45,6 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Global.dataType = type;
-    print(MediaQuery.of(context).size.height);
-    print(MediaQuery.of(context).size.width);
-    print(kBottomNavigationBarHeight);
     
 
     return SingleChildScrollView(

@@ -163,7 +163,7 @@ class User with ChangeNotifier {
     episode = episode - 1;
     if (show.episodes == null) {
       await Provider.of<DataProvider>(ctx, listen: false)
-          .fetchSeasons(id, season: season);
+          .fetchSeasons(id,ctx, season: season,);
     }
     final _seriesEpisodes = show.episodes!;
 
@@ -173,7 +173,7 @@ class User with ChangeNotifier {
 
     if (_seriesEpisodes[season]!.isEmpty) {
       await Provider.of<DataProvider>(ctx, listen: false)
-          .fetchSeasons(id, season: season);
+          .fetchSeasons(id,ctx, season: season);
     }
 
     if (episode >= _seriesEpisodes[season]!.length) {

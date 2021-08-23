@@ -105,8 +105,6 @@ class _WatchListCardState extends State<WatchListCard>
               title = 'Watch complete. \n No more episodes';
             }
           }
-          
-         
 
           return LayoutBuilder(
             builder: (ctx, constraints) {
@@ -146,7 +144,8 @@ class _WatchListCardState extends State<WatchListCard>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          ElipseImageView(constraints, data.id),
+                          ElipseImageView(
+                              constraints, data.id, eps?.epsId ?? data.id),
                           InfoColumn(
                               constraints, data, statusOfData, eps, userProv),
                           Spacer(),
@@ -189,7 +188,8 @@ class _WatchListCardState extends State<WatchListCard>
 class ElipseImageView extends StatelessWidget {
   final BoxConstraints cnst;
   final int id;
-  const ElipseImageView(this.cnst, this.id);
+  final int epsId;
+  const ElipseImageView(this.cnst, this.id, this.epsId);
 
   @override
   Widget build(BuildContext context) {
@@ -207,8 +207,10 @@ class ElipseImageView extends StatelessWidget {
               ];
               if (Global.isMovie())
                 backdrop = photoProv.getMovieImages(id) ?? backdrop;
-              else
-                backdrop = photoProv.getShowImages(id) ?? backdrop;
+              else {
+                backdrop = photoProv.getShowImages(epsId) ?? backdrop;
+              
+              }
 
               return Image.network(
                 backdrop[1],

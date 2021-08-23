@@ -76,7 +76,6 @@ class PosterItem extends StatelessWidget {
           ),
           Container(
             padding: const EdgeInsets.only(top: 10, bottom: 2),
-            
             child: Text(
               _data.name,
               maxLines: 1,
@@ -112,8 +111,7 @@ class PosterItem extends StatelessWidget {
 
 class ImagePoster extends StatelessWidget {
   final int id;
-  const ImagePoster(this.id);
-
+  const ImagePoster(this.id,);
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
@@ -125,8 +123,9 @@ class ImagePoster extends StatelessWidget {
             List<String> posters = [Global.defaultImage];
             if (Global.isMovie())
               posters = image.getMovieImages(id) ?? posters;
-            else
-              posters = image.getShowImages(id) ?? posters;
+            else {
+                posters = image.getShowImages(id) ?? posters;
+            }
 
             return FadeInImage(
               placeholder: AssetImage('assets/images/logo.png'),

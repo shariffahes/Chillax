@@ -257,6 +257,7 @@ class Episode extends Data {
 
 class DataProvider with ChangeNotifier {
   static Map<int, Data> dataDB = {};
+  static Map<int, List<int>> seasonIds = {};
   List<List<int>> _movies = List.filled(MovieTypes.values.length, []);
   //static Map<TvTypes, List<Show>> tvShowsDB = {};
   List<List<int>> _tvShows = List.filled(TvTypes.values.length, []);
@@ -629,46 +630,10 @@ class DataProvider with ChangeNotifier {
     return [..._tvShows[type.index]];
   }
 
-  Future<DataProvider> fetchEpisodes(int id) async {
-    if ((dataDB[id] as Show).episodes != null) return this;
-    final url = Uri.parse(
-        'https://api.trakt.tv/shows/$id/seasons?extended=episodes,full');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'trakt-api-version': '2',
-        'trakt-api-key': Global.apiKey,
-      },
-    );
-    final results = json.decode(response.body) as List<dynamic>;
-    Map<int, List<Episode>> info = {};
-    for (var season in results) {
-      final number = season['number'];
-      if (number == 0) continue;
-      final episodes = season['episodes'] as List<dynamic>;
-      List<Episode> ep = [];
-
-      episodes.forEach(
-        (episode) {
-          final eps = _extractEpisodesData(
-            episode,
-            id,
-          );
-          ep.add(eps);
-        },
-      );
-      info[number] = ep;
-    }
-    (dataDB[id] as Show).setEpisodes(info);
-
-    return this;
-  }
-
   Episode _extractEpisodesData(
     Map info,
     int showId,
+    BuildContext ctx,
   ) {
     final int id = info['ids']['trakt'] ?? 0;
     final tmdbId = info['ids']['tmdb'] ?? -1;
@@ -681,7 +646,14 @@ class DataProvider with ChangeNotifier {
     final String first_aired = info['first_aired'] ?? '0';
     final int year = int.parse(first_aired.split('-').first);
     final runTime = info['runtime'] ?? 0;
-
+    fetchImage(
+      showId,
+      DataType.tvShow,
+      ctx,
+      season: season,
+      episode: num,
+      epsId: id,
+    );
     return Episode(
       id,
       showId,
@@ -697,115 +669,17 @@ class DataProvider with ChangeNotifier {
     );
   }
 
-  /* Future<List<int>> getScheduleFor(
-      String date, bool isAll, BuildContext ctx) async {
-    final user = Provider.of<User>(ctx, listen: false);
-    if (!user.isChange) {
-      if (!Global.isMovie()) {
-        if (isAll && tvSchedule[date] != null)
-          return tvSchedule[date]!.keys.toList();
-        if (!isAll && _myTvSchedule[date] != null) return _myTvSchedule[date]!;
-      } else {
-        if (isAll && movieSchedule[date] != null) return movieSchedule[date]!;
-        if (!isAll && _myMovieSchedule[date] != null)
-          return _myMovieSchedule[date]!;
-      }
-    }
-
-    final label = Global.isMovie() ? 'movies' : 'shows';
-    final url =
-        'https://api.trakt.tv/calendars/all/$label/$date/1?extended=full';
-    final response = await _fetchData(url) as List<dynamic>;
-    bool isFirst = false;
-    user.isChange = false;
-    if (Global.isMovie()) {
-      final data = _extractData(response, ctx);
-      _myMovieSchedule[date] = [];
-      movieSchedule[date] = data;
-
-      data.forEach((item) {
-        isFirst = user.watchedMovies[item] != null ||
-            user.movieWatchList[item] != null;
-
-        if (isFirst) _myMovieSchedule[date]!.add(item);
-      });
-
-      return isAll ? movieSchedule[date]! : _myMovieSchedule[date]!;
-    } else {
-      _myTvSchedule[date] = [];
-      Map<int, List<Episode>> todaySchedule = {};
-      int prevId = -1;
-      List<Episode> epsInfo = [];
-      List<int> myEpisodes = [];
-      String dateOfRelease = '';
-      response.forEach((element) {
-        //stage 1: Data
-        final id = element['show']['ids']['trakt'];
-        dateOfRelease = element['first_aired'].split('T').first;
-
-        if (prevId != -1 && prevId != id) {
-          Map<int, Data> watchingMap = {};
-          //loop just one time on watching.
-          //this helps by decreasing the number of looping each time we want
-          //to check if the show is currently watching or not
-          if (watchingMap.isEmpty) watchingMap = user.watchingtoMap();
-          //if the show has been watched, in the watching list, or currently watching
-          //turn is First to true which will notify that this show should be in my schedule
-          final status = user.getStatus(prevId);
-          isFirst = status == Status.watching || status == Status.watched;
-          todaySchedule[prevId] = [...epsInfo];
-          myEpisodes.add(prevId);
-
-          if (isFirst) {
-            if (_myTvSchedule[dateOfRelease] == null ||
-                _myTvSchedule[dateOfRelease]!.isEmpty)
-              _myTvSchedule[dateOfRelease] = [prevId];
-            else
-              _myTvSchedule[dateOfRelease]!.add(prevId);
-          }
-          epsInfo.clear();
-        }
-
-        if (dataDB[id] == null) {
-          _extractData([element], ctx);
-        }
-
-        //Stage 2: episodes
-        final episode = _extractEpisodesData(element['episode'], id);
-
-        epsInfo.add(episode);
-        prevId = id;
-      });
-      tvSchedule[dateOfRelease] = {...todaySchedule};
-      return isAll ? myEpisodes : _myTvSchedule[dateOfRelease]!;
-    }
-
-    //return isAll ? schedule[ind][date]! : (_mySchedule[ind][date] ?? []);
-  }
-*/
-
-  List<int> imageRequested = [];
-  Future<void> fetchImage(
-    int id,
-    DataType type,
-    BuildContext ctx,
-  ) async {
-    if (imageRequested.contains(id)) {
-      return;
-    }
-    imageRequested.add(id);
-
+  Future<void> fetchImage(int id, DataType type, BuildContext ctx,
+      {int? season, int? seasonId, int? episode, int? epsId}) async {
     final tmdbID = dataDB[id]?.tmdb ?? -1;
 
     if (tmdbID != -1)
-      Provider.of<PhotoProvider>(ctx, listen: false)
-          .fetchImagesFor(tmdbID, id, type);
+      Provider.of<PhotoProvider>(ctx, listen: false).fetchImagesFor(
+          tmdbID, id, type,
+          season: season, episode: episode, seasonId: seasonId, epsId: epsId);
   }
 
-  Future<void> fetchSeasons(
-    int id, {
-    int? season,
-  }) async {
+  Future<void> fetchSeasons(int id, BuildContext ctx, {int? season}) async {
     Show data = dataDB[id] as Show;
 
     String url = Global.baseURL + 'shows/$id/seasons';
@@ -817,9 +691,16 @@ class DataProvider with ChangeNotifier {
       data.episodes = {};
 
       response.forEach((item) {
-        int season = item['number'] ?? -1;
-        if (season != 0) {
-          data.episodes![season] = [];
+        int num = item['number'] ?? -1;
+        int seasonId = item['ids']['trakt'];
+        if (num != 0) {
+          data.episodes![num] = [];
+          if (seasonIds[id] == null)
+            seasonIds[id] = [seasonId];
+          else
+            seasonIds[id]!.add(seasonId);
+
+          fetchImage(id, DataType.tvShow, ctx, season: num, seasonId: seasonId);
         }
       });
     }
@@ -829,10 +710,10 @@ class DataProvider with ChangeNotifier {
         uri = Uri.parse(url);
 
         response = await _fetchData(url, uri: uri) as List<dynamic>;
-
+      
         response.forEach(
           (element) {
-            Episode eps = _extractEpisodesData(element, id);
+            Episode eps = _extractEpisodesData(element, id, ctx);
             data.episodes![season]!.add(eps);
           },
         );
@@ -855,7 +736,8 @@ class DataProvider with ChangeNotifier {
             'number': response['number'],
             'name': response['title'],
             'title': dataDB[key]?.name ?? response['title'],
-            'id': key
+            'id': key,
+            'epsId': response['ids']['trakt']
           };
 
           tvSchedule[key] = info;

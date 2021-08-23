@@ -177,7 +177,7 @@ class ViewCards extends StatelessWidget {
               onPanUpdate: (details) {
                 if (details.delta.dx > 0)
                   _scrollToIndex(
-                      (index - 1) == 0 ? list.length - 1 : index - 1);
+                      (index - 1) == -1 ? list.length - 1 : index - 1);
                 else
                   _scrollToIndex((index + 1) % list.length);
               },
