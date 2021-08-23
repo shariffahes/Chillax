@@ -543,23 +543,27 @@ class MediaView extends StatelessWidget {
                                 controller: _controller,
                                 gestureRecognizers: {},
                               ),
-                              secondChild: Stack(children: [
-                                Positioned.fill(
-                                  child: Image.network(
-                                    YoutubePlayerController.getThumbnail(
-                                        videoId: _controller.initialVideoId,
-                                        quality: ThumbnailQuality.medium),
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (ctx, _, __) => Image.asset(
-                                      'assets/images/logo.png',
+                              secondChild: Container(
+                                width: 85.w,
+                                height: (85.w / 16) * 9,
+                                child: Stack(children: [
+                                  Positioned.fill(
+                                    child: Image.network(
+                                      YoutubePlayerController.getThumbnail(
+                                          videoId: _controller.initialVideoId,
+                                          quality: ThumbnailQuality.medium),
                                       fit: BoxFit.cover,
+                                      errorBuilder: (ctx, _, __) => Image.asset(
+                                        'assets/images/logo.png',
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Align(
-                                    alignment: Alignment.center,
-                                    child: CircularProgressIndicator()),
-                              ]),
+                                  Align(
+                                      alignment: Alignment.center,
+                                      child: CircularProgressIndicator()),
+                                ]),
+                              ),
                               crossFadeState: value.isReady
                                   ? CrossFadeState.showFirst
                                   : CrossFadeState.showSecond,

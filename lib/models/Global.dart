@@ -40,13 +40,30 @@ class Global {
     "Western"
   ];
   static int mainList = 4;
+
   static const accent = Colors.amber;
   static const primary = Color.fromRGBO(0, 0, 128, 1);
   static Data get defaultData {
     return isMovie()
-        ? Movie(0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', 0,-1)
+        ? Movie(0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-', 0, -1)
         : Show(
-            0, '-', '-', '-', 0, '-', [], '-', '-', '-', '-',-1, '-', 0, '-', 0,);
+            0,
+            '-',
+            '-',
+            '-',
+            0,
+            '-',
+            [],
+            '-',
+            '-',
+            '-',
+            '-',
+            -1,
+            '-',
+            0,
+            '-',
+            0,
+          );
   }
 
   static const String apiKey =

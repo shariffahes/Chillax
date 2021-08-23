@@ -11,10 +11,11 @@ import '../Type/PosterList.dart';
 class Type extends StatelessWidget {
   final MovieTypes? movieType;
   final TvTypes? showType;
-
+  final int k;
   Type(
     this.movieType,
     this.showType,
+    this.k
   );
 
   @override
@@ -27,7 +28,8 @@ class Type extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             alignment: AlignmentDirectional.topStart,
             child: Text(
-              movieType?.toNormalString().capitalize() ?? showType!.toNormalString().capitalize(),
+              movieType?.toNormalString().capitalize() ??
+                  showType!.toNormalString().capitalize(),
               style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
             ),
           ),
@@ -40,7 +42,10 @@ class Type extends StatelessWidget {
                 },
               );
             },
-            child: Text('View all',style: TextStyle(color: Global.primary),),
+            child: Text(
+              'View all',
+              style: TextStyle(color: Global.primary),
+            ),
           ),
         ],
       ),
@@ -58,7 +63,7 @@ class Type extends StatelessWidget {
 
           return Container(
             height: 40.h,
-            child: PosterList(_data),
+            child: PosterList(_data,k),
           );
         },
       ),

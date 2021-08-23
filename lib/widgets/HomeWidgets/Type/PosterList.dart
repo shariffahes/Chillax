@@ -11,8 +11,8 @@ import 'package:provider/provider.dart';
 
 class PosterList extends StatefulWidget {
   final List<int> _items;
-
-  PosterList(this._items);
+  final int k;
+  PosterList(this._items, this.k);
 
   @override
   _PosterListState createState() => _PosterListState();
@@ -22,6 +22,7 @@ class _PosterListState extends State<PosterList> {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      key: PageStorageKey(widget.k),
       scrollDirection: Axis.horizontal,
       children: widget._items.map((item) {
         Data data = DataProvider.dataDB[item] ?? Global.defaultData;
@@ -111,7 +112,9 @@ class PosterItem extends StatelessWidget {
 
 class ImagePoster extends StatelessWidget {
   final int id;
-  const ImagePoster(this.id,);
+  const ImagePoster(
+    this.id,
+  );
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
@@ -124,7 +127,7 @@ class ImagePoster extends StatelessWidget {
             if (Global.isMovie())
               posters = image.getMovieImages(id) ?? posters;
             else {
-                posters = image.getShowImages(id) ?? posters;
+              posters = image.getShowImages(id) ?? posters;
             }
 
             return FadeInImage(

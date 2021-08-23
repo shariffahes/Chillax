@@ -10,42 +10,55 @@ import '../widgets/HomeWidgets/genre/Genre.dart';
 import '../widgets/HomeWidgets/trending/Trending.dart';
 
 class HomeScreen extends StatefulWidget {
+  HomeScreen({Key? key}) : super(key: key);
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   //Prepare the home screen main titles
   final List<MovieTypes> listOfMovieTitles =
       MovieTypes.values.skip(Global.mainList).toList();
   final List<TvTypes> listOfShowTitles =
       TvTypes.values.skip(Global.mainList).toList();
+
   @override
   Widget build(BuildContext context) {
     return TabBarView(
       physics: NeverScrollableScrollPhysics(),
       children: [
-        MainScreen(DataType.movie, listOfTitles: listOfMovieTitles),
-        MainScreen(DataType.tvShow, listOfTitles: listOfShowTitles),
+        MainScreen(DataType.movie, 0, listOfTitles: listOfMovieTitles),
+        MainScreen(DataType.tvShow, 4, listOfTitles: listOfShowTitles),
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   final DataType type;
+  int k;
   MainScreen(
-    this.type, {
+    this.type,
+    this.k, {
     required this.listOfTitles,
   });
 
   final List<Object> listOfTitles;
 
   @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
   Widget build(BuildContext context) {
-    Global.dataType = type;
-    
+    Global.dataType = widget.type;
+    int key = widget.k;
 
     return SingleChildScrollView(
       child: Column(children: [
@@ -53,14 +66,22 @@ class MainScreen extends StatelessWidget {
         Trending(
           MovieTypes.boxoffice,
           TvTypes.played,
+          key++,
         ),
         Container(padding: const EdgeInsets.all(5), child: Genre()),
-        ...listOfTitles.map((e) {
-          if (e is MovieTypes) return Type(e, null);
+        ...widget.listOfTitles.map((e) {
+          if (e is MovieTypes) return Type(e, null, key++);
 
-          return Type(null, e as TvTypes);
+          return Type(
+            null,
+            e as TvTypes,
+            key++,
+          );
         }).toList(),
       ]),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

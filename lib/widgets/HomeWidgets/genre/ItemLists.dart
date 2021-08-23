@@ -16,6 +16,7 @@ class ItemLists extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisExtent: MediaQuery.of(context).size.width * 0.41,
