@@ -47,12 +47,8 @@ class PhotoProvider with ChangeNotifier {
     int? episode,
     int? epsId,
   }) async {
-    //prepare the url
-    //check if we are fetching people, shows, or movies.
-    var url = Uri.parse(
-        'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
     try {
-      //no need to refetch if image available
+      //data are cached locally
       if (episode != null && showsImages[epsId] != null)
         return showsImages[epsId]!;
       else if (season != null && showsImages[seasonId] != null)
@@ -66,16 +62,20 @@ class PhotoProvider with ChangeNotifier {
           return peopleImages[id]!;
       }
 
+      //Data reached here so it is not locally cached yet.
+      //Check if it is stored in database which also has a varinish cach
+
+      //otherwise fetch image from tmdb api
+      var url = 'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId';
       if (episode != null) {
-        url = Uri.parse(
-            'https://api.themoviedb.org/3/tv/$tmdbId/season/$season/episode/$episode/images?api_key=dd5468d7aa41e016a24fa6bce058252d&include_image_language=en,null');
+        url += '/season/$season/episode/$episode';
       } else if (season != null) {
-        url = Uri.parse(
-            'https://api.themoviedb.org/3/tv/$tmdbId/season/$season/images?api_key=dd5468d7aa41e016a24fa6bce058252d&include_image_language=en,null');
+        url += '/season/$season';
       }
+      final URL =
+          Uri.parse(url + '/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
 
-      final response = await http.get(url);
-
+      final response = await http.get(URL);
       final decodedData = json.decode(response.body);
 
       List<String> images =
@@ -106,7 +106,6 @@ class PhotoProvider with ChangeNotifier {
       print(error);
       return [];
     }
-    
   }
 
   List<String> _extractData(dynamic response, DataType type,

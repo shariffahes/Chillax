@@ -1,8 +1,10 @@
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
+import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 class Universal {
@@ -134,5 +136,30 @@ class Universal {
           ),
         );
     }
+  }
+
+  static Widget imageSource(int id, int flag, BuildContext ctx) {
+    return Consumer<PhotoProvider>(
+      builder: (ctx, image, _) {
+        List<String> posters = [Global.defaultImage, Global.defaultImage];
+        if (flag == 1)
+          Provider.of<DataProvider>(ctx, listen: false)
+              .fetchImage(id, Global.dataType, ctx);
+
+        if (Global.isMovie())
+          posters = image.getMovieImages(id) ?? posters;
+        else
+          posters = image.getShowImages(id) ?? posters;
+
+        return flag == 1
+            ? Image.network(posters[flag], fit: BoxFit.cover)
+            : FadeInImage(
+                placeholder: AssetImage('assets/images/logo.png'),
+                image: NetworkImage(
+                  posters[flag],
+                ),
+                fit: BoxFit.cover);
+      },
+    );
   }
 }

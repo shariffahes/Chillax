@@ -3,6 +3,7 @@ import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
+import 'package:discuss_it/widgets/HomeWidgets/trending/Trending.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,14 +22,16 @@ class _WatchListCardState extends State<WatchListCard>
     with SingleTickerProviderStateMixin {
   late final _offsetAnimation;
   late AnimationController _animationController;
-
+  late Animation<double> _opacityAnimation;
   @override
   void initState() {
     _animationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+        AnimationController(vsync: this, duration: Duration(milliseconds: 520));
 
     _offsetAnimation = Tween<Offset>(begin: Offset.zero, end: Offset(1.5, 0))
         .animate(_animationController);
+    _opacityAnimation =
+        Tween<double>(begin: 0, end: 1).animate(_animationController);
     super.initState();
   }
 
@@ -42,7 +45,7 @@ class _WatchListCardState extends State<WatchListCard>
     if (statusOfData == Status.watching) {
       _animationController.forward();
 
-      Future.delayed(Duration(milliseconds: 500), () {
+      Future.delayed(Duration(milliseconds: 520), () {
         setState(() {
           userProv.watchComplete(id);
         });
@@ -55,6 +58,7 @@ class _WatchListCardState extends State<WatchListCard>
   }
 
   Episode? eps;
+  var isHidden = false;
   @override
   Widget build(BuildContext context) {
     final userProv = widget.userProv;
@@ -63,6 +67,7 @@ class _WatchListCardState extends State<WatchListCard>
     Status statusOfData = userProv.getStatus(widget._data.id);
     Track? track = userProv.track[data.id];
     int season = track?.currentSeason ?? widget.season;
+
     return Container(
       key: UniqueKey(),
       width: 200,
@@ -77,7 +82,7 @@ class _WatchListCardState extends State<WatchListCard>
             ? userProv.getEpisodeInfo(data.id, context, season: season)
             : null,
         builder: (ctx, snapshot) {
-          String title = 'Episode Completed.';
+          String title = 'Episode Completed.\nLoading next episode ...';
           if (snapshot.hasError) {
             print('sn: ${snapshot.error}');
             return Universal.failedWidget();
@@ -89,8 +94,8 @@ class _WatchListCardState extends State<WatchListCard>
 
           if (snapshot.connectionState == ConnectionState.done) {
             eps = snapshot.data;
-
-            Future.delayed(Duration(milliseconds: 510), () {
+            isHidden = true;
+            Future.delayed(Duration(milliseconds: 520), () {
               if (snapshot.data == null)
                 userProv.completeShow(data.id);
               else {
@@ -102,22 +107,26 @@ class _WatchListCardState extends State<WatchListCard>
               }
             });
             if (statusOfData == Status.watching && snapshot.data == null) {
-              title = 'Watch complete. \n No more episodes';
+              title = 'Watch complete.\nThat\s all for now.';
             }
           }
 
           return LayoutBuilder(
             builder: (ctx, constraints) {
               return Stack(children: [
-                Container(
-                  color: Global.accent,
-                  width: double.infinity,
-                  height: 135,
-                  child: Center(
-                      child: Text(
-                    title,
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  )),
+                FadeTransition(
+                  opacity: _opacityAnimation,
+                  child: Container(
+                    color: isHidden ? Global.accent : Colors.red,
+                    width: double.infinity,
+                    height: 135,
+                    child: Center(
+                        child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.bold,fontStyle: FontStyle.italic),
+                    )),
+                  ),
                 ),
                 SlideTransition(
                   position: _offsetAnimation,
@@ -125,12 +134,16 @@ class _WatchListCardState extends State<WatchListCard>
                     key: UniqueKey(),
                     background: Container(
                       color: Colors.amber,
+                      padding: const EdgeInsets.only(left: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Icon(Icons.check_circle_sharp,size: 45,),
                     ),
                     secondaryBackground: Container(
                       padding: const EdgeInsets.only(right: 20),
                       alignment: Alignment.centerRight,
                       color: Colors.red,
-                      child: Text('Delete'),
+                      
+                      child: Icon(Icons.delete,size: 45,),
                     ),
                     onDismissed: (dir) {
                       if (dir == DismissDirection.endToStart) {
@@ -197,26 +210,7 @@ class ElipseImageView extends StatelessWidget {
       width: cnst.minWidth * 0.4,
       child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.elliptical(80, 125)),
-          child: Consumer<PhotoProvider>(
-            builder: (_, photoProv, __) {
-              Provider.of<DataProvider>(context, listen: false)
-                  .fetchImage(id, Global.dataType, context);
-              List<String> backdrop = [
-                Global.defaultImage,
-                Global.defaultImage
-              ];
-              if (Global.isMovie())
-                backdrop = photoProv.getMovieImages(id) ?? backdrop;
-              else {
-                backdrop = photoProv.getShowImages(epsId) ?? backdrop;
-              
-              }
-
-              return Image.network(
-                backdrop[1],
-              );
-            },
-          )),
+          child: Universal.imageSource(id, 1, context)),
     );
   }
 }

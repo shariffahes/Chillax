@@ -22,17 +22,13 @@ class TabsScreenState extends State<TabsScreen> {
 
     tabBarWidgets = [
       {
-        'page': WatchListScreen(
-          key: PageStorageKey<String>('WatchList'),
-        ),
+        'page': WatchListScreen(),
       },
       // {
       //   'page': SearchScreen(),
       // },
       {
-        'page': HomeScreen(
-          key: PageStorageKey<String>('Home'),
-        ),
+        'page': HomeScreen(),
       },
       {
         'page': UpcomingScreen(),
@@ -49,11 +45,10 @@ class TabsScreenState extends State<TabsScreen> {
     });
   }
 
-  final PageStorageBucket _bucket = PageStorageBucket();
+
 
   @override
   Widget build(BuildContext context) {
-   
     return DefaultTabController(
       initialIndex: 0,
       length: 2,
@@ -132,10 +127,7 @@ class TabsScreenState extends State<TabsScreen> {
             ],
           ),
         ),
-        body: PageStorage(
-          bucket: _bucket,
-          child: tabBarWidgets[_index]['page'] as Widget,
-        ),
+        body: tabBarWidgets[_index]['page'] as Widget,
       ),
     );
   }

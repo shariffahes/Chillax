@@ -337,23 +337,7 @@ class CustomAppBar extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Positioned.fill(
-            child: Consumer<PhotoProvider>(
-              builder: (ctx, image, _) {
-                List<String> backdrop = [
-                  Global.defaultImage,
-                  Global.defaultImage
-                ];
-                if (Global.isMovie())
-                  backdrop = image.getMovieImages(_data.id) ?? backdrop;
-                else
-                  backdrop = image.getShowImages(_data.id) ?? backdrop;
-
-                return Image.network(
-                  backdrop[1],
-                  fit: BoxFit.cover,
-                );
-              },
-            ),
+            child: Universal.imageSource(_data.id, 1, context),
           ),
           Positioned(
             child: Container(
@@ -541,33 +525,19 @@ class MediaView extends StatelessWidget {
                               alignment: Alignment.center,
                               firstChild: YoutubePlayerIFrame(
                                 controller: _controller,
-                                gestureRecognizers: {},
-                              ),
-                              secondChild: Container(
-                                width: 85.w,
-                                height: (85.w / 16) * 9,
-                                child: Stack(children: [
-                                  Positioned.fill(
-                                    child: Image.network(
-                                      YoutubePlayerController.getThumbnail(
-                                          videoId: _controller.initialVideoId,
-                                          quality: ThumbnailQuality.medium),
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (ctx, _, __) => Image.asset(
-                                        'assets/images/logo.png',
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
+                                gestureRecognizers: {
+                                  new Factory<TapGestureRecognizer>(
+                                    () => TapGestureRecognizer(),
                                   ),
-                                  Align(
-                                      alignment: Alignment.center,
-                                      child: CircularProgressIndicator()),
-                                ]),
+                                },
+                              ),
+                              secondChild: Center(
+                                child: CircularProgressIndicator(),
                               ),
                               crossFadeState: value.isReady
                                   ? CrossFadeState.showFirst
                                   : CrossFadeState.showSecond,
-                              duration: const Duration(milliseconds: 600),
+                              duration: const Duration(seconds: 1),
                             );
                           }),
                     ));

@@ -16,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+     {
   //Prepare the home screen main titles
   final List<MovieTypes> listOfMovieTitles =
       MovieTypes.values.skip(Global.mainList).toList();
@@ -33,9 +33,6 @@ class _HomeScreenState extends State<HomeScreen>
       ],
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
 
 class MainScreen extends StatefulWidget {
@@ -54,7 +51,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen>
-    with AutomaticKeepAliveClientMixin {
+     {
   @override
   Widget build(BuildContext context) {
     Global.dataType = widget.type;
@@ -66,7 +63,6 @@ class _MainScreenState extends State<MainScreen>
         Trending(
           MovieTypes.boxoffice,
           TvTypes.played,
-          key++,
         ),
         Container(padding: const EdgeInsets.all(5), child: Genre()),
         ...widget.listOfTitles.map((e) {
@@ -81,7 +77,4 @@ class _MainScreenState extends State<MainScreen>
       ]),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

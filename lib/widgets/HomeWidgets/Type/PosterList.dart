@@ -121,24 +121,7 @@ class ImagePoster extends StatelessWidget {
       aspectRatio: 3 / 4,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
-        child: Consumer<PhotoProvider>(
-          builder: (ctx, image, _) {
-            List<String> posters = [Global.defaultImage];
-            if (Global.isMovie())
-              posters = image.getMovieImages(id) ?? posters;
-            else {
-              posters = image.getShowImages(id) ?? posters;
-            }
-
-            return FadeInImage(
-              placeholder: AssetImage('assets/images/logo.png'),
-              image: NetworkImage(
-                posters[0],
-              ),
-              fit: BoxFit.cover,
-            );
-          },
-        ),
+        child: Universal.imageSource(id, 0, context),
       ),
     );
   }

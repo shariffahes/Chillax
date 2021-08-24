@@ -106,6 +106,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     );
 
     var list = ListView.builder(
+      key: PageStorageKey(0),
       itemBuilder: (ctx, index) {
         final currentShow = shows[index];
         final String showName = currentShow['title'] as String;

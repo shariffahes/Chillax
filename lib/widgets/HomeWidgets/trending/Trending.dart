@@ -11,9 +11,9 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 class Trending extends StatefulWidget {
   MovieTypes movieType;
   TvTypes showType;
-  final int k;
+  
 
-  Trending(this.movieType, this.showType, this.k);
+  Trending(this.movieType, this.showType);
 
   @override
   _TrendingState createState() => _TrendingState();
@@ -74,7 +74,7 @@ class _TrendingState extends State<Trending> {
           _controller,
           _scrollToIndex,
           _itemsData[Global.dataType.index]!,
-          widget.k,
+   
         ),
         SizedBox(
           height: 13,
@@ -149,16 +149,15 @@ class ViewCards extends StatelessWidget {
   final AutoScrollController _controller;
   final Function(int ind) _scrollToIndex;
   List<int> list;
-  final int k;
 
-  ViewCards(this._controller, this._scrollToIndex, this.list, this.k);
+
+  ViewCards(this._controller, this._scrollToIndex, this.list, );
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 7 / 4,
       child: ListView.builder(
-        key: PageStorageKey(k),
         physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
         controller: _controller,
         scrollDirection: Axis.horizontal,

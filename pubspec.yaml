@@ -36,6 +36,7 @@ dependencies:
   flutter_calendar_carousel: ^2.0.3
   responsive_sizer: 3.0.4+4
   youtube_player_iframe: ^2.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
