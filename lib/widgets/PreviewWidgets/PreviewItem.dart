@@ -403,17 +403,21 @@ class ActorItem extends StatelessWidget {
         child: Consumer<PhotoProvider>(
           builder: (ctx, image, _) {
             var profile = [Global.defaultImage];
-            if (isCast)
+            if (isCast) {
               profile = image.getPersonProfiles(_cast!.id) ?? profile;
-            else
+            } else {
+              Provider.of<DataProvider>(ctx, listen: false)
+                  .fetchImage(id!, Global.dataType, ctx);
               profile = Global.isMovie()
                   ? image.getMovieImages(data.id) ?? profile
                   : image.getShowImages(data.id) ?? profile;
-
-            return Image.network(
-              profile[0],
-              fit: BoxFit.cover,
-            );
+            }
+            return FadeInImage(
+                placeholder: AssetImage('assets/images/logo.png'),
+                image: NetworkImage(
+                  profile[0],
+                ),
+                fit: BoxFit.cover);
           },
         ),
         footer: Container(

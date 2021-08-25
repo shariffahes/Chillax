@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
+import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -51,13 +52,15 @@ class PhotoProvider with ChangeNotifier {
       //data are cached locally
       if (episode != null && showsImages[epsId] != null)
         return showsImages[epsId]!;
-      else if (season != null && showsImages[seasonId] != null)
+      else if (season != null && showsImages[seasonId] != null) {
         return showsImages[seasonId]!;
-      else if (season == null) {
+      } else if (season == null) {
         if (type == DataType.tvShow && showsImages[id] != null)
           return showsImages[id]!;
+
         if (type == DataType.movie && moviesImages[id] != null)
           return moviesImages[id]!;
+
         if (type == DataType.person && peopleImages[id] != null)
           return peopleImages[id]!;
       }
@@ -138,6 +141,7 @@ class PhotoProvider with ChangeNotifier {
             ? (response['posters'].isNotEmpty ? response['posters'][0] : {})
             : {};
         final path = isEpisode ? 'stills' : 'backdrops';
+        final quality = isEpisode ? '/w300' : '/w1280';
         final backdropImages = response[path] != null
             ? (response[path].isNotEmpty ? response[path][0] : {})
             : {};
@@ -148,7 +152,7 @@ class PhotoProvider with ChangeNotifier {
 
         final backDropURL = backdropImages['file_path'] == null
             ? Global.defaultImage
-            : Global.baseImageURL + '/w1280' + backdropImages['file_path'];
+            : Global.baseImageURL + quality + backdropImages['file_path'];
 
         _images.add(imageURL);
         _images.add(backDropURL);

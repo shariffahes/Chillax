@@ -142,11 +142,15 @@ class Universal {
     return Consumer<PhotoProvider>(
       builder: (ctx, image, _) {
         List<String> posters = [Global.defaultImage, Global.defaultImage];
-        if (flag == 1)
+
+        if (DataProvider.dataDB[id] != null)
           Provider.of<DataProvider>(ctx, listen: false)
               .fetchImage(id, Global.dataType, ctx);
-
-        if (Global.isMovie())
+        if (flag != 0 && flag != 1) {
+          posters = image.getShowImages(flag) ?? posters;
+          posters[0] = posters[1];
+          flag = 0;
+        } else if (Global.isMovie())
           posters = image.getMovieImages(id) ?? posters;
         else
           posters = image.getShowImages(id) ?? posters;

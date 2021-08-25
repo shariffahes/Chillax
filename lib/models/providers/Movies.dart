@@ -373,12 +373,6 @@ class DataProvider with ChangeNotifier {
 
       final id = info['ids']['trakt'] ?? 0;
       final tmdbId = info['ids']['tmdb'] ?? -1;
-      //fetch the images from tmdb.
-      //fetch is not sync to avoid the long wait to get the image
-      //so we fetch the image and notify listeners when finished
-      if (tmdbId != -1)
-        Provider.of<PhotoProvider>(ctx, listen: false)
-            .fetchImagesFor(tmdbId, id, Global.dataType);
 
       final title = info['title'] ?? '-';
       final overview = info['overview'] ?? '-';
@@ -669,14 +663,17 @@ class DataProvider with ChangeNotifier {
     );
   }
 
+  Map<int, int> requests = {};
   Future<void> fetchImage(int id, DataType type, BuildContext ctx,
       {int? season, int? seasonId, int? episode, int? epsId}) async {
     final tmdbID = dataDB[id]?.tmdb ?? -1;
-
-    if (tmdbID != -1)
-      Provider.of<PhotoProvider>(ctx, listen: false).fetchImagesFor(
-          tmdbID, id, type,
-          season: season, episode: episode, seasonId: seasonId, epsId: epsId);
+    if ((season == null && requests[id] != null) || tmdbID == -1) {
+      return;
+    }
+    requests[id] = 1;
+    Provider.of<PhotoProvider>(ctx, listen: false).fetchImagesFor(
+        tmdbID, id, type,
+        season: season, episode: episode, seasonId: seasonId, epsId: epsId);
   }
 
   Future<void> fetchSeasons(int id, BuildContext ctx, {int? season}) async {
@@ -710,7 +707,7 @@ class DataProvider with ChangeNotifier {
         uri = Uri.parse(url);
 
         response = await _fetchData(url, uri: uri) as List<dynamic>;
-      
+
         response.forEach(
           (element) {
             Episode eps = _extractEpisodesData(element, id, ctx);
@@ -723,6 +720,7 @@ class DataProvider with ChangeNotifier {
 
   Future<void> fetchSchedule() async {
     List<int> keys = tvSchedule.keys.toList();
+
     for (int key in keys) {
       if (tvSchedule[key]!.isEmpty) {
         final url = Global.baseURL + 'shows/$key/next_episode?extended=full';

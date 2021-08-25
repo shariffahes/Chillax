@@ -1,6 +1,5 @@
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
-import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
@@ -43,21 +42,10 @@ class CardItem extends StatelessWidget {
                   borderRadius: roundedBorder(22, 55)),
               child: ClipRRect(
                 borderRadius: roundedBorder(22, 55),
-                child: Consumer<PhotoProvider>(
-                  builder: (ctx, image, _) {
-                    List<String> poster = [Global.defaultImage];
-                    if (Global.isMovie())
-                      poster = image.getMovieImages(_data.id) ?? poster;
-                    else
-                      poster = image.getShowImages(_data.id) ?? poster;
-
-                    return Image(
-                      image: NetworkImage(poster[0]),
-                    );
-                  },
+                child: Universal.imageSource(_data.id, 0, context)
                 ),
               ),
-            ),
+            
             Flexible(
               fit: FlexFit.tight,
               child: InfoColumn(_data),

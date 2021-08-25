@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:discuss_it/main.dart';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
@@ -128,7 +127,7 @@ class User with ChangeNotifier {
       _delete(id, DataType.movie);
     } else {
       _tvWatched.remove(id);
-      _watching.remove(DataProvider.dataDB[id]);
+      _watching.removeWhere((element) => element.id == id);
       _tvWatchList.remove(id);
       DataProvider.tvSchedule.remove(id);
       _delete(id, DataType.tvShow);
@@ -300,7 +299,7 @@ class User with ChangeNotifier {
   }
 
   void _delete(int id, DataType type) async {
-    track[id] = Track(currentEp: 1, currentSeason: 1);
+    
     if (type == DataType.movie)
       await MyApp.db!.delete('MovieWatch', where: 'id = $id');
     else

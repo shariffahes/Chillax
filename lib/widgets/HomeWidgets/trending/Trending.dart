@@ -11,7 +11,6 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 class Trending extends StatefulWidget {
   MovieTypes movieType;
   TvTypes showType;
-  
 
   Trending(this.movieType, this.showType);
 
@@ -32,7 +31,7 @@ class _TrendingState extends State<Trending> {
   void _scrollToIndex(int index) async {
     await _controller.scrollToIndex(index,
         preferPosition: AutoScrollPosition.middle);
-    
+
     setState(() {
       ind = index;
     });
@@ -74,7 +73,6 @@ class _TrendingState extends State<Trending> {
           _controller,
           _scrollToIndex,
           _itemsData[Global.dataType.index]!,
-   
         ),
         SizedBox(
           height: 13,
@@ -150,8 +148,11 @@ class ViewCards extends StatelessWidget {
   final Function(int ind) _scrollToIndex;
   List<int> list;
 
-
-  ViewCards(this._controller, this._scrollToIndex, this.list, );
+  ViewCards(
+    this._controller,
+    this._scrollToIndex,
+    this.list,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -184,6 +185,8 @@ class ViewCards extends StatelessWidget {
                 width: 95.w,
                 child: Consumer<PhotoProvider>(
                   builder: (ctx, image, child) {
+                    Provider.of<DataProvider>(ctx, listen: false)
+                        .fetchImage(id, Global.dataType, ctx);
                     List<String> backdrop = [
                       Global.defaultImage,
                       Global.defaultImage

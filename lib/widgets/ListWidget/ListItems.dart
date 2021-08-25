@@ -42,6 +42,7 @@ class ListItems extends StatelessWidget {
       controller: _controller,
       onLoading: load,
       child: ListView.builder(
+        
         itemBuilder: (_, index) {
           Data data =
               DataProvider.dataDB[_movieList[index]] ?? Global.defaultData;

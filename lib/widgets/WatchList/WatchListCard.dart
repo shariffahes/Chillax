@@ -210,7 +210,7 @@ class ElipseImageView extends StatelessWidget {
       width: cnst.minWidth * 0.4,
       child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.elliptical(80, 125)),
-          child: Universal.imageSource(id, 1, context)),
+          child: Universal.imageSource(id, epsId, context)),
     );
   }
 }

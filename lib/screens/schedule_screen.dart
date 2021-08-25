@@ -67,7 +67,7 @@ class Shows extends StatelessWidget {
 
         DataProvider.tvSchedule.forEach((key, value) {
           final date = DateTime.parse(value['date'] as String).toLocal();
-     
+         
           if (date.isAfter(DateTime.now().subtract(Duration(days: 1))))
             listOfShows.add(value);
         });
