@@ -40,7 +40,7 @@ class Global {
     "Western"
   ];
   static int mainList = 4;
-
+  static String? key;
   static const accent = Colors.amber;
   static const primary = Color.fromRGBO(0, 0, 128, 1);
   static Data get defaultData {
@@ -120,7 +120,7 @@ class Global {
       int id = show['id'] as int;
       watched[id] = Show.fromMap(show);
       DataProvider.dataDB[id] = watched[id]!;
-      DataProvider.tvSchedule[id] = {};
+      
       final int episode = show['currentEps'] as int;
       final int season = show['currentSeason'] as int;
       track[id] = Track(currentEp: episode, currentSeason: season);
@@ -136,7 +136,7 @@ class Global {
       currWatching.add(s);
 
       DataProvider.dataDB[id] = s;
-      DataProvider.tvSchedule[id] = {};
+     
     });
 
     if (ctx == null) {

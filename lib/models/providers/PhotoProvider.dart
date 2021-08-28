@@ -70,19 +70,21 @@ class PhotoProvider with ChangeNotifier {
 
       //otherwise fetch image from tmdb api
       var url = 'https://api.themoviedb.org/3/${type.toShortString()}/$tmdbId';
+      List<String> images = [];
       if (episode != null) {
         url += '/season/$season/episode/$episode';
       } else if (season != null) {
         url += '/season/$season';
-      }
-      final URL =
-          Uri.parse(url + '/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
+      } 
 
-      final response = await http.get(URL);
-      final decodedData = json.decode(response.body);
+        final URL =
+            Uri.parse(url + '/images?api_key=dd5468d7aa41e016a24fa6bce058252d');
 
-      List<String> images =
-          _extractData(decodedData, type, isEpisode: epsId != null);
+        final response = await http.get(URL);
+        final decodedData = json.decode(response.body);
+
+        images = _extractData(decodedData, type, isEpisode: epsId != null);
+      
 
       if (type == DataType.person) {
         _peopleProfiles[id] = images;
@@ -99,7 +101,6 @@ class PhotoProvider with ChangeNotifier {
             images = await fetchImagesFor(tmdbId, id, type);
           }
           _showsImage[seasonId] = images;
-          
         } else {
           _showsImage[id] = images;
         }

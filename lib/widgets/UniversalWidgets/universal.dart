@@ -86,6 +86,7 @@ class Universal {
           padding: EdgeInsets.zero,
           onPressed: () {
             user.removeFromWatchList(_data.id);
+            
           },
           icon: Icon(
             Icons.check_circle,

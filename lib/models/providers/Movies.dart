@@ -285,7 +285,7 @@ class DataProvider with ChangeNotifier {
 
       MovieTypes localType = type;
       final stringURL = _prepareURL(localType, null);
-      final decodedData = await _fetchData(stringURL);
+      final decodedData = await fetchData(stringURL);
 
       final data = _extractData(decodedData, ctx);
       _movies[ind] = data.cast<int>();
@@ -298,7 +298,7 @@ class DataProvider with ChangeNotifier {
         null,
         localType,
       );
-      final decodedData = await _fetchData(stringURL);
+      final decodedData = await fetchData(stringURL);
       final data = _extractData(decodedData, ctx);
       _tvShows[ind] = data.cast<int>();
     } else {
@@ -322,7 +322,7 @@ class DataProvider with ChangeNotifier {
 
     final url = _prepareURL(movieType, tvType, genre: genre, id: id);
 
-    final decodedData = await _fetchData(url);
+    final decodedData = await fetchData(url);
 
     final results = decodedData as List<dynamic>;
 
@@ -504,7 +504,7 @@ class DataProvider with ChangeNotifier {
   }
 
 //responsible to get the json data from trakt
-  Future<dynamic> _fetchData(String url, {Uri? uri}) async {
+  Future<dynamic> fetchData(String url, {Uri? uri}) async {
     Uri parsedURL = Uri.parse(url);
     if (uri != null) parsedURL = uri;
     try {
@@ -544,7 +544,7 @@ class DataProvider with ChangeNotifier {
         genre: genre,
         searchName: searchName);
     try {
-      final decodedData = await _fetchData(url);
+      final decodedData = await fetchData(url);
       final results = decodedData as List<dynamic>;
 
       final data = _extractData(results, ctx);
@@ -566,7 +566,7 @@ class DataProvider with ChangeNotifier {
 
     final decodedData;
     try {
-      decodedData = await _fetchData(stringURL);
+      decodedData = await fetchData(stringURL);
     } catch (error) {
       return null;
     }
@@ -604,7 +604,7 @@ class DataProvider with ChangeNotifier {
   Future<List<int>> searchFor(String searchName, BuildContext ctx) async {
     final url =
         _prepareURL(MovieTypes.search, TvTypes.search, searchName: searchName);
-    final response = await _fetchData(url);
+    final response = await fetchData(url);
     final results = response as List<dynamic>;
     List<int> _searchData = _extractData(results, ctx);
     if (Global.isMovie())
@@ -684,7 +684,7 @@ class DataProvider with ChangeNotifier {
     List<dynamic> response;
 
     if (data.episodes == null) {
-      response = await _fetchData(url, uri: uri) as List<dynamic>;
+      response = await fetchData(url, uri: uri) as List<dynamic>;
       data.episodes = {};
 
       response.forEach((item) {
@@ -706,7 +706,7 @@ class DataProvider with ChangeNotifier {
         url += '/$season?extended=full';
         uri = Uri.parse(url);
 
-        response = await _fetchData(url, uri: uri) as List<dynamic>;
+        response = await fetchData(url, uri: uri) as List<dynamic>;
 
         response.forEach(
           (element) {
@@ -719,14 +719,21 @@ class DataProvider with ChangeNotifier {
   }
 
   Future<void> fetchSchedule() async {
-    List<int> keys = tvSchedule.keys.toList();
-
-    for (int key in keys) {
-      if (tvSchedule[key]!.isEmpty) {
+    final res = await http.get(Uri.parse(
+        'https://chillax-4c80c-default-rtdb.firebaseio.com/schedule/${Global.key}.json'));
+    final decoded = json.decode(res.body);
+    final ids = decoded.keys;
+    
+    for (var val in ids) {
+      if (val == 'initial') {
+        
+        continue;
+      }
+      int key = int.parse(val);
+      if (tvSchedule[key] == null || tvSchedule[key]!.isEmpty) {
         final url = Global.baseURL + 'shows/$key/next_episode?extended=full';
         final parsedURL = Uri.parse(url);
-        final response = await _fetchData(url, uri: parsedURL);
-
+        final response = await fetchData(url, uri: parsedURL);
         if (response != 'Nan') {
           Map<String, Object> info = {
             'date': response['first_aired'],
@@ -737,7 +744,6 @@ class DataProvider with ChangeNotifier {
             'id': key,
             'epsId': response['ids']['trakt']
           };
-
           tvSchedule[key] = info;
         } else {
           tvSchedule.remove(key);
@@ -748,7 +754,7 @@ class DataProvider with ChangeNotifier {
 
   Future<Track?> getLatestEpisode(int id) async {
     final url = Global.baseURL + 'shows/$id/last_episode';
-    final response = await _fetchData(url, uri: Uri.parse(url));
+    final response = await fetchData(url, uri: Uri.parse(url));
 
     if (response != 'Nan') {
       final season = response['season'];
@@ -764,7 +770,7 @@ class DataProvider with ChangeNotifier {
       final url =
           'https://api.trakt.tv/calendars/all/movies/$formattedDate/1?extended=full';
       final response =
-          await _fetchData(url, uri: Uri.parse(url)) as List<dynamic>;
+          await fetchData(url, uri: Uri.parse(url)) as List<dynamic>;
 
       final data = _extractData(response, ctx);
 

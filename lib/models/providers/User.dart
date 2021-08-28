@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:discuss_it/main.dart';
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 class Track {
@@ -68,7 +70,8 @@ class User with ChangeNotifier {
     _update(id, -1, DataType.tvShow);
     _tvWatchList.remove(id);
     _tvWatched.remove(id);
-    DataProvider.tvSchedule[id] = {};
+    
+    mapShowToUser(id);
     notifyListeners();
   }
 
@@ -95,8 +98,8 @@ class User with ChangeNotifier {
         _update(id, 0, DataType.tvShow);
       } else if (_tvWatchList[id] != null) {
         _tvWatched[id] = _tvWatchList[id]!;
-        _tvWatchList.remove(id);
-        DataProvider.tvSchedule[id] = {};
+        _tvWatchList.remove(id); 
+        mapShowToUser(id);
         DataProvider().getLatestEpisode(id).then((trak) {
           if (trak != null) {
             _update(id, 1, DataType.tvShow);
@@ -128,10 +131,12 @@ class User with ChangeNotifier {
       _movieWatchList.remove(id);
       _delete(id, DataType.movie);
     } else {
+      print(id);
       _tvWatched.remove(id);
       _watching.removeWhere((element) => element.id == id);
       _tvWatchList.remove(id);
       DataProvider.tvSchedule.remove(id);
+      removeUserFromWatchers(id);
       _delete(id, DataType.tvShow);
     }
     notifyListeners();
@@ -228,6 +233,7 @@ class User with ChangeNotifier {
 
   void removeFromWatched(int id) {
     isChange = true;
+    removeUserFromWatchers(id);
     if (Global.isMovie()) {
       _movieWatched.remove(id);
       _delete(id, DataType.movie);
@@ -240,7 +246,7 @@ class User with ChangeNotifier {
 
   void removeFromWatching(int id) {
     isChange = true;
-
+    removeUserFromWatchers(id);
     _watching.removeWhere((element) => element.id == id);
     _delete(id, DataType.tvShow);
 
@@ -263,6 +269,69 @@ class User with ChangeNotifier {
       return Status.watched;
     else if (isWatching(id)) return Status.watching;
     return Status.none;
+  }
+
+  void mapShowToUser(int id) {
+    print(id);
+    Uri url = Uri.parse(
+        'https://chillax-4c80c-default-rtdb.firebaseio.com/shows/$id.json');
+    http.get(url).then((response) async {
+      final decodeData = json.decode(response.body);
+      List<String> watchers = [];
+      String? flag;
+      if (decodeData == null) {
+        final stringURL =
+            Global.baseURL + 'shows/$id/next_episode?extended=full';
+        url = Uri.parse(stringURL);
+        final response = await DataProvider().fetchData(stringURL, uri: url);
+        if (response != 'Nan') {
+          flag = response['first_aired'];
+        }
+      } else if (decodeData['watchers'] != null) {
+        decodeData['watchers'] as List<dynamic>;
+        watchers = decodeData['watchers'].cast<String>();
+
+        print(watchers);
+      }
+      watchers.add(Global.key!);
+      Map content = {'watchers': watchers};
+      if (flag != null) content['flag'] = flag;
+      if (flag != null || decodeData['flag'] != null) {
+        DataProvider.tvSchedule[id] = {};
+        var f = flag ?? decodeData['flag'];
+        url = Uri.parse(
+            'https://chillax-4c80c-default-rtdb.firebaseio.com/schedule/${Global.key}/$id.json');
+        http.patch(url, body: json.encode({'flag': f}));
+      }
+      url = Uri.parse(
+          'https://chillax-4c80c-default-rtdb.firebaseio.com/shows/$id.json');
+      http.patch(url, body: json.encode(content));
+    });
+  }
+
+  void removeUserFromWatchers(int id) {
+    print(id);
+    Uri url = Uri.parse(
+        'https://chillax-4c80c-default-rtdb.firebaseio.com/shows/$id/watchers.json');
+
+    http.get(url).then((response) {
+      final decodedData = json.decode(response.body);
+
+      if (decodedData != null) {
+        final watchers = (decodedData as List<dynamic>).cast<String>();
+
+        if (watchers.contains(Global.key)) {
+          watchers.remove(Global.key);
+          url = Uri.parse(
+              'https://chillax-4c80c-default-rtdb.firebaseio.com/shows/$id.json');
+          http.patch(url, body: json.encode({'watchers': watchers}));
+        }
+      }
+    });
+
+    url = Uri.parse(
+        'https://chillax-4c80c-default-rtdb.firebaseio.com/schedule/${Global.key}/$id.json');
+    http.delete(url);
   }
 
 //OPTIMIZE SEARCH!!
@@ -363,7 +432,6 @@ class User with ChangeNotifier {
   }
 
   void checkLatest(Track trak, int id) {
-
     if (track[id]!.currentEp == trak.currentEp ||
         track[id]!.currentSeason > trak.currentSeason) {
       startWatching(id, episode: trak.currentEp, season: trak.currentSeason);

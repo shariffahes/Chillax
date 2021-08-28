@@ -42,6 +42,7 @@ class PreviewItem extends StatelessWidget {
   }
 
   void action(Status status, User user, Data _data) {
+    
     switch (status) {
       case Status.watchList:
         user.removeFromWatchList(_data.id);

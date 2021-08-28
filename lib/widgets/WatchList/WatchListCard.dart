@@ -1,12 +1,9 @@
 import 'package:discuss_it/models/Enums.dart';
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
-import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
-import 'package:discuss_it/widgets/HomeWidgets/trending/Trending.dart';
 import 'package:discuss_it/widgets/UniversalWidgets/universal.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class WatchListCard extends StatefulWidget {
   WatchListCard(this._data, this.userProv, {this.season = 1});

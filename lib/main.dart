@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:discuss_it/models/Global.dart';
 import 'package:discuss_it/models/providers/Movies.dart';
 import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:discuss_it/screens/list_all_screen.dart';
 import 'package:discuss_it/widgets/PreviewWidgets/PreviewItem.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'screens/tabs_screen.dart';
@@ -45,6 +49,20 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Future<void> setDB() async {
     var databasePath = await getDatabasesPath();
+    SharedPreferences.getInstance().then((prefs) async {
+      String? value = prefs.getString('key');
+
+      if (value == null) {
+        final response = await post(
+            Uri.parse(
+                'https://chillax-4c80c-default-rtdb.firebaseio.com/schedule.json'),
+            body: json.encode({'initial': -1}));
+        final id = json.decode(response.body);
+        value = id['name'];
+        prefs.setString('key', value!);
+      } else
+        Global.key = value;
+    });
     String path = databasePath + '/chill_time.db';
     print(path);
     MyApp.db = await openDatabase(
@@ -61,7 +79,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-
     return FutureBuilder<void>(
         future: setDB(),
         builder: (ctx, _) {
