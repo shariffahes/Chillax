@@ -36,6 +36,7 @@ class CardItem extends StatelessWidget {
           children: [
             Container(
               height: 180,
+              width: 130,
               margin: const EdgeInsets.all(15.0),
               decoration: BoxDecoration(
                   color: Global.primary,

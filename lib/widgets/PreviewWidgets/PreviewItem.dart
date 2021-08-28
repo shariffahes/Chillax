@@ -480,16 +480,31 @@ class ActorItem extends StatelessWidget {
   }
 }
 
-class MediaView extends StatelessWidget {
+class MediaView extends StatefulWidget {
   final tmdbId;
 
   const MediaView(this.tmdbId);
 
   @override
+  _MediaViewState createState() => _MediaViewState();
+}
+
+class _MediaViewState extends State<MediaView> {
+  List<YoutubePlayerController> _controllers = [];
+
+  @override
+  void dispose() {
+    _controllers.forEach((element) {
+      element.close();
+    });
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<String>>(
         future: Provider.of<DataProvider>(context, listen: false)
-            .getVideosFor(tmdbId, Global.dataType),
+            .getVideosFor(widget.tmdbId, Global.dataType),
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting)
             return Universal.loadingWidget();
@@ -511,7 +526,7 @@ class MediaView extends StatelessWidget {
                       showFullscreenButton: true,
                       autoPlay: false,
                     ));
-
+                _controllers.add(_controller);
                 return Container(
                     width: 85.w,
                     height: (85.w / 16) * 9,

@@ -100,8 +100,10 @@ class User with ChangeNotifier {
         DataProvider().getLatestEpisode(id).then((trak) {
           if (trak != null) {
             _update(id, 1, DataType.tvShow);
-
             _updateEpisode(id, trak.currentEp + 1, trak.currentSeason);
+            track[id] = Track(
+                currentEp: trak.currentEp + 1,
+                currentSeason: trak.currentSeason);
           }
         });
       } else {
@@ -161,8 +163,11 @@ class User with ChangeNotifier {
 
     episode = episode - 1;
     if (show.episodes == null) {
-      await Provider.of<DataProvider>(ctx, listen: false)
-          .fetchSeasons(id,ctx, season: season,);
+      await Provider.of<DataProvider>(ctx, listen: false).fetchSeasons(
+        id,
+        ctx,
+        season: season,
+      );
     }
     final _seriesEpisodes = show.episodes!;
 
@@ -172,7 +177,7 @@ class User with ChangeNotifier {
 
     if (_seriesEpisodes[season]!.isEmpty) {
       await Provider.of<DataProvider>(ctx, listen: false)
-          .fetchSeasons(id,ctx, season: season);
+          .fetchSeasons(id, ctx, season: season);
     }
 
     if (episode >= _seriesEpisodes[season]!.length) {
@@ -299,7 +304,6 @@ class User with ChangeNotifier {
   }
 
   void _delete(int id, DataType type) async {
-    
     if (type == DataType.movie)
       await MyApp.db!.delete('MovieWatch', where: 'id = $id');
     else
@@ -359,6 +363,7 @@ class User with ChangeNotifier {
   }
 
   void checkLatest(Track trak, int id) {
+
     if (track[id]!.currentEp == trak.currentEp ||
         track[id]!.currentSeason > trak.currentSeason) {
       startWatching(id, episode: trak.currentEp, season: trak.currentSeason);

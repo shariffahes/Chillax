@@ -148,21 +148,20 @@ class Universal {
               .fetchImage(id, Global.dataType, ctx);
         if (flag != 0 && flag != 1) {
           posters = image.getShowImages(flag) ?? posters;
-          posters[0] = posters[1];
-          flag = 0;
+         
+          flag = 1;
         } else if (Global.isMovie())
           posters = image.getMovieImages(id) ?? posters;
-        else
+        else {
           posters = image.getShowImages(id) ?? posters;
+        }
 
-        return flag == 1
-            ? Image.network(posters[flag], fit: BoxFit.cover)
-            : FadeInImage(
-                placeholder: AssetImage('assets/images/logo.png'),
-                image: NetworkImage(
-                  posters[flag],
-                ),
-                fit: BoxFit.cover);
+        return FadeInImage(
+            placeholder: AssetImage('assets/images/logo.png'),
+            image: NetworkImage(
+              posters[flag],
+            ),
+            fit: BoxFit.cover);
       },
     );
   }

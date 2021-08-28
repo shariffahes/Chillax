@@ -4,6 +4,7 @@ import 'package:discuss_it/models/providers/PhotoProvider.dart';
 import 'package:discuss_it/models/providers/User.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 
 class SeasonCard extends StatelessWidget {
   const SeasonCard(this.id, this.epsId, this.season, this.number, this.showName,
@@ -30,7 +31,7 @@ class SeasonCard extends StatelessWidget {
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 16.5.sp,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -41,7 +42,7 @@ class SeasonCard extends StatelessWidget {
         Text(
           numberString,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 15.3.sp,
           ),
         ),
         SizedBox(
@@ -49,14 +50,14 @@ class SeasonCard extends StatelessWidget {
         ),
         Icon(
           Icons.circle,
-          size: 5,
+          size: 6,
         ),
         SizedBox(
           width: 5,
         ),
         Text(seasonString,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 15.3.sp,
             )),
       ]),
       Spacer(),
@@ -97,20 +98,20 @@ class SeasonCard extends StatelessWidget {
     Widget setIcon() {
       if (track == null || track.currentSeason > season)
         return IconButton(
-            onPressed: () {}, icon: Icon(Icons.check_circle_rounded));
+            onPressed: () {}, icon: Icon(Icons.check_circle_rounded,size: 30,));
       else if (track.currentSeason < season)
         return IconButton(
-            onPressed: () {}, icon: Icon(Icons.check_circle_outline));
+            onPressed: () {}, icon: Icon(Icons.check_circle_outline,size: 30,));
       else if (track.currentSeason == season) {
         if (track.currentEp > number)
           return IconButton(
-              onPressed: () {}, icon: Icon(Icons.check_circle_rounded));
+              onPressed: () {}, icon: Icon(Icons.check_circle_rounded,size: 30,));
         else if (track.currentEp < number)
           return IconButton(
-              onPressed: () {}, icon: Icon(Icons.check_circle_outline));
+              onPressed: () {}, icon: Icon(Icons.check_circle_outline,size: 30,));
         else if (track.currentEp == number)
           return IconButton(
-              onPressed: () {}, icon: Icon(Icons.check_circle_outline));
+              onPressed: () {}, icon: Icon(Icons.check_circle_outline,size: 30,));
       }
       return Container();
     }

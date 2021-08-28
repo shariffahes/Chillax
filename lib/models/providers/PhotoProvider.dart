@@ -99,10 +99,12 @@ class PhotoProvider with ChangeNotifier {
             images = await fetchImagesFor(tmdbId, id, type);
           }
           _showsImage[seasonId] = images;
+          
         } else {
           _showsImage[id] = images;
         }
       }
+
       notifyListeners();
       return images;
     } catch (error) {

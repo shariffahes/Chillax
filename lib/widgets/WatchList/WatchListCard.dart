@@ -124,7 +124,9 @@ class _WatchListCardState extends State<WatchListCard>
                         child: Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.bold,fontStyle: FontStyle.italic),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic),
                     )),
                   ),
                 ),
@@ -136,14 +138,19 @@ class _WatchListCardState extends State<WatchListCard>
                       color: Colors.amber,
                       padding: const EdgeInsets.only(left: 20),
                       alignment: Alignment.centerLeft,
-                      child: Icon(Icons.check_circle_sharp,size: 45,),
+                      child: Icon(
+                        Icons.check_circle_sharp,
+                        size: 45,
+                      ),
                     ),
                     secondaryBackground: Container(
                       padding: const EdgeInsets.only(right: 20),
                       alignment: Alignment.centerRight,
                       color: Colors.red,
-                      
-                      child: Icon(Icons.delete,size: 45,),
+                      child: Icon(
+                        Icons.delete,
+                        size: 45,
+                      ),
                     ),
                     onDismissed: (dir) {
                       if (dir == DismissDirection.endToStart) {
@@ -208,6 +215,11 @@ class ElipseImageView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: cnst.minWidth * 0.4,
+      height: 100,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.elliptical(80, 125)),
+      ),
+      clipBehavior: Clip.hardEdge,
       child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.elliptical(80, 125)),
           child: Universal.imageSource(id, epsId, context)),
