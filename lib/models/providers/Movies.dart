@@ -730,22 +730,24 @@ class DataProvider with ChangeNotifier {
       }
       int key = int.parse(val);
       if (tvSchedule[key] == null || tvSchedule[key]!.isEmpty) {
-        final url = Uri.parse(
-            'https://chillax-4c80c-default-rtdb.firebaseio.com/shows/$key.json');
+        final url = Global.baseURL + 'shows/$key/next_episode?extended=full';
+        final parsedURL = Uri.parse(url);
+        final response = await fetchData(url, uri: parsedURL);
 
-        final response = await http.get(url);
-        final data = json.decode(response.body);
-
-        Map<String, Object> info = {
-          'date': data['flag'],
-          'season': data['season'],
-          'number': data['number'],
-          'name': data['title'],
-          'title': dataDB[key]?.name ?? data['title'],
-          'id': key,
-          'epsId': data['epsId']
-        };
-        tvSchedule[key] = info;
+        if (response != 'Nan') {
+          Map<String, Object> info = {
+            'date': response['first_aired'],
+            'season': response['season'],
+            'number': response['number'],
+            'name': response['title'],
+            'title': dataDB[key]?.name ?? response['title'],
+            'id': key,
+            'epsId': response['ids']['trakt']
+          };
+          tvSchedule[key] = info;
+        } else {
+          tvSchedule.remove(key);
+        }
       }
     }
   }

@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
     var databasePath = await getDatabasesPath();
     SharedPreferences.getInstance().then((prefs) async {
       String? value = prefs.getString('key');
-
+      print(value);
       if (value == null) {
         final response = await post(
             Uri.parse(

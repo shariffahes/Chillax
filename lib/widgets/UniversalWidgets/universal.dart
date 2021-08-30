@@ -86,7 +86,6 @@ class Universal {
           padding: EdgeInsets.zero,
           onPressed: () {
             user.removeFromWatchList(_data.id);
-            
           },
           icon: Icon(
             Icons.check_circle,
@@ -148,8 +147,11 @@ class Universal {
           Provider.of<DataProvider>(ctx, listen: false)
               .fetchImage(id, Global.dataType, ctx);
         if (flag != 0 && flag != 1) {
-          posters = image.getShowImages(flag) ?? posters;
-         
+          if (Global.isMovie()) {
+            posters = image.getMovieImages(id) ?? posters;
+          } else {
+            posters = image.getShowImages(flag) ?? posters;
+          }
           flag = 1;
         } else if (Global.isMovie())
           posters = image.getMovieImages(id) ?? posters;

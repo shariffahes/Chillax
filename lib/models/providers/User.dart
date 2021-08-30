@@ -278,57 +278,33 @@ class User with ChangeNotifier {
     http.get(url).then((response) async {
       final decodeData = json.decode(response.body);
       List<String> watchers = [];
-      url = Uri.parse(
-          'https://chillax-4c80c-default-rtdb.firebaseio.com/shows/$id.json');
-
-      Map content = {};
+      String? flag;
       if (decodeData == null) {
         final stringURL =
             Global.baseURL + 'shows/$id/next_episode?extended=full';
         url = Uri.parse(stringURL);
         final response = await DataProvider().fetchData(stringURL, uri: url);
         if (response != 'Nan') {
-          String? flag = response['first_aired'];
-          final title = response["title"];
-          final season = response["season"];
-          final number = response["number"];
-          final epsId = response["ids"]["trakt"];
-          watchers.add(Global.key!);
-          content = {
-            'title': title,
-            'season': season,
-            'number': number,
-            'epsId': epsId,
-            'flag': flag,
-            'watchers': watchers,
-          };
-          await http.patch(url, body: json.encode(content));
+          flag = response['first_aired'];
         }
       } else if (decodeData['watchers'] != null) {
         decodeData['watchers'] as List<dynamic>;
         watchers = decodeData['watchers'].cast<String>();
-        watchers.add(Global.key!);
-        content['watchers'] = watchers;
-        http.patch(url, body: json.encode(content));
         print(watchers);
       }
-
-      if (decodeData['epsId'] != null) {
-        DataProvider.tvSchedule[id] = {
-          'date': decodeData['flag'],
-          'season': decodeData['season'],
-          'number': decodeData['number'],
-          'name': decodeData['title'],
-          'title': DataProvider.dataDB[id]?.name ?? decodeData['title'],
-          'id': id,
-          'epsId': decodeData['epsId']
-        };
-
-        var epsId = decodeData['epsId'];
+      watchers.add(Global.key!);
+      Map content = {'watchers': watchers};
+      if (flag != null) content['flag'] = flag;
+      if (flag != null || (decodeData != null && decodeData['flag'] != null)) {
+        DataProvider.tvSchedule[id] = {};
+        var f = flag ?? decodeData['flag'];
         url = Uri.parse(
             'https://chillax-4c80c-default-rtdb.firebaseio.com/schedule/${Global.key}/$id.json');
-        http.patch(url, body: json.encode({'epsId': epsId}));
+        http.patch(url, body: json.encode({'flag': f}));
       }
+      url = Uri.parse(
+          'https://chillax-4c80c-default-rtdb.firebaseio.com/shows/$id.json');
+      http.patch(url, body: json.encode(content));
     });
   }
 
@@ -355,7 +331,7 @@ class User with ChangeNotifier {
     url = Uri.parse(
         'https://chillax-4c80c-default-rtdb.firebaseio.com/schedule/${Global.key}/$id.json');
     http.delete(url);
-    DataProvider.tvSchedule.remove(id);
+    DataProvider.tvSchedule.remove(id.toString());
   }
 
 //OPTIMIZE SEARCH!!
