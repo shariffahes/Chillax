@@ -75,8 +75,10 @@ class PreviewItem extends StatelessWidget {
                     future: Provider.of<DataProvider>(context, listen: false)
                         .fetchCast(_data.id, context),
                     builder: (_, snapshot) {
+                      
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Universal.loadingWidget();
+                      
                       }
                       if (snapshot.hasError) {
                         print(snapshot.error);
