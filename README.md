@@ -16,7 +16,7 @@ A Flutter project to discover movies and shows, track your shows, and see the la
 ## Movies Discover:
 
 ## Movies Schedule:
-![Uploading movieSchedule.gif…]()
+![movieSchedule](https://user-images.githubusercontent.com/22710660/131445969-f7268bdc-9d7f-4217-8ea7-a0a0b5687435.gif)
 
 ## Movies WatchList: 
 ![moviesWatchList](https://user-images.githubusercontent.com/22710660/131444383-354b65b2-fb2b-4bbb-9777-f4f5f14e1930.gif)
