@@ -1,16 +1,25 @@
-# discuss_it
+# Chillax
 
-A new Flutter project.
+A Flutter project to discover movies and shows, track your shows, and see the latest schedule.
 
-## Getting Started
+# OverView
 
-This project is a starting point for a Flutter application.
+## Tv shows discover:
+![showPreview](https://user-images.githubusercontent.com/22710660/131443920-56b5c0a7-0ef7-4394-8e84-35bf68016266.gif)
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Tv schedule:
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tv WatchList:
+![showsWatchList](https://user-images.githubusercontent.com/22710660/131444296-1cd118d5-7ca8-4c69-9e35-10e772fbec21.gif)
+
+## Movies Discover:
+
+## Movies Schedule:
+![Uploading movieSchedule.gif…]()
+
+## Movies WatchList: 
+![moviesWatchList](https://user-images.githubusercontent.com/22710660/131444383-354b65b2-fb2b-4bbb-9777-f4f5f14e1930.gif)
+
+
+
